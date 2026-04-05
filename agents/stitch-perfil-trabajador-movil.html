@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Perfil del Trabajador - Ironclad Forge ERP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#ffdad8",
+                        "on-background": "#191c1d",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "inverse-primary": "#bbc6e2",
+                        "surface-container": "#edeeef",
+                        "on-tertiary-container": "#fe4b55",
+                        "on-secondary-fixed": "#001d36",
+                        "on-primary-container": "#828da7",
+                        "outline-variant": "#c5c6cd",
+                        "tertiary-fixed-dim": "#ffb3b1",
+                        "surface-tint": "#545e76",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-container": "#1b263b",
+                        "primary": "#051125",
+                        "inverse-surface": "#2e3132",
+                        "secondary-fixed-dim": "#afc9ea",
+                        "on-secondary-fixed-variant": "#2f4865",
+                        "error-container": "#ffdad6",
+                        "tertiary": "#2e0004",
+                        "surface-dim": "#d9dadb",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-surface": "#191c1d",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed-variant": "#3c475d",
+                        "background": "#f8f9fa",
+                        "surface-container-high": "#e7e8e9",
+                        "surface-container-low": "#f3f4f5",
+                        "on-secondary-container": "#48617e",
+                        "secondary-fixed": "#d1e4ff",
+                        "primary-fixed": "#d7e2ff",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#101b30",
+                        "surface-variant": "#e1e3e4",
+                        "secondary": "#47607e",
+                        "on-surface-variant": "#45474d",
+                        "secondary-container": "#c2dcff",
+                        "inverse-on-surface": "#f0f1f2",
+                        "tertiary-container": "#55000c",
+                        "primary-fixed-dim": "#bbc6e2",
+                        "on-tertiary-fixed": "#410007",
+                        "outline": "#75777d",
+                        "on-tertiary-fixed-variant": "#92001c",
+                        "surface-container-highest": "#e1e3e4",
+                        "surface-bright": "#f8f9fa",
+                        "surface": "#f8f9fa"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .segmented-progress {
+            display: flex;
+            gap: 4px;
+        }
+        .segment {
+            height: 8px;
+            flex: 1;
+            border-radius: 2px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface min-h-screen pb-24">
+<!-- Top AppBar (As per JSON structure but for Mobile context) -->
+<header class="bg-[#051125] text-white flex justify-between items-center w-full px-6 py-4 sticky top-0 z-50">
+<div class="text-lg font-bold text-white tracking-tight">Ironclad Forge ERP</div>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-[#47607E]">notifications</span>
+<span class="material-symbols-outlined text-[#47607E]">help</span>
+</div>
+</header>
+<main class="max-w-md mx-auto p-4 space-y-6">
+<!-- User Header Section -->
+<section class="bg-surface-container-low p-6 rounded-xl relative overflow-hidden">
+<div class="flex items-center gap-5 relative z-10">
+<div class="w-20 h-20 rounded-lg overflow-hidden border-2 border-secondary">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="professional portrait of a manufacturing supervisor wearing a dark vest in a clean industrial environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_mBW02ZVr_2IjXHNbUYaXNPpplVAS5gBbT-Rzpf8lDS2COvIT4e3mNyjXJ5UYLrub9I-GJzl0I3Dcb0TdhU2hfDuMtVWbqmjM9hqc-a-Byw-vN-IZtG83kkytxRp7jn2bYSbzE6rlm-Ol1nGn2yQz0aLsZSqcMM3Adx9U_RPi8sHX2vcodpJ1qZOJcS6X3PHk0tWLGbXp360stXjosylGLwrl7vpytW-Nm9zoFsORmv4B_vvpEWudI3SQqk0kdCGx6OYBlo2Vkc4"/>
+</div>
+<div>
+<h1 class="text-xl font-bold text-primary leading-tight">Alejandro Varga</h1>
+<p class="text-secondary font-medium text-sm">Supervisor de Planta</p>
+<div class="mt-2 inline-flex items-center px-2 py-1 bg-primary text-[10px] text-white font-bold rounded uppercase tracking-wider">
+                        ID: #082-99
+                    </div>
+</div>
+</div>
+<!-- Decorative Industrial Element -->
+<div class="absolute -right-4 -bottom-4 opacity-10">
+<span class="material-symbols-outlined text-8xl" style="font-variation-settings: 'wght' 700;">settings_accessibility</span>
+</div>
+</section>
+<!-- Color Identificador Section -->
+<section class="space-y-3">
+<div class="flex items-center gap-2 px-1">
+<span class="material-symbols-outlined text-secondary text-sm">palette</span>
+<h2 class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Color Identificador</h2>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-xl">
+<p class="text-xs text-on-surface-variant mb-4">Selecciona el color para tu visibilidad en calendarios compartidos.</p>
+<div class="grid grid-cols-4 gap-4">
+<!-- Color Options - Large touch targets 48x48 -->
+<button class="w-full aspect-square rounded-lg bg-[#E63946] ring-2 ring-offset-2 ring-[#E63946] border-4 border-white shadow-sm h-12"></button>
+<button class="w-full aspect-square rounded-lg bg-[#47607E] border-2 border-transparent h-12"></button>
+<button class="w-full aspect-square rounded-lg bg-[#051125] border-2 border-transparent h-12"></button>
+<button class="w-full aspect-square rounded-lg bg-[#2D6A4F] border-2 border-transparent h-12"></button>
+<button class="w-full aspect-square rounded-lg bg-[#F4A261] border-2 border-transparent h-12"></button>
+<button class="w-full aspect-square rounded-lg bg-[#8338EC] border-2 border-transparent h-12"></button>
+<button class="w-full aspect-square rounded-lg bg-[#FB5607] border-2 border-transparent h-12"></button>
+<button class="w-full aspect-square rounded-lg bg-[#FFD60A] border-2 border-transparent h-12"></button>
+</div>
+</div>
+</section>
+<!-- Seguridad: PIN Change -->
+<section class="space-y-3">
+<div class="flex items-center gap-2 px-1">
+<span class="material-symbols-outlined text-secondary text-sm">lock_person</span>
+<h2 class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Seguridad de Acceso</h2>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-xl">
+<div class="mb-4">
+<label class="text-xs font-semibold text-primary mb-2 block">Actualizar PIN de 4 Dígitos</label>
+<div class="flex justify-between gap-3">
+<input class="w-full h-14 bg-surface-container text-center text-xl font-bold border-none rounded-lg focus:ring-2 focus:ring-secondary" maxlength="1" placeholder="•" type="password"/>
+<input class="w-full h-14 bg-surface-container text-center text-xl font-bold border-none rounded-lg focus:ring-2 focus:ring-secondary" maxlength="1" placeholder="•" type="password"/>
+<input class="w-full h-14 bg-surface-container text-center text-xl font-bold border-none rounded-lg focus:ring-2 focus:ring-secondary" maxlength="1" placeholder="•" type="password"/>
+<input class="w-full h-14 bg-surface-container text-center text-xl font-bold border-none rounded-lg focus:ring-2 focus:ring-secondary" maxlength="1" placeholder="•" type="password"/>
+</div>
+</div>
+<button class="w-full h-12 bg-primary-container text-white font-bold rounded-lg flex items-center justify-center gap-2 hover:bg-secondary transition-colors">
+                    Actualizar PIN
+                </button>
+</div>
+</section>
+<!-- Ajustes: Notification Toggle -->
+<section class="space-y-3">
+<div class="flex items-center gap-2 px-1">
+<span class="material-symbols-outlined text-secondary text-sm">settings</span>
+<h2 class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Configuración de Interfaz</h2>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-xl space-y-4">
+<div class="flex items-center justify-between">
+<div>
+<h3 class="text-sm font-bold text-primary">Alertas de Notificación</h3>
+<p class="text-xs text-on-surface-variant">Sonido de alta prioridad activado</p>
+</div>
+<div class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</div>
+</div>
+<div class="pt-4 border-t border-surface-container flex items-center justify-between">
+<div>
+<h3 class="text-sm font-bold text-primary">Modo Oscuro Industrial</h3>
+<p class="text-xs text-on-surface-variant">Optimización de contraste para planta</p>
+</div>
+<div class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Danger Zone -->
+<section class="pt-4 pb-8">
+<button class="w-full h-12 border-2 border-[#E63946] border-opacity-30 text-[#E63946] font-bold rounded-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">logout</span>
+                Cerrar Sesión del Terminal
+            </button>
+</section>
+</main>
+<!-- Bottom Navigation Bar (Following JSON structure & rules) -->
+<!-- Content & Identity: Use exact labels/icons from JSON for the specific context -->
+<nav class="fixed bottom-0 left-0 right-0 h-20 bg-[#051125] flex justify-around items-center px-4 z-50">
+<!-- Inbox Tab (Inactive) -->
+<button class="flex flex-col items-center gap-1 text-[#47607E] transition-all active:scale-95">
+<span class="material-symbols-outlined">inbox</span>
+<span class="font-Inter text-[10px] font-medium">Inbox</span>
+</button>
+<!-- Sent Tab (Inactive) -->
+<button class="flex flex-col items-center gap-1 text-[#47607E] transition-all active:scale-95">
+<span class="material-symbols-outlined">send</span>
+<span class="font-Inter text-[10px] font-medium">Sent</span>
+</button>
+<!-- Critical Tab (Inactive) -->
+<button class="flex flex-col items-center gap-1 text-[#47607E] transition-all active:scale-95">
+<span class="material-symbols-outlined">report_problem</span>
+<span class="font-Inter text-[10px] font-medium">Critical</span>
+</button>
+<!-- Archive Tab (Inactive) -->
+<button class="flex flex-col items-center gap-1 text-[#47607E] transition-all active:scale-95">
+<span class="material-symbols-outlined">archive</span>
+<span class="font-Inter text-[10px] font-medium">Archive</span>
+</button>
+<!-- Profile Tab (Inferred Active context for User Settings) -->
+<!-- Since "Profile" isn't in labels array but is the current page, we use settings style logic -->
+<button class="bg-[#47607E] text-white flex flex-col items-center gap-1 px-4 py-2 rounded-lg border-l-4 border-[#E63946] active:bg-[#47607E]">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_circle</span>
+<span class="font-Inter text-[10px] font-bold">Perfil</span>
+</button>
+</nav>
+</body></html>

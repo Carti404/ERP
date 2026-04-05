@@ -1,0 +1,72 @@
+<div
+  class="erp-app-shell flex min-h-svh flex-col bg-[var(--erp-login-surface)] text-[var(--erp-login-text-primary)]"
+  [class.erp-app-shell--bar-hidden]="!bottomBarVisible()"
+>
+  <header
+    class="flex shrink-0 flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] px-3 py-2.5 dark:bg-[var(--erp-login-surface)] sm:px-5 lg:px-6"
+  >
+    <div class="min-w-0 max-w-[min(100%,22rem)] sm:max-w-none">
+      <p class="truncate text-[10px] font-black uppercase tracking-widest text-[var(--erp-login-label)]">
+        ERP control de producción y asistencia
+      </p>
+      <p class="truncate text-sm font-bold leading-tight">Panel trabajador</p>
+    </div>
+    <div class="flex shrink-0 flex-wrap items-center justify-end gap-2 sm:gap-2.5">
+      <div
+        class="erp-plant-status"
+        [attr.data-status]="plantStatus()"
+        role="status"
+        [attr.aria-label]="'Estado operativo de planta: ' + plantStatusLabel()"
+      >
+        <span class="erp-plant-status__dot" aria-hidden="true"></span>
+        <span class="erp-plant-status__text">{{ plantStatusLabel() }}</span>
+      </div>
+      <span
+        class="hidden max-w-[120px] truncate text-xs text-[var(--erp-login-muted)] sm:inline md:max-w-[200px]"
+        [title]="session()?.displayName ?? ''"
+        >{{ session()?.displayName }}</span
+      >
+      <button
+        type="button"
+        class="erp-shell-theme-btn"
+        (click)="theme.toggle()"
+        [attr.aria-label]="theme.isDark() ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'"
+      >
+        @if (theme.isDark()) {
+          <span class="material-symbols-outlined" aria-hidden="true">light_mode</span>
+        } @else {
+          <span class="material-symbols-outlined" aria-hidden="true">dark_mode</span>
+        }
+      </button>
+      <button
+        type="button"
+        class="rounded-lg border border-[var(--erp-login-input-border)] bg-[var(--erp-login-input-bg)] px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--erp-login-text-primary)] transition-colors hover:border-[var(--erp-login-accent)] hover:text-[var(--erp-login-accent)]"
+        (click)="logout()"
+      >
+        Salir
+      </button>
+    </div>
+  </header>
+
+  <main
+    class="erp-app-shell__scroll min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto p-3 sm:p-4 lg:p-5"
+    (scroll)="onMainScroll($event)"
+  >
+    <router-outlet />
+  </main>
+
+  <nav class="erp-bottom-bar" aria-label="Módulos trabajador">
+    @for (item of navItems; track item.path) {
+      <a
+        [routerLink]="item.path"
+        routerLinkActive="erp-bottom-bar__item--active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="erp-bottom-bar__item"
+        [attr.title]="item.label"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">{{ item.icon }}</span>
+        <span class="erp-bottom-bar__label">{{ item.short }}</span>
+      </a>
+    }
+  </nav>
+</div>

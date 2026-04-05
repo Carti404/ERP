@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-highest": "#e1e3e4",
+                    "on-surface-variant": "#45474d",
+                    "on-tertiary-fixed": "#410007",
+                    "tertiary": "#2e0004",
+                    "surface-container-high": "#e7e8e9",
+                    "inverse-primary": "#bbc6e2",
+                    "secondary-container": "#c2dcff",
+                    "outline-variant": "#c5c6cd",
+                    "on-primary-fixed-variant": "#3c475d",
+                    "on-error-container": "#93000a",
+                    "tertiary-container": "#55000c",
+                    "surface-dim": "#d9dadb",
+                    "surface-container-low": "#f3f4f5",
+                    "background": "#f8f9fa",
+                    "tertiary-fixed-dim": "#ffb3b1",
+                    "outline": "#75777d",
+                    "on-background": "#191c1d",
+                    "on-tertiary-fixed-variant": "#92001c",
+                    "tertiary-fixed": "#ffdad8",
+                    "surface-container": "#edeeef",
+                    "on-primary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "primary-fixed": "#d7e2ff",
+                    "primary-fixed-dim": "#bbc6e2",
+                    "on-secondary-container": "#48617e",
+                    "on-secondary-fixed-variant": "#2f4865",
+                    "surface-container-lowest": "#ffffff",
+                    "surface": "#f8f9fa",
+                    "primary-container": "#1b263b",
+                    "error": "#ba1a1a",
+                    "inverse-on-surface": "#f0f1f2",
+                    "on-secondary-fixed": "#001d36",
+                    "on-surface": "#191c1d",
+                    "on-secondary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "inverse-surface": "#2e3132",
+                    "surface-variant": "#e1e3e4",
+                    "primary": "#051125",
+                    "on-primary-fixed": "#101b30",
+                    "surface-bright": "#f8f9fa",
+                    "on-tertiary-container": "#fe4b55",
+                    "secondary": "#47607e",
+                    "secondary-fixed-dim": "#afc9ea",
+                    "secondary-fixed": "#d1e4ff",
+                    "on-primary-container": "#828da7",
+                    "surface-tint": "#545e76",
+                    "on-tertiary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9fa; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1B263B; border-radius: 10px; }
+    </style>
+</head>
+<body class="flex overflow-hidden">
+<!-- SideNavBar (Authority: JSON) -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-[#051125] flex flex-col overflow-y-auto border-r border-[#1B263B]/15 z-50">
+<div class="px-6 py-8">
+<h1 class="text-lg font-black text-slate-100 uppercase tracking-widest">Industrial ERP</h1>
+<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider mt-1">Plant Floor Alpha</p>
+</div>
+<nav class="flex-grow space-y-1 px-3">
+<a class="flex items-center text-slate-400 px-4 py-3 hover:bg-[#1B263B] transition-all font-['Inter'] text-sm font-medium uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined mr-3">analytics</span> Overview
+            </a>
+<a class="flex items-center bg-[#47607E] text-white rounded-md px-4 py-3 border-l-4 border-[#E63946] transition-all font-['Inter'] text-sm font-medium uppercase tracking-wider scale-95 duration-150" href="#">
+<span class="material-symbols-outlined mr-3">pending_actions</span> Solicitudes
+            </a>
+<a class="flex items-center text-slate-400 px-4 py-3 hover:bg-[#1B263B] transition-all font-['Inter'] text-sm font-medium uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined mr-3">calendar_month</span> Calendario
+            </a>
+<a class="flex items-center text-slate-400 px-4 py-3 hover:bg-[#1B263B] transition-all font-['Inter'] text-sm font-medium uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined mr-3">history</span> Historial
+            </a>
+<a class="flex items-center text-slate-400 px-4 py-3 hover:bg-[#1B263B] transition-all font-['Inter'] text-sm font-medium uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined mr-3">tune</span> Configuración
+            </a>
+</nav>
+<div class="px-3 pb-8 mt-auto space-y-1">
+<button class="w-full bg-[#E63946] text-white font-bold py-3 px-4 rounded-md mb-6 hover:opacity-90 transition-opacity uppercase text-xs tracking-widest">
+                Nueva Solicitud
+            </button>
+<a class="flex items-center text-slate-400 px-4 py-3 hover:bg-[#1B263B] transition-all font-['Inter'] text-sm font-medium uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined mr-3">help</span> Ayuda
+            </a>
+<a class="flex items-center text-slate-400 px-4 py-3 hover:bg-[#1B263B] transition-all font-['Inter'] text-sm font-medium uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined mr-3">logout</span> Cerrar Sesión
+            </a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 flex-1 flex flex-col h-screen overflow-hidden bg-surface">
+<!-- TopAppBar (Authority: JSON) -->
+<header class="flex justify-between items-center w-full px-6 py-3 bg-[#051125] text-slate-100 z-40">
+<div class="flex items-center gap-8">
+<div class="text-xl font-bold text-slate-50 tracking-widest uppercase">Ironclad Forge</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-slate-400 font-medium hover:text-slate-200 transition-colors font-['Inter'] font-semibold tracking-tight" href="#">Dashboard</a>
+<a class="text-slate-400 font-medium hover:text-slate-200 transition-colors font-['Inter'] font-semibold tracking-tight" href="#">Production</a>
+<a class="text-slate-400 font-medium hover:text-slate-200 transition-colors font-['Inter'] font-semibold tracking-tight" href="#">Logistics</a>
+<a class="text-slate-50 border-b-2 border-[#47607E] pb-1 font-['Inter'] font-semibold tracking-tight" href="#">Permisos</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-slate-100">notifications</button>
+<button class="material-symbols-outlined text-slate-100">settings</button>
+<div class="w-8 h-8 rounded-full overflow-hidden bg-slate-700 border border-slate-600">
+<img class="w-full h-full object-cover" data-alt="Close-up portrait of a professional industrial administrator with a focused and serious expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuARbkvz8S54ylxHCXCq6vmvHMOQf6oQVHKr3xfhmFKu1ZISZsZ60YN-Rc_0UDaCJdz8vxR5bRTrh29111etyVTPuvengrw6w1n40akkbSX4v4vUiKl9_x9U11YXShxaCI5_F0Eus_-97B7FPql5B1eVXf-_99wL0OvIGFDMQWnegFENPjRRx2edVK7L9FzXXhXzt1pobLu5jl_PJTo2GELf2KX8Z4y6W2_wUwsZkJKLJ5KYBwYO6T1_YVrSIXdmUmni-pphP-iiHFM"/>
+</div>
+</div>
+</header>
+<!-- Dashboard Workspace -->
+<div class="flex-1 flex overflow-hidden">
+<!-- Main Grid/Calendar Area -->
+<div class="flex-1 p-6 overflow-y-auto custom-scrollbar">
+<div class="mb-8 flex justify-between items-end">
+<div>
+<h2 class="text-headline-md text-on-surface font-bold tracking-tight">Capacidad de Planta y Permisos</h2>
+<p class="text-on-surface-variant text-label-md font-medium uppercase tracking-widest mt-1">Visión General: Octubre 2023</p>
+</div>
+<div class="flex gap-2">
+<div class="flex bg-surface-container-low rounded-lg p-1">
+<button class="px-4 py-2 bg-surface-container-lowest text-primary text-xs font-bold rounded-md">Gantt View</button>
+<button class="px-4 py-2 text-on-surface-variant text-xs font-bold">List View</button>
+</div>
+</div>
+</div>
+<!-- Bento KPI Stats -->
+<div class="grid grid-cols-4 gap-6 mb-8">
+<div class="bg-surface-container-low p-6 rounded-xl relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl">group</span>
+</div>
+<p class="text-on-surface-variant text-label-md font-bold uppercase tracking-widest mb-1">Total Operarios</p>
+<p class="text-display-lg text-primary leading-none">142</p>
+<div class="mt-4 flex items-center gap-2 text-secondary font-bold text-xs">
+<span class="material-symbols-outlined text-sm">trending_up</span> 94% Disponibilidad
+                        </div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-on-tertiary-container">
+<span class="material-symbols-outlined text-6xl">priority_high</span>
+</div>
+<p class="text-on-surface-variant text-label-md font-bold uppercase tracking-widest mb-1">Pendientes</p>
+<p class="text-display-lg text-on-tertiary-container leading-none">12</p>
+<div class="mt-4 flex items-center gap-2 text-on-tertiary-container font-bold text-xs">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">warning</span> Acción Requerida
+                        </div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl col-span-2 flex items-center justify-between border-l-4 border-secondary">
+<div>
+<p class="text-on-surface-variant text-label-md font-bold uppercase tracking-widest mb-1">Nivel de Alerta de Capacidad</p>
+<p class="text-title-sm text-on-surface font-semibold">Taller de Estampado <span class="text-on-tertiary-container">Crítico (72%)</span></p>
+<div class="mt-3 w-64 h-2 bg-surface-variant rounded-full flex">
+<div class="w-[72%] bg-secondary rounded-full"></div>
+</div>
+</div>
+<div class="text-right">
+<span class="text-on-surface-variant text-[10px] font-bold uppercase">Mínimo requerido</span>
+<p class="text-xl font-bold">85%</p>
+</div>
+</div>
+</div>
+<!-- Overlap Calendar (Gantt-Style) -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden">
+<div class="grid grid-cols-12 bg-primary text-white py-4 px-6">
+<div class="col-span-3 font-bold text-xs uppercase tracking-widest">Personal / Planta</div>
+<div class="col-span-9 flex justify-between px-4 text-xs font-bold uppercase tracking-tighter opacity-70">
+<span>01 Oct</span><span>05 Oct</span><span>10 Oct</span><span>15 Oct</span><span>20 Oct</span><span>25 Oct</span><span>30 Oct</span>
+</div>
+</div>
+<!-- Calendar Rows -->
+<div class="divide-y divide-surface-container">
+<!-- Row 1 -->
+<div class="grid grid-cols-12 hover:bg-surface-container-low transition-colors items-center group">
+<div class="col-span-3 py-4 px-6 border-r border-surface-container">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-md bg-secondary flex items-center justify-center text-white text-xs font-bold">RM</div>
+<div>
+<p class="text-xs font-bold text-on-surface">Ricardo Mendoza</p>
+<p class="text-[10px] text-on-surface-variant">Línea de Ensamblaje A</p>
+</div>
+</div>
+</div>
+<div class="col-span-9 h-full relative px-4 flex items-center">
+<div class="absolute left-[15%] w-[10%] h-8 bg-secondary-container text-on-secondary-container rounded flex items-center px-3 text-[10px] font-black uppercase tracking-tighter cursor-pointer border-l-4 border-secondary">Vacaciones</div>
+</div>
+</div>
+<!-- Row 2 -->
+<div class="grid grid-cols-12 bg-surface-container-low items-center border-l-4 border-on-tertiary-container">
+<div class="col-span-3 py-4 px-6 border-r border-surface-container">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-md bg-secondary flex items-center justify-center text-white text-xs font-bold">EL</div>
+<div>
+<p class="text-xs font-bold text-on-surface">Elena López</p>
+<p class="text-[10px] text-on-surface-variant">Control de Calidad</p>
+</div>
+</div>
+</div>
+<div class="col-span-9 h-full relative px-4 flex items-center">
+<div class="absolute left-[35%] w-[15%] h-10 bg-on-tertiary-container/10 border-2 border-dashed border-on-tertiary-container rounded flex items-center justify-between px-3 text-[10px] font-black text-on-tertiary-container uppercase tracking-tighter cursor-pointer">
+                                    Solicitud Pendiente
+                                    <span class="material-symbols-outlined text-sm">open_in_new</span>
+</div>
+</div>
+</div>
+<!-- Row 3 -->
+<div class="grid grid-cols-12 hover:bg-surface-container-low transition-colors items-center">
+<div class="col-span-3 py-4 px-6 border-r border-surface-container">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-md bg-secondary flex items-center justify-center text-white text-xs font-bold">JS</div>
+<div>
+<p class="text-xs font-bold text-on-surface">Javier Soler</p>
+<p class="text-[10px] text-on-surface-variant">Mantenimiento</p>
+</div>
+</div>
+</div>
+<div class="col-span-9 h-full relative px-4 flex items-center">
+<div class="absolute left-[60%] w-[5%] h-8 bg-surface-container-highest text-on-surface-variant rounded flex items-center px-3 text-[10px] font-black uppercase tracking-tighter border-l-4 border-outline">Médico</div>
+</div>
+</div>
+<!-- Row 4 -->
+<div class="grid grid-cols-12 hover:bg-surface-container-low transition-colors items-center">
+<div class="col-span-3 py-4 px-6 border-r border-surface-container">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-md bg-secondary flex items-center justify-center text-white text-xs font-bold">MA</div>
+<div>
+<p class="text-xs font-bold text-on-surface">Marta Aranda</p>
+<p class="text-[10px] text-on-surface-variant">Línea de Ensamblaje B</p>
+</div>
+</div>
+</div>
+<div class="col-span-9 h-full relative px-4 flex items-center">
+<div class="absolute left-[20%] w-[12%] h-8 bg-secondary-container text-on-secondary-container rounded flex items-center px-3 text-[10px] font-black uppercase tracking-tighter border-l-4 border-secondary">Vacaciones</div>
+<div class="absolute left-[80%] w-[8%] h-8 bg-surface-container-highest text-on-surface-variant rounded flex items-center px-3 text-[10px] font-black uppercase tracking-tighter border-l-4 border-outline">Personal</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Industrial Machine Status Overlay -->
+<div class="mt-8 grid grid-cols-3 gap-6">
+<div class="col-span-2 bg-primary-container text-white p-6 rounded-xl flex items-center gap-8 relative overflow-hidden">
+<div class="z-10">
+<h3 class="text-title-sm font-bold uppercase tracking-widest mb-4">Análisis de Impacto en Producción</h3>
+<div class="flex gap-10">
+<div>
+<span class="text-[10px] text-on-primary-container font-bold uppercase">Capacidad Actual</span>
+<p class="text-3xl font-bold">88.2%</p>
+</div>
+<div>
+<span class="text-[10px] text-on-primary-container font-bold uppercase">Impacto Proyectado</span>
+<p class="text-3xl font-bold text-on-tertiary-container">-4.1%</p>
+</div>
+<div>
+<span class="text-[10px] text-on-primary-container font-bold uppercase">Personal Activo</span>
+<p class="text-3xl font-bold">124 / 142</p>
+</div>
+</div>
+</div>
+<div class="absolute right-0 top-0 h-full w-1/3 opacity-20 pointer-events-none">
+<img class="w-full h-full object-cover grayscale" data-alt="Close-up of industrial machinery and robotic arms with blue lighting tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBItv1hRwQ6A5umnZPP-B8MkWvbNs5de_d8gCuDlurUG0RLO46hYI3baQIU2DVNw7rTWrcdnaw3btgSo_PLKUrx5SHnMYkDhkRoE83KDo8NokFe-0QxxFe0TD2vyDmMrB2rLPUWFPpBhwoNhcPgFRj6lcVnFpw25wHQqKmlnKusLu_1m8ieoOYizCTII-aT70Pb841Qf8PIwfNFUnBX2Qr7wZz_NqH4XACQAR9OrNyYXYg1FhZJN2AiiI9abD-7YjA8NSOvNYXXKIQ"/>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl border-t-4 border-secondary">
+<h3 class="text-label-md font-bold text-on-surface-variant uppercase tracking-widest mb-3">Recomendación IA</h3>
+<p class="text-xs text-on-surface leading-relaxed">Se sugiere <span class="font-bold">aprobar</span> la solicitud de Elena López. El equipo de Ensamblaje B tiene capacidad redundante para cubrir el turno de control.</p>
+<button class="mt-4 text-xs font-bold text-secondary uppercase flex items-center gap-1">Ver detalles de viabilidad <span class="material-symbols-outlined text-sm">arrow_forward</span></button>
+</div>
+</div>
+</div>
+<!-- Request Detail Sidebar (Task-Focused) -->
+<div class="w-[400px] bg-surface-container-lowest h-full border-l border-surface-container flex flex-col z-30">
+<div class="p-6 border-b border-surface-container flex justify-between items-center bg-surface-container-low/50">
+<div>
+<h3 class="font-bold text-primary tracking-tight">Detalle de Solicitud</h3>
+<span class="text-[10px] text-on-tertiary-container font-black uppercase tracking-widest">ID: #VAC-2023-149</span>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">close</button>
+</div>
+<div class="flex-1 overflow-y-auto p-6 custom-scrollbar">
+<!-- User Header -->
+<div class="flex items-center gap-4 mb-8">
+<div class="w-16 h-16 rounded-xl overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Portrait of a female industrial plant worker with a confident smile and technical work attire" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBd_uGURr2xwq3jw1yxxzdmZm4BKbwmtdn_kcG-aiiflHQBf2gRQOmkt3hfeoxlx3Y4kPIufSxuOlPimlEnf80MfRYLtGr6QqRxusGwb-p_44O73Dfx1TRuPIPDYDLrYziaKx27TPSrw9hgiLiQy6XcAnMxnjr0yJsc3kDBrfkdp5Bmc4FjeHr-RfwgDwN6ufC_G_GliqtTUrP4rwOcqemFamKcVGcNyChpN4vu9AN_0IAsNvpGLBFx0BHzEZ-19rgjyNIo9ANyd3k"/>
+</div>
+<div>
+<p class="text-lg font-bold text-on-surface">Elena López</p>
+<p class="text-xs text-on-surface-variant uppercase font-medium">Control de Calidad • Senior</p>
+</div>
+</div>
+<!-- Read-Only Data Sections (System Logic) -->
+<div class="space-y-6">
+<div class="bg-surface-container-low p-4 rounded-lg">
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Periodo Solicitado</span>
+<div class="flex items-center justify-between mt-2">
+<div class="text-center">
+<p class="text-xl font-bold text-primary">12 Oct</p>
+<p class="text-[10px] font-medium text-on-surface-variant">JUEVES</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">arrow_forward</span>
+<div class="text-center">
+<p class="text-xl font-bold text-primary">16 Oct</p>
+<p class="text-[10px] font-medium text-on-surface-variant">LUNES</p>
+</div>
+</div>
+</div>
+<div>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Motivo de la Solicitud</span>
+<div class="mt-2 bg-surface-container p-4 rounded-lg">
+<p class="text-sm text-on-surface italic">"Asunto familiar inaplazable. He coordinado con el supervisor de turno para que mis tareas críticas sean cubiertas por el equipo B."</p>
+</div>
+</div>
+<!-- Negotiation History -->
+<div>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-3 block">Historial de Negociación</span>
+<div class="space-y-4 border-l-2 border-surface-container ml-2 pl-4 py-2">
+<div class="relative">
+<div class="absolute -left-[22px] top-1 w-3 h-3 bg-secondary rounded-full border-2 border-surface-container-lowest"></div>
+<p class="text-xs font-bold text-on-surface">Solicitud Inicial</p>
+<p class="text-[10px] text-on-surface-variant">28 Sept, 09:12</p>
+</div>
+<div class="relative">
+<div class="absolute -left-[22px] top-1 w-3 h-3 bg-on-tertiary-container rounded-full border-2 border-surface-container-lowest"></div>
+<p class="text-xs font-bold text-on-surface">Rechazo por Capacidad</p>
+<p class="text-[10px] text-on-surface-variant">28 Sept, 14:45 • Admin: "Falta personal en Calidad"</p>
+</div>
+<div class="relative">
+<div class="absolute -left-[22px] top-1 w-3 h-3 bg-secondary rounded-full border-2 border-surface-container-lowest"></div>
+<p class="text-xs font-bold text-on-surface">Nueva Propuesta</p>
+<p class="text-[10px] text-on-surface-variant">Hoy, 08:30 • Usuario: "Días ajustados"</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Three Main Actions Footer -->
+<div class="p-6 bg-surface-container-low border-t border-surface-container space-y-3">
+<button class="w-full h-12 bg-secondary text-white font-bold rounded-lg flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all uppercase text-xs tracking-widest">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                        Aprobar
+                    </button>
+<button class="w-full h-12 border-2 border-secondary text-secondary font-bold rounded-lg flex items-center justify-center gap-2 hover:bg-secondary/5 active:scale-95 transition-all uppercase text-xs tracking-widest">
+<span class="material-symbols-outlined text-lg">edit_calendar</span>
+                        Proponer Alternativa
+                    </button>
+<div class="pt-2">
+<button class="w-full h-10 text-on-tertiary-container font-bold flex items-center justify-center gap-2 hover:bg-on-tertiary-container/5 rounded-lg active:scale-95 transition-all uppercase text-[10px] tracking-widest">
+<span class="material-symbols-outlined text-base">cancel</span>
+                            Rechazar con Motivo
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

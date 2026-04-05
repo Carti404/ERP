@@ -1,0 +1,262 @@
+<div class="erp-worker-home erp-dashboard-page mx-auto max-w-6xl pb-2">
+  <section class="erp-worker-hero-check erp-stitch-panel mb-6 lg:mb-8" aria-labelledby="worker-check-heading">
+    <p
+      id="worker-check-heading"
+      class="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--erp-login-label)]"
+    >
+      Reloj checador
+    </p>
+    <div
+      class="erp-worker-hero-time tabular-nums"
+      [class.erp-worker-hero-time--working]="clockFaceState() === 'working'"
+      [class.erp-worker-hero-time--break]="clockFaceState() === 'break'"
+      [class.erp-worker-hero-time--ended]="clockFaceState() === 'ended'"
+      aria-live="off"
+    >
+      {{ clock() | date: 'h:mm:ss a' }}
+    </div>
+    <div class="mt-2 flex flex-wrap items-center gap-3">
+      <span class="erp-worker-date-chip">{{ clock() | date: "d 'de' MMM yyyy" }}</span>
+      <div class="erp-worker-shift-pill">
+        <span class="material-symbols-outlined text-lg" aria-hidden="true">verified</span>
+        <span>Turno activo · 02h 42m</span>
+      </div>
+    </div>
+    <div class="erp-worker-check-actions mt-5">
+      <button type="button" class="erp-worker-quick-btn erp-worker-quick-btn--entry" (click)="onQuickAction('check_in')">
+        <span class="material-symbols-outlined" aria-hidden="true">login</span>
+        Entrada<br />turno
+      </button>
+      <button type="button" class="erp-worker-quick-btn" (click)="onQuickAction('break_start')">
+        <span class="material-symbols-outlined" aria-hidden="true">coffee</span>
+        Inicio<br />descanso
+      </button>
+      <button type="button" class="erp-worker-quick-btn" (click)="onQuickAction('break_end')">
+        <span class="material-symbols-outlined" aria-hidden="true">undo</span>
+        Regreso<br />descanso
+      </button>
+      <button type="button" class="erp-worker-quick-btn erp-worker-quick-btn--accent" (click)="onQuickAction('check_out')">
+        <span class="material-symbols-outlined" aria-hidden="true">logout</span>
+        Salida<br />turno
+      </button>
+    </div>
+  </section>
+
+  <div class="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    @for (k of kpis; track k.id) {
+      <article class="erp-kpi-card p-3 sm:p-4" [attr.data-tone]="k.tone">
+        <div class="erp-kpi-card__stripe" aria-hidden="true"></div>
+        <div class="relative z-10 flex gap-3">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-start justify-between gap-2">
+              <p class="text-[9px] font-black uppercase tracking-widest text-[var(--erp-login-label)]">
+                {{ k.label }}
+              </p>
+              <div class="erp-kpi-card__icon shrink-0" aria-hidden="true">
+                <span class="material-symbols-outlined text-lg">{{ kpiIcon(k.id) }}</span>
+              </div>
+            </div>
+            <p class="erp-kpi-value mt-2 leading-none">{{ k.value }}</p>
+            <div class="mt-1.5 flex flex-wrap items-center gap-1.5">
+              <span [class]="trendClass(k.trend)">
+                <span class="material-symbols-outlined text-sm" aria-hidden="true">{{ trendIcon(k.trend) }}</span>
+                {{ trendLabel(k.trend) }}
+              </span>
+              <p class="text-[11px] leading-snug text-[var(--erp-login-muted)]">{{ k.sub }}</p>
+            </div>
+          </div>
+          <div class="flex w-[4.25rem] shrink-0 flex-col justify-end">
+            <app-kpi-mini-chart [chartId]="k.id" [chart]="k.chart" [accent]="toneHex(k.tone)" />
+          </div>
+        </div>
+      </article>
+    }
+  </div>
+
+  <div class="mb-5">
+    <div class="erp-worker-batch-card">
+      <div class="erp-worker-batch-card__watermark" aria-hidden="true">
+        <span class="material-symbols-outlined text-[var(--erp-login-text-primary)]">precision_manufacturing</span>
+      </div>
+      <div class="relative z-10">
+        <div class="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+          <div>
+            <span class="text-[11px] font-bold uppercase tracking-[0.2em] text-[#47607e]">Lote actual #8842</span>
+            <h2 class="mt-0.5 text-xl font-bold text-[var(--erp-login-text-primary)] sm:text-2xl">
+              Carcasas motor V8
+            </h2>
+          </div>
+          <div class="text-left sm:text-right">
+            <p class="text-[10px] font-black uppercase tracking-widest text-[var(--erp-login-label)]">Takt</p>
+            <p class="text-xl font-bold tracking-tight text-[#47607e] sm:text-2xl">
+              4:12 <span class="text-xs font-medium text-[var(--erp-login-muted)]">/ 4:30</span>
+            </p>
+          </div>
+        </div>
+        <div class="flex flex-col items-center gap-5 sm:flex-row sm:flex-wrap sm:justify-between">
+          <div class="erp-worker-progress-wrap">
+            <svg viewBox="0 0 160 160" aria-hidden="true">
+              <circle
+                cx="80"
+                cy="80"
+                r="52"
+                fill="none"
+                stroke="var(--erp-login-input-border)"
+                stroke-width="10"
+                opacity="0.45"
+              />
+              <circle
+                cx="80"
+                cy="80"
+                r="52"
+                fill="none"
+                stroke="var(--erp-login-primary-cta-bg)"
+                stroke-width="10"
+                [attr.stroke-dasharray]="progressCircumference"
+                [attr.stroke-dashoffset]="progressDashOffset()"
+                stroke-linecap="round"
+                class="dark:stroke-[var(--erp-login-accent)]"
+              />
+            </svg>
+            <div class="erp-worker-progress-center">
+              <span class="text-2xl font-black text-[var(--erp-login-text-primary)] sm:text-3xl">72%</span>
+              <span class="text-[10px] font-black uppercase tracking-widest text-[var(--erp-login-label)]"
+                >Avance</span
+              >
+            </div>
+          </div>
+          <div class="grid w-full max-w-md grid-cols-2 gap-x-8 gap-y-2 sm:flex-1">
+            <div>
+              <p class="text-[10px] font-black uppercase tracking-widest text-[var(--erp-login-label)]">Asignado</p>
+              <p class="text-2xl font-bold text-[var(--erp-login-text-primary)]">450</p>
+            </div>
+            <div>
+              <p class="text-[10px] font-black uppercase tracking-widest text-[var(--erp-login-label)]">Pendiente</p>
+              <p class="text-2xl font-bold text-[#e63946]">126</p>
+            </div>
+            <div class="col-span-2 mt-0.5">
+              <div class="erp-worker-seg-progress">
+                <div class="erp-worker-seg-progress__fill" style="width: 72%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mb-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+    <div class="erp-worker-bento-card erp-worker-bento-card--inbox">
+      <div class="mb-4 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[#47607e]" aria-hidden="true">mail</span>
+          <h3 class="text-lg font-bold text-[var(--erp-login-text-primary)]">Bandeja</h3>
+        </div>
+        <span
+          class="rounded-full bg-[#47607e] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white"
+          >4 nuevos</span
+        >
+      </div>
+      <div class="flex flex-col gap-3">
+        @for (m of inbox; track m.id) {
+          <div class="erp-worker-inbox-item" [class.opacity-60]="m.dimmed">
+            <div class="erp-worker-inbox-avatar">{{ m.initials }}</div>
+            <div class="min-w-0 flex-1">
+              <div class="flex justify-between gap-2">
+                <p class="text-xs font-bold text-[var(--erp-login-text-primary)]">{{ m.from }}</p>
+                <p class="shrink-0 text-[10px] text-[var(--erp-login-muted)]">{{ m.time }}</p>
+              </div>
+              <p class="line-clamp-2 text-xs text-[var(--erp-login-muted)]">{{ m.preview }}</p>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="erp-worker-bento-card erp-worker-bento-card--urgent">
+      <div class="mb-4 flex items-center justify-between">
+        <div class="flex items-center gap-2 text-[#e63946]">
+          <span class="material-symbols-outlined" aria-hidden="true">report</span>
+          <h3 class="text-lg font-bold text-[var(--erp-login-text-primary)]">{{ urgentTitle }}</h3>
+        </div>
+        <span
+          class="rounded-full bg-[#e63946] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white"
+          >{{ urgentBadge }}</span
+        >
+      </div>
+      <div class="erp-worker-alert-critical">
+        <span class="material-symbols-outlined shrink-0 text-2xl text-[#e63946]" aria-hidden="true">priority_high</span>
+        <div>
+          <p class="text-xs font-bold text-[#b91c1c] dark:text-[#fca5a5]">Aviso de calibración</p>
+          <p class="mt-1 text-sm font-semibold text-[var(--erp-login-text-primary)]">{{ urgentBody }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="erp-stitch-panel erp-worker-events-panel">
+    <h3 class="mb-4 text-[10px] font-black uppercase tracking-widest text-[var(--erp-login-label)]">
+      Actividad y eventos recientes
+    </h3>
+    <div class="erp-worker-events-table-wrap overflow-x-auto rounded-lg border border-[var(--erp-login-input-border)]">
+      <table class="erp-worker-events-table">
+        <thead>
+          <tr>
+            <th scope="col">Tipo</th>
+            <th scope="col">Descripción</th>
+            <th scope="col">Hora</th>
+            <th scope="col" class="text-right">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (e of events; track e.id) {
+            <tr>
+              <td>
+                <div class="erp-worker-events-type">
+                  <span class="erp-worker-events-type__icon material-symbols-outlined" aria-hidden="true">{{
+                    e.typeIcon
+                  }}</span>
+                  <span class="erp-worker-events-type__label">{{ e.type }}</span>
+                </div>
+              </td>
+              <td class="erp-worker-events-table__desc">{{ e.description }}</td>
+              <td class="erp-worker-events-table__time">{{ e.time }}</td>
+              <td class="text-right">
+                <span
+                  class="erp-worker-pill-tag"
+                  [class.erp-worker-pill-tag--dark]="e.statusVariant === 'dark'"
+                  [class.erp-worker-pill-tag--secondary]="e.statusVariant === 'secondary'"
+                  [class.erp-worker-pill-tag--success]="e.statusVariant === 'success'"
+                  >{{ e.status }}</span
+                >
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <button
+    type="button"
+    class="erp-worker-fab"
+    (click)="onReportIssue()"
+    aria-label="Reportar incidencia"
+    title="Reportar incidencia"
+  >
+    <span class="material-symbols-outlined" aria-hidden="true">add_alert</span>
+  </button>
+
+  @if (toast(); as t) {
+    <div
+      class="erp-worker-toast"
+      [attr.data-variant]="t.variant"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      <span class="material-symbols-outlined erp-worker-toast__icon" aria-hidden="true">{{ toastIcon(t.variant) }}</span>
+      <span class="erp-worker-toast__text">{{ t.message }}</span>
+    </div>
+  }
+</div>

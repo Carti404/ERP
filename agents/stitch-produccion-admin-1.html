@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed": "#410007",
+                    "on-primary-fixed": "#101b30",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed-variant": "#3c475d",
+                    "surface-bright": "#f8f9fa",
+                    "on-tertiary-fixed-variant": "#92001c",
+                    "primary-container": "#1b263b",
+                    "inverse-surface": "#2e3132",
+                    "on-error-container": "#93000a",
+                    "surface-container-highest": "#e1e3e4",
+                    "tertiary": "#2e0004",
+                    "surface-tint": "#545e76",
+                    "on-tertiary-container": "#fe4b55",
+                    "on-tertiary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "surface-container-low": "#f3f4f5",
+                    "inverse-primary": "#bbc6e2",
+                    "secondary-fixed": "#d1e4ff",
+                    "on-primary-container": "#828da7",
+                    "on-surface": "#191c1d",
+                    "outline-variant": "#c5c6cd",
+                    "on-error": "#ffffff",
+                    "surface-container-high": "#e7e8e9",
+                    "primary-fixed": "#d7e2ff",
+                    "outline": "#75777d",
+                    "on-secondary": "#ffffff",
+                    "background": "#f8f9fa",
+                    "surface": "#f8f9fa",
+                    "on-background": "#191c1d",
+                    "tertiary-container": "#55000c",
+                    "on-primary": "#ffffff",
+                    "tertiary-fixed": "#ffdad8",
+                    "on-secondary-fixed-variant": "#2f4865",
+                    "secondary-container": "#c2dcff",
+                    "primary": "#051125",
+                    "primary-fixed-dim": "#bbc6e2",
+                    "tertiary-fixed-dim": "#ffb3b1",
+                    "surface-variant": "#e1e3e4",
+                    "surface-dim": "#d9dadb",
+                    "on-secondary-fixed": "#001d36",
+                    "on-secondary-container": "#48617e",
+                    "on-surface-variant": "#45474d",
+                    "inverse-on-surface": "#f0f1f2",
+                    "error": "#ba1a1a",
+                    "surface-container": "#edeeef",
+                    "secondary-fixed-dim": "#afc9ea",
+                    "secondary": "#47607e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #051125; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #47607E; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-background font-body text-on-background min-h-screen flex overflow-hidden">
+<!-- SideNavBar (Authority: JSON & Design System) -->
+<aside class="hidden md:flex flex-col h-full py-4 bg-[#051125] text-[#47607E] h-screen w-64 left-0 top-0 shadow-xl shadow-[#051125]/50 z-50">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container flex items-center justify-center rounded-lg">
+<span class="material-symbols-outlined text-white" data-icon="factory">factory</span>
+</div>
+<div>
+<h1 class="text-white font-bold font-['Inter'] label-md uppercase">Ironclad</h1>
+<p class="text-[10px] text-on-primary-container">Admin Console</p>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-[#47607E] hover:bg-[#1B263B]/50 font-['Inter'] label-md font-medium uppercase transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                Panel Control
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 bg-[#1B263B] text-white border-l-4 border-[#47607E] font-['Inter'] label-md font-medium uppercase transition-transform translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="factory">factory</span>
+                Producción
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#47607E] hover:bg-[#1B263B]/50 font-['Inter'] label-md font-medium uppercase transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+                Inventario
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#47607E] hover:bg-[#1B263B]/50 font-['Inter'] label-md font-medium uppercase transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="precision_manufacturing">precision_manufacturing</span>
+                Maquinaria
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#47607E] hover:bg-[#1B263B]/50 font-['Inter'] label-md font-medium uppercase transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                Configuración
+            </a>
+</nav>
+<div class="px-4 mt-auto space-y-1 border-t border-[#1B263B] pt-4">
+<button class="w-full bg-[#47607E] text-white py-3 rounded-lg font-bold text-sm mb-4">Nueva Orden</button>
+<a class="flex items-center gap-3 px-4 py-2 text-[#47607E] hover:text-white transition-all font-['Inter'] label-md font-medium uppercase" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+                Soporte
+            </a>
+<a class="flex items-center gap-3 px-4 py-2 text-[#47607E] hover:text-white transition-all font-['Inter'] label-md font-medium uppercase" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                Cerrar Sesión
+            </a>
+</div>
+</aside>
+<div class="flex-1 flex flex-col h-screen overflow-hidden">
+<!-- TopNavBar (Authority: JSON & Design System) -->
+<header class="flex justify-between items-center w-full px-6 py-3 bg-[#051125] text-[#47607E] font-['Inter'] font-semibold headline-md tracking-tight docked full-width top-0 z-40">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold text-white uppercase tracking-wider">Ironclad Forge</span>
+<nav class="hidden lg:flex items-center gap-6">
+<a class="text-white border-b-2 border-[#47607E] pb-1" href="#">Requerimientos</a>
+<a class="text-[#47607E] hover:text-white transition-colors" href="#">Asignaciones</a>
+<a class="text-[#47607E] hover:text-white transition-colors" href="#">Supervisión</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="bg-[#1B263B] px-3 py-1.5 rounded flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm text-white placeholder:text-[#47607E] w-48" placeholder="Buscar..." type="text"/>
+</div>
+<button class="material-symbols-outlined text-white hover:bg-[#1B263B] p-2 rounded transition-all" data-icon="notifications">notifications</button>
+<div class="flex items-center gap-2 border-l border-[#1B263B] pl-4">
+<img alt="Administrator Profile" class="w-8 h-8 rounded-full object-cover" data-alt="professional male industrial manager in formal office wear looking confident with neutral expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5PVDk-H-tB0xeSTurbWwqbDUtRU0yKzy9kLOVPJ4FlPQbBpu6_vU_8OTqNdpEETcuc73Jk7DILa1BS9JtkZ6fVK_RK8yuiy8XiwGWw7Kz49auSakgGHT6jBwZGsT112J5O3otzZKv_7lMhDPfDPz4nk_L4jnRnFtS22h5IvGvyJb1CLH6hUoaAZCSFbFYFRXFLDkMfG1VivT4hEAwoIWf5O4Qoo2J5RYt4YIkq1vbjXhlfdln3cDyEMNZhp1d4FuS1Le9ibMp8Nw"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+<!-- Hero Stats & Critical Alerts -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+<div class="md:col-span-3 bg-surface-container-lowest p-6 rounded-xl border-l-4 border-secondary flex items-center justify-between">
+<div>
+<h2 class="text-on-surface-variant font-label label-md uppercase tracking-widest mb-1">Carga de Producción Actual</h2>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-bold text-primary">84.2%</span>
+<span class="text-secondary font-semibold text-sm">+5.4% vs Ayer</span>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="h-16 w-1 bg-surface-container-highest rounded"></div>
+<div class="space-y-1">
+<p class="text-on-surface-variant text-xs">Total Piezas</p>
+<p class="text-primary font-bold">12,450</p>
+</div>
+</div>
+</div>
+<div class="bg-tertiary-container p-6 rounded-xl flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-on-tertiary-container" data-icon="warning">warning</span>
+<span class="text-[10px] bg-tertiary text-on-tertiary px-2 py-0.5 rounded-full font-bold">ALERTA</span>
+</div>
+<div>
+<h3 class="text-on-tertiary-container font-bold text-xl">3 Mermas</h3>
+<p class="text-on-tertiary-container/80 text-xs">Sección Forja Pesada</p>
+</div>
+</div>
+</div>
+<!-- Dashboard Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Left: Requirements Table (Read-Only) -->
+<div class="lg:col-span-8 bg-surface-container-low rounded-xl overflow-hidden">
+<div class="p-6 bg-primary flex justify-between items-center">
+<div class="flex items-center gap-3">
+<h3 class="text-white font-semibold headline-md">Requerimientos MT</h3>
+<span class="material-symbols-outlined text-[#47607E] text-sm" data-icon="lock" title="Solo Lectura">lock</span>
+</div>
+<span class="text-[10px] text-[#47607E] font-bold uppercase tracking-widest">Sincronizado: Hace 2m</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container text-on-surface-variant text-[10px] uppercase font-bold tracking-wider">
+<th class="px-6 py-4">Producto</th>
+<th class="px-6 py-4">Cant. Total</th>
+<th class="px-6 py-4">Plazo</th>
+<th class="px-6 py-4">Delegación</th>
+<th class="px-6 py-4">Acción</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-variant">
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-primary font-bold text-sm">Válvula de Presión V-44</span>
+<span class="text-on-surface-variant text-[10px]">SKU: IC-990-22</span>
+</div>
+</td>
+<td class="px-6 py-4 font-mono text-primary font-bold">2,500 <span class="text-[10px] font-normal">pzs</span></td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="text-on-surface text-xs font-semibold">12 May 2024</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="w-full bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
+<div class="bg-secondary h-full w-3/4"></div>
+</div>
+<p class="text-[10px] text-on-surface-variant mt-1">75% Asignado</p>
+</td>
+<td class="px-6 py-4">
+<button class="text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-primary font-bold text-sm">Eje de Transmisión T-1</span>
+<span class="text-on-surface-variant text-[10px]">SKU: IC-112-00</span>
+</div>
+</td>
+<td class="px-6 py-4 font-mono text-primary font-bold">450 <span class="text-[10px] font-normal">pzs</span></td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span class="text-on-surface text-xs font-semibold">Hoy, 18:00</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="w-full bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
+<div class="bg-error h-full w-1/5"></div>
+</div>
+<p class="text-[10px] text-on-surface-variant mt-1">20% Asignado</p>
+</td>
+<td class="px-6 py-4">
+<button class="text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Right: Delegation Tool & Detail -->
+<div class="lg:col-span-4 space-y-6">
+<!-- Ficha Técnica Section -->
+<section class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<h4 class="text-primary font-bold title-sm">Ficha Técnica</h4>
+<span class="text-[10px] bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded font-bold">DETALLE</span>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="p-3 bg-surface-container-low rounded-lg">
+<p class="text-on-surface-variant text-[10px] font-bold uppercase mb-1">Insumos</p>
+<p class="text-primary text-xs font-semibold">Acero 4140, Lubricante X</p>
+</div>
+<div class="p-3 bg-surface-container-low rounded-lg">
+<p class="text-on-surface-variant text-[10px] font-bold uppercase mb-1">Maquinaria</p>
+<p class="text-primary text-xs font-semibold">Torno CNC-08</p>
+</div>
+</div>
+<div class="mt-4 p-4 border border-outline-variant/15 rounded-lg bg-surface-bright">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-sm" data-icon="receipt_long">receipt_long</span>
+<span class="text-xs font-bold text-primary">Receta de Proceso</span>
+</div>
+<ul class="text-[11px] space-y-1 text-on-surface-variant">
+<li class="flex justify-between"><span>1. Corte Térmico</span> <span class="font-bold">120s</span></li>
+<li class="flex justify-between"><span>2. Forjado en Frío</span> <span class="font-bold">450s</span></li>
+<li class="flex justify-between"><span>3. Templado</span> <span class="font-bold">1800s</span></li>
+</ul>
+</div>
+</section>
+<!-- Delegation Tool -->
+<section class="bg-primary p-6 rounded-xl text-white">
+<h4 class="font-bold title-sm mb-4">Herramienta de Delegación</h4>
+<div class="space-y-4">
+<div class="space-y-2">
+<div class="flex justify-between items-center text-xs">
+<span>Operador: Juan Pérez</span>
+<input class="w-16 bg-[#1B263B] border-none rounded text-white text-xs px-2 py-1 text-right focus:ring-1 focus:ring-secondary" type="number" value="1200"/>
+</div>
+<div class="flex justify-between items-center text-xs">
+<span>Operador: Ana Martínez</span>
+<input class="w-16 bg-[#1B263B] border-none rounded text-white text-xs px-2 py-1 text-right focus:ring-1 focus:ring-secondary" type="number" value="800"/>
+</div>
+<div class="flex justify-between items-center text-xs">
+<span>Operador: Luis Soto</span>
+<input class="w-16 bg-[#1B263B] border-none rounded text-white text-xs px-2 py-1 text-right focus:ring-1 focus:ring-secondary" type="number" value="500"/>
+</div>
+</div>
+<div class="pt-4 border-t border-[#47607E] flex justify-between items-center">
+<div class="flex flex-col">
+<span class="text-[10px] text-on-primary-container uppercase">Total Repartido</span>
+<span class="text-lg font-bold">2,500 / 2,500</span>
+</div>
+<span class="material-symbols-outlined text-green-400" data-icon="check_circle">check_circle</span>
+</div>
+<button class="w-full bg-secondary hover:bg-[#5a7696] text-white py-3 rounded-lg font-bold text-sm transition-colors uppercase tracking-wider">
+                                Confirmar Asignación
+                            </button>
+</div>
+</section>
+</div>
+</div>
+<!-- Supervision Section -->
+<section class="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/15">
+<div class="flex justify-between items-end mb-6">
+<div>
+<h3 class="text-primary font-bold headline-md">Supervisión en Tiempo Real</h3>
+<p class="text-on-surface-variant text-sm">Seguimiento de avance por trabajador asignado</p>
+</div>
+<div class="flex gap-2">
+<button class="px-4 py-2 bg-surface-container text-on-surface font-bold text-xs rounded hover:bg-surface-container-high transition-colors">DEVOLUCIÓN</button>
+<button class="px-4 py-2 bg-primary text-white font-bold text-xs rounded hover:bg-secondary transition-colors">APROBAR CIERRE</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Progress Card 1 -->
+<div class="bg-surface-bright p-4 rounded-lg border-l-4 border-secondary">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest overflow-hidden">
+<img alt="Worker profile" class="w-full h-full object-cover" data-alt="close up headshot of a middle aged latino male worker in factory setting with soft background blur" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6OxPhKeFFrz7E2zjnMWLUaUpNsH_AmNf9j3I51nDwb9WZmcZK12dvJU4gaWkKBicBrCqRSa-Xtjrx7yTVxg2I3vFOLb_NHjYmGOPAdp3MzgF5XGixsTx_wYUva7slPTwG7Tc93_UobexaqCIfw_Q0n7Vmg01HHf94s-dVi__buymHpU92HwdJsI8Aclp5t5C9oepL3l6vtunVzQJuEH8A89q9-EuLFV2rvIM4Ev0uJrhkX_3YaUeXItlcRvRZ-lGXL1do498sg9I"/>
+</div>
+<div>
+<p class="text-xs font-bold text-primary">Juan Pérez</p>
+<p class="text-[10px] text-on-surface-variant">Turno A</p>
+</div>
+</div>
+<span class="text-xs font-bold text-secondary">85%</span>
+</div>
+<div class="flex gap-1 h-3 mb-2">
+<div class="flex-1 bg-primary rounded-sm"></div>
+<div class="flex-1 bg-primary rounded-sm"></div>
+<div class="flex-1 bg-primary rounded-sm"></div>
+<div class="flex-1 bg-primary rounded-sm"></div>
+<div class="flex-1 bg-secondary rounded-sm"></div>
+<div class="flex-1 bg-surface-container-highest rounded-sm"></div>
+</div>
+<div class="flex justify-between text-[10px] text-on-surface-variant font-medium">
+<span>Meta: 1,200</span>
+<span>Prod: 1,020</span>
+</div>
+</div>
+<!-- Progress Card 2 -->
+<div class="bg-surface-bright p-4 rounded-lg border-l-4 border-secondary">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest overflow-hidden">
+<img alt="Worker profile" class="w-full h-full object-cover" data-alt="portrait of a young woman engineer smiling in a clean industrial workshop environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDeepnaJclV0XPmW1HH7O32hdIbIjzgUIbQnBgQSWU0zXVfRhtD3YwsYiuGreLbnXj45QK_laddfXXwicJE5wIzAMXiOfcq2fVdAjumTSiBscVUNB3P1i3ZEJZPrT0_ThlO59lWSkenT8VE9O-ECbTFJp9icmt-2qytGcBcXBmVBr73jwPpXPKD_I2Pru7OPSFQiNjdeVysu-453NF90pk_4AKF2JD9EjrpW0UfSJu1xzNjkX0_0bggzPOliftlM7QQCQfO2vVDKQ8"/>
+</div>
+<div>
+<p class="text-xs font-bold text-primary">Ana Martínez</p>
+<p class="text-[10px] text-on-surface-variant">Turno A</p>
+</div>
+</div>
+<span class="text-xs font-bold text-secondary">92%</span>
+</div>
+<div class="flex gap-1 h-3 mb-2">
+<div class="flex-1 bg-primary rounded-sm"></div>
+<div class="flex-1 bg-primary rounded-sm"></div>
+<div class="flex-1 bg-primary rounded-sm"></div>
+<div class="flex-1 bg-primary rounded-sm"></div>
+<div class="flex-1 bg-primary rounded-sm"></div>
+<div class="flex-1 bg-surface-container-highest rounded-sm"></div>
+</div>
+<div class="flex justify-between text-[10px] text-on-surface-variant font-medium">
+<span>Meta: 800</span>
+<span>Prod: 736</span>
+</div>
+</div>
+<!-- Progress Card 3 -->
+<div class="bg-tertiary-fixed p-4 rounded-lg border-l-4 border-error">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest overflow-hidden">
+<img alt="Worker profile" class="w-full h-full object-cover" data-alt="man in protective workwear looking serious and focused on his industrial task" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYlBaAPAgV2VVcw5mshePS_1P_Z7Q1A8LH4uLuqrhk3gOtuowFEkKW-COPkxzXEV-vHX0ducrbajDlPc6SR-RldFjZqCwvACvm2A61afgOdIUo8htVzx4_uNdMHJgxzrN_Us1GHtF70p_OO1LwNTmh2sQ1gUFpsif2S5aq6Xb0cJzWABnzUYd4DI373U5b-6SbyE1Iu5PMkhBIWYuPN_Vj2aNyu3RaTr7f2avuFyht_yf6_a-Y-5y_9MdoiTzI3-qXZPIlWDfIv0k"/>
+</div>
+<div>
+<p class="text-xs font-bold text-primary">Luis Soto</p>
+<p class="text-[10px] text-on-tertiary-fixed-variant">Alerta Merma</p>
+</div>
+</div>
+<span class="text-xs font-bold text-error">42%</span>
+</div>
+<div class="flex gap-1 h-3 mb-2">
+<div class="flex-1 bg-error rounded-sm"></div>
+<div class="flex-1 bg-error rounded-sm"></div>
+<div class="flex-1 bg-surface-container-highest rounded-sm"></div>
+<div class="flex-1 bg-surface-container-highest rounded-sm"></div>
+<div class="flex-1 bg-surface-container-highest rounded-sm"></div>
+<div class="flex-1 bg-surface-container-highest rounded-sm"></div>
+</div>
+<div class="flex justify-between text-[10px] text-on-tertiary-fixed font-medium">
+<span>Meta: 500</span>
+<span>Prod: 210</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+<!-- BottomNavBar (Authority: JSON & Design System - Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 rounded-t-lg bg-[#1B263B]/80 backdrop-blur-md flex justify-around items-center px-4 pb-4 pt-2 shadow-[0_-4px_20px_rgba(5,17,37,0.4)]">
+<a class="flex flex-col items-center justify-center bg-[#47607E] text-white rounded-xl p-3 min-w-[72px] scale-90 transition-transform active:scale-100" href="#">
+<span class="material-symbols-outlined" data-icon="assignment">assignment</span>
+<span class="font-['Inter'] text-[10px] font-bold uppercase">Tareas</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#47607E] p-3 scale-90 transition-transform active:scale-100" href="#">
+<span class="material-symbols-outlined" data-icon="pending_actions">pending_actions</span>
+<span class="font-['Inter'] text-[10px] font-bold uppercase">Avance</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#47607E] p-3 scale-90 transition-transform active:scale-100" href="#">
+<span class="material-symbols-outlined" data-icon="delete_history">delete_history</span>
+<span class="font-['Inter'] text-[10px] font-bold uppercase">Mermas</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#47607E] p-3 scale-90 transition-transform active:scale-100" href="#">
+<span class="material-symbols-outlined" data-icon="timer">timer</span>
+<span class="font-['Inter'] text-[10px] font-bold uppercase">Turno</span>
+</a>
+</nav>
+</body></html>

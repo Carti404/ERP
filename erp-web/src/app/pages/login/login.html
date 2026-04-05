@@ -1,0 +1,156 @@
+<div
+  class="login-root flex h-svh max-h-svh w-full flex-col overflow-hidden bg-[var(--erp-login-outer)] font-sans"
+>
+  <main
+    class="flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--erp-login-surface)] lg:flex-row"
+  >
+    <!-- Marca: pantalla completa; columna izquierda en lg -->
+    <section
+      class="login-brand-section industrial-gradient relative flex shrink-0 flex-col items-center justify-center overflow-hidden px-4 pb-4 pt-[max(0.75rem,env(safe-area-inset-top))] min-[480px]:py-8 lg:min-h-0 lg:flex-1 lg:basis-0 lg:px-8 lg:py-10 xl:px-12"
+    >
+      <div
+        class="absolute -right-24 -top-24 h-48 w-48 rounded-full blur-3xl lg:h-64 lg:w-64"
+        style="background: var(--erp-login-glow-blue)"
+      ></div>
+      <div
+        class="absolute -bottom-24 -left-24 h-48 w-48 rounded-full blur-3xl lg:h-64 lg:w-64"
+        style="background: var(--erp-login-glow-white)"
+      ></div>
+
+      <button
+        type="button"
+        class="login-theme-btn absolute left-[max(1rem,env(safe-area-inset-left))] top-[max(0.75rem,env(safe-area-inset-top))] z-20 sm:left-[max(1.25rem,env(safe-area-inset-left))] sm:top-[max(1rem,env(safe-area-inset-top))]"
+        (click)="theme.toggle()"
+        [attr.aria-label]="theme.isDark() ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'"
+      >
+        @if (theme.isDark()) {
+          <span class="material-symbols-outlined" aria-hidden="true">light_mode</span>
+        } @else {
+          <span class="material-symbols-outlined" aria-hidden="true">dark_mode</span>
+        }
+      </button>
+
+      <div
+        class="relative z-10 flex max-w-lg flex-col items-center gap-2 px-2 text-center sm:px-4 lg:gap-5 lg:px-6"
+      >
+        <div
+          class="login-brand-logo flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-xl shadow-black/20 dark:bg-[#1f2a3f] lg:h-20 lg:w-20 lg:rounded-3xl lg:shadow-2xl"
+        >
+          <span
+            class="material-symbols-outlined text-3xl text-[var(--erp-login-primary)] lg:text-5xl"
+            style="font-variation-settings: 'FILL' 1"
+            aria-hidden="true"
+            >precision_manufacturing</span
+          >
+        </div>
+        <div class="w-full min-w-0">
+          <h1
+            class="login-brand-title text-balance text-base font-black uppercase leading-snug tracking-wide text-[var(--erp-login-text-heading)] sm:text-lg lg:text-2xl xl:text-3xl"
+          >
+            ERP control de producción y asistencia
+          </h1>
+          <p
+            class="login-brand-sub mt-2 text-[10px] font-bold uppercase tracking-widest text-[var(--erp-login-text-sub)] lg:text-xs"
+          >
+            Acceso seguro al panel de operaciones
+          </p>
+        </div>
+        <p
+          class="login-brand-tagline hidden max-w-sm text-pretty text-xs leading-relaxed text-[var(--erp-login-text-sub)]/90 lg:block xl:text-sm"
+        >
+          Introduce tu PIN en el terminal. El sistema identificará tu sesión.
+        </p>
+      </div>
+    </section>
+
+    <!-- PIN + teclado -->
+    <div
+      class="flex min-h-0 flex-1 flex-col overflow-hidden lg:min-h-0 lg:flex-1 lg:basis-0"
+      [class.login-shake-play]="shakePlay()"
+    >
+      <section
+        class="shrink-0 border-b border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] px-4 py-4 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-surface)] sm:px-6 sm:py-5 lg:px-8 xl:px-10"
+      >
+        <div class="flex flex-col items-center gap-3 sm:gap-4">
+          <span class="text-[8px] font-black uppercase tracking-[0.2em] text-[var(--erp-login-label)] sm:text-[9px]"
+            >PIN de seguridad</span
+          >
+          <div class="flex gap-4 sm:gap-5" role="status" aria-live="polite">
+            @for (i of [0, 1, 2, 3]; track i) {
+              <div
+                class="pin-ring"
+                [class.filled]="pinLength() > i"
+                [class.pin-ring--error]="pinError()"
+              ></div>
+            }
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="flex min-h-0 flex-1 flex-col px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 sm:px-5 sm:pb-3 sm:pt-3 lg:px-8 xl:px-10"
+      >
+        <div
+          class="login-keypad-grid grid min-h-0 w-full max-w-md flex-1 gap-1 self-center sm:max-w-lg sm:gap-2 lg:max-w-none lg:self-stretch"
+        >
+          @for (row of keypad; track $index) {
+            @for (key of row; track key.digit) {
+              <button
+                type="button"
+                class="keypad-btn flex h-full min-h-0 w-full min-w-0 flex-col items-center justify-center rounded-xl transition-all sm:rounded-2xl"
+                (click)="addDigit(key.digit)"
+              >
+                <span class="text-lg font-black text-[var(--erp-login-text-primary)] sm:text-xl lg:text-2xl">{{
+                  key.digit
+                }}</span>
+                <span
+                  class="text-[7px] font-bold uppercase tracking-tighter text-[var(--erp-login-muted)] sm:text-[8px]"
+                  >{{ key.sub }}</span
+                >
+              </button>
+            }
+          }
+          <button
+            type="button"
+            class="login-backspace-btn flex h-full min-h-0 w-full min-w-0 items-center justify-center rounded-xl transition-all active:scale-95 sm:rounded-2xl"
+            (click)="backspace()"
+            aria-label="Borrar dígito"
+          >
+            <span class="material-symbols-outlined text-xl text-red-600 sm:text-2xl dark:text-red-400" aria-hidden="true"
+              >backspace</span
+            >
+          </button>
+          <button
+            type="button"
+            class="keypad-btn flex h-full min-h-0 w-full min-w-0 flex-col items-center justify-center rounded-xl transition-all sm:rounded-2xl"
+            (click)="addDigit('0')"
+          >
+            <span class="text-lg font-black text-[var(--erp-login-text-primary)] sm:text-xl lg:text-2xl">0</span>
+          </button>
+          <div
+            class="pointer-events-none min-h-0 min-w-0"
+            aria-hidden="true"
+          ></div>
+        </div>
+
+        <div class="mt-2 shrink-0 sm:mt-3">
+          <button
+            type="button"
+            class="login-cta tactile-btn flex h-12 w-full items-center justify-center gap-2 rounded-xl text-xs font-black uppercase tracking-[0.15em] transition-all sm:h-14 sm:gap-3 sm:rounded-2xl sm:text-sm"
+            [class.login-cta--ready]="pinComplete()"
+            [disabled]="!pinComplete()"
+            (click)="verify()"
+          >
+            Verificar identidad
+            <span
+              class="material-symbols-outlined text-[var(--erp-login-accent)]"
+              style="font-variation-settings: 'wght' 700"
+              aria-hidden="true"
+              >arrow_forward</span
+            >
+          </button>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>

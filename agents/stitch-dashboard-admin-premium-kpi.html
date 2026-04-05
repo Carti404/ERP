@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed-dim": "#ffb3b1",
+                    "secondary": "#47607e",
+                    "inverse-surface": "#2e3132",
+                    "primary": "#1B263B",
+                    "primary-fixed": "#d7e2ff",
+                    "surface-dim": "#d9dadb",
+                    "secondary-container": "#c2dcff",
+                    "on-surface": "#191c1d",
+                    "surface-bright": "#f8f9fa",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error": "#ffffff",
+                    "inverse-on-surface": "#f0f1f2",
+                    "tertiary-fixed": "#ffdad8",
+                    "surface": "#f8f9fa",
+                    "primary-container": "#1B263B",
+                    "on-secondary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "surface-container-low": "#f3f4f5",
+                    "background": "#f8f9fa",
+                    "surface-container-high": "#e7e8e9",
+                    "error": "#ba1a1a",
+                    "tertiary": "#2e0004",
+                    "outline-variant": "#c5c6cd",
+                    "on-secondary-container": "#48617e",
+                    "on-primary": "#ffffff",
+                    "on-secondary-fixed-variant": "#2f4865",
+                    "inverse-primary": "#bbc6e2",
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-fixed": "#410007",
+                    "on-primary-fixed": "#101b30",
+                    "on-secondary-fixed": "#001d36",
+                    "on-background": "#191c1d",
+                    "outline": "#75777d",
+                    "surface-tint": "#545e76",
+                    "secondary-fixed": "#d1e4ff",
+                    "on-error-container": "#93000a",
+                    "surface-container-highest": "#e1e3e4",
+                    "on-primary-container": "#828da7",
+                    "primary-fixed-dim": "#bbc6e2",
+                    "on-surface-variant": "#45474d",
+                    "tertiary-container": "#55000c",
+                    "on-tertiary-container": "#fe4b55",
+                    "surface-container": "#edeeef",
+                    "on-primary-fixed-variant": "#3c475d",
+                    "on-tertiary-fixed-variant": "#92001c",
+                    "surface-variant": "#e1e3e4",
+                    "secondary-fixed-dim": "#afc9ea"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9fa; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .tonal-shift { background-color: rgba(27, 38, 59, 0.04); }
+        .glass-panel { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+        .chart-gradient { background: linear-gradient(180deg, #1B263B 0%, #47607e 100%); }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- SideNavBar (Desktop Shell) -->
+<aside class="hidden lg:flex flex-col fixed left-0 top-0 h-full z-40 bg-[#0F172A] w-64 transition-all duration-150 ease-in-out border-r border-slate-800">
+<div class="p-6 flex flex-col gap-1">
+<span class="text-xl font-black text-white tracking-widest uppercase">Industrial ERP</span>
+<div class="mt-4 flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-700">
+<img alt="Admin User" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAW4MA7FScrbsv8AvltBk40UtkxwO2RD0OY2M7wndwnXom5v8NDHKPDYJxzOsYRce8zOzzld3TQDQCjFgifhdqVEEJ5Aar1F2yB3YC2Tb48QRJZhCaLXNgNtMzV52R9dOsVfnW0UUNY3PRQWZEVZS2npTW7d07OZh_jcfY-7SaHFlD7DRpLPLj7vZoC5-twFh9KJmJk4C3SeD3Zvmj4eVaMwsDTOEAWwzS6k6qsEYGu-fTC-yuoYilFm4zeH_0H4IkQGt37ooaA2iw"/>
+</div>
+<div>
+<p class="text-slate-100 font-bold text-sm leading-none">Plant Manager</p>
+<p class="text-slate-400 text-xs mt-1">Floor A-12</p>
+</div>
+</div>
+</div>
+<nav class="mt-4 flex-1 overflow-y-auto">
+<a class="bg-slate-800 text-white border-l-4 border-[#1B263B] px-4 py-3 flex items-center gap-3 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-inter label-md font-medium uppercase text-xs tracking-wider">Home</span>
+</a>
+<a class="text-slate-400 px-4 py-3 flex items-center gap-3 hover:bg-slate-800 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="factory">factory</span>
+<span class="font-inter label-md font-medium uppercase text-xs tracking-wider">Production</span>
+</a>
+<a class="text-slate-400 px-4 py-3 flex items-center gap-3 hover:bg-slate-800 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="event_available">event_available</span>
+<span class="font-inter label-md font-medium uppercase text-xs tracking-wider">Attendance</span>
+</a>
+<a class="text-slate-400 px-4 py-3 flex items-center gap-3 hover:bg-slate-800 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+<span class="font-inter label-md font-medium uppercase text-xs tracking-wider">Permissions</span>
+</a>
+<a class="text-slate-400 px-4 py-3 flex items-center gap-3 hover:bg-slate-800 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="inbox">inbox</span>
+<span class="font-inter label-md font-medium uppercase text-xs tracking-wider">Inbox</span>
+</a>
+<a class="text-slate-400 px-4 py-3 flex items-center gap-3 hover:bg-slate-800 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="font-inter label-md font-medium uppercase text-xs tracking-wider">Notifications</span>
+</a>
+<div class="mt-auto border-t border-slate-800 pt-4">
+<a class="text-slate-400 px-4 py-3 flex items-center gap-3 hover:bg-slate-800 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-inter label-md font-medium uppercase text-xs tracking-wider">System Settings</span>
+</a>
+<a class="text-slate-400 px-4 py-3 flex items-center gap-3 hover:bg-slate-800 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-inter label-md font-medium uppercase text-xs tracking-wider">Staff</span>
+</a>
+</div>
+</nav>
+</aside>
+<!-- TopNavBar Shell -->
+<header class="fixed top-0 right-0 left-0 lg:left-64 h-16 flex justify-between items-center px-6 z-50 bg-white border-b border-slate-200 transition-colors duration-200">
+<div class="flex items-center">
+<h1 class="font-inter headline-md font-bold tracking-tight text-[#1B263B]">Industrial Intelligence Console</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:text-[#1B263B] hover:bg-slate-100 transition-colors rounded-lg relative">
+<span class="material-symbols-outlined" data-icon="inbox">inbox</span>
+<span class="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+</button>
+<button class="p-2 text-slate-500 hover:text-[#1B263B] hover:bg-slate-100 transition-colors rounded-lg">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<div class="h-8 w-[1px] bg-slate-200 mx-2"></div>
+<div class="flex items-center gap-3 cursor-pointer group">
+<span class="text-slate-700 text-sm font-semibold group-hover:text-[#1B263B] transition-colors">Admin Session</span>
+<div class="w-8 h-8 rounded bg-slate-100 border border-slate-200 overflow-hidden">
+<img alt="User Color Identifier" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDlL2gjD40eklxxPmlSG58ZUt8aVnQ9C_hZKjYSvmVN6VaeDEAf-lyORMBnCNIYSXcRim4gDVFZREOF20-qcpsXkVt38LlOq5hZgIOuKtZmi_3Mxf4gISe2HJIAhyLo1UVo5l4hu6G10QpEvRW87O_063H2iHUjC6cGee_WEr2_6T_bDrvQWeco6A3yDqNzng2MB5RVz2p2akDLRzjQU_dc-wzc2fyKJZadAnXGTUVno9EJUIAvkJ5Ymddjo9kknLLu7dVZIMFtKyE"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="pt-24 pb-12 lg:ml-64 px-6 min-h-screen bg-[#F1F5F9]">
+<!-- Row 1: KPI Stats Cards (Industrial Precision Redesign) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<!-- Asistencia Card with Doughnut Mockup -->
+<div class="bg-white p-5 rounded border border-slate-200 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+<div class="flex justify-between items-start mb-4">
+<div>
+<p class="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Asistencia Hoy</p>
+<h3 class="text-3xl font-black text-[#1B263B] mt-1">85%</h3>
+<p class="text-[10px] text-emerald-600 font-bold flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[12px]" data-icon="trending_up">trending_up</span> +2.4% vs ayer
+</p>
+</div>
+<div class="relative w-16 h-16 flex items-center justify-center">
+<!-- SVG Doughnut Mockup -->
+<svg class="w-full h-full -rotate-90" viewbox="0 0 36 36">
+<circle class="stroke-slate-100" cx="18" cy="18" fill="none" r="15.915" stroke-width="3.5"></circle>
+<circle class="stroke-[#1B263B]" cx="18" cy="18" fill="none" r="15.915" stroke-dasharray="85 100" stroke-width="3.5"></circle>
+</svg>
+<span class="material-symbols-outlined absolute text-[#1B263B]/20 text-lg" data-icon="groups">groups</span>
+</div>
+</div>
+<div class="h-[2px] bg-slate-100 w-full mt-4">
+<div class="h-full bg-[#1B263B] w-[85%]"></div>
+</div>
+</div>
+<!-- Puntualidad Card -->
+<div class="bg-white p-5 rounded border border-slate-200 shadow-sm hover:shadow-md transition-shadow group">
+<div class="flex justify-between items-start mb-4">
+<div>
+<p class="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Puntualidad</p>
+<h3 class="text-3xl font-black text-[#1B263B] mt-1">92%</h3>
+<p class="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-tighter">Variación nominal</p>
+</div>
+<div class="w-12 h-12 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-[#1B263B]" data-icon="schedule">schedule</span>
+</div>
+</div>
+<div class="flex gap-1 mt-4">
+<div class="h-1 flex-1 bg-[#1B263B]"></div>
+<div class="h-1 flex-1 bg-[#1B263B]"></div>
+<div class="h-1 flex-1 bg-[#1B263B]"></div>
+<div class="h-1 flex-1 bg-[#1B263B]"></div>
+<div class="h-1 flex-1 bg-slate-100"></div>
+</div>
+</div>
+<!-- Producción Pendiente Card with Mini Bar Chart -->
+<div class="bg-white p-5 rounded border border-slate-200 shadow-sm hover:shadow-md transition-shadow group">
+<div class="flex justify-between items-start mb-2">
+<div>
+<p class="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Producción Pendiente</p>
+<h3 class="text-3xl font-black text-[#1B263B] mt-1">12,400 <span class="text-sm font-medium text-slate-400">u.</span></h3>
+</div>
+<div class="w-10 h-10 flex items-center justify-center">
+<span class="material-symbols-outlined text-[#1B263B]/40" data-icon="precision_manufacturing">precision_manufacturing</span>
+</div>
+</div>
+<!-- Mini Bar Chart Mockup -->
+<div class="flex items-end gap-1 h-12 mt-2">
+<div class="w-full bg-slate-100 rounded-t-sm h-[40%] group-hover:bg-[#1B263B]/20 transition-colors"></div>
+<div class="w-full bg-slate-100 rounded-t-sm h-[60%] group-hover:bg-[#1B263B]/20 transition-colors"></div>
+<div class="w-full bg-[#1B263B] rounded-t-sm h-[90%]"></div>
+<div class="w-full bg-[#1B263B] rounded-t-sm h-[75%]"></div>
+<div class="w-full bg-slate-100 rounded-t-sm h-[50%] group-hover:bg-[#1B263B]/20 transition-colors"></div>
+<div class="w-full bg-slate-100 rounded-t-sm h-[30%] group-hover:bg-[#1B263B]/20 transition-colors"></div>
+<div class="w-full bg-slate-100 rounded-t-sm h-[45%] group-hover:bg-[#1B263B]/20 transition-colors"></div>
+</div>
+</div>
+<!-- Mermas Card with Pie Mockup -->
+<div class="bg-white p-5 rounded border-l-4 border-red-600 shadow-sm hover:shadow-md transition-shadow group">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-[10px] font-black uppercase tracking-[0.15em] text-red-600/60">Mermas (Crítico)</p>
+<h3 class="text-3xl font-black text-red-600 mt-1">2.1%</h3>
+<p class="text-[10px] text-red-700 font-bold flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[12px]" data-icon="warning">warning</span> +0.8% desviado
+</p>
+</div>
+<div class="relative w-16 h-16">
+<svg class="w-full h-full" viewbox="0 0 36 36">
+<circle class="stroke-slate-100" cx="18" cy="18" fill="none" r="16" stroke-width="4"></circle>
+<circle class="stroke-red-600" cx="18" cy="18" fill="none" r="16" stroke-dasharray="7 100" stroke-width="4"></circle>
+</svg>
+</div>
+</div>
+</div>
+</div>
+<!-- Row 2: Critical Actions (Pending Approvals) -->
+<section class="mb-8">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-xs font-black uppercase tracking-widest text-[#1B263B]">Aprobaciones de Turno</h2>
+<button class="text-[#1B263B] font-bold text-[10px] uppercase tracking-wider hover:underline flex items-center gap-1">
+        Gestionar Todo <span class="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+<div class="bg-white border border-slate-200 rounded overflow-hidden">
+<div class="grid grid-cols-1 divide-y divide-slate-100">
+<!-- Item 1 -->
+<div class="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-slate-200 overflow-hidden border border-slate-300">
+<img alt="User" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWj6zikPNZ7FOqOE3bT7lzBpP6DFPV6XDiaRgjqsUt2eKBT1AUJMQs3rj6Z-7LGTVgFRMBraqnDQ9cUhAVgofeZo7QurQXc4L7ZsVyw-wdJB1lJgi1UOZScjN4lxlZElwJxmhNSaSAybVp_RnF6mNmBlb0RVA85MtPy2TrBs4QowwLFYqYWMM9W2AqxBcoOcAlCgBKAqMqjqmc51qGu5aqwhlERt1w-sO6eGVvgk9_G8HsHN8Z_-Jn2RGomu1rscsSn3ZEQKXBFGM"/>
+</div>
+<div>
+<p class="text-sm font-bold text-[#1B263B]">Juan Delgado</p>
+<p class="text-[10px] text-slate-500 uppercase font-bold tracking-tight">Justificación: Ausencia Médica</p>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="px-5 py-2 bg-[#1B263B] text-white text-[10px] font-black uppercase tracking-widest rounded hover:bg-slate-800 transition-all">Aprobar</button>
+<button class="px-5 py-2 bg-white border border-slate-200 text-[#1B263B] text-[10px] font-black uppercase tracking-widest rounded hover:bg-slate-50 transition-all">Rechazar</button>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-slate-200 overflow-hidden border border-slate-300">
+<img alt="User" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAS4ZN9yN2u-EsNriSQrvBEVVjtTT6yYTeAPyy_iBOHLFYRGnEZqEcIJUaN4UllevommpkdgQTWSspjao_4bN9L7TaAMOUH5GYgDI9l2Jd2f3-xVjrjtyktb14D07CUaworVa7zNG_cIUyAnlccExz93uimT1-vIPDEBcdBYW9SazI3n8PeKEvmqfdzNNvD5xgzicGcLbIgM0xqA_EuJaGqgGlhuJoAqJI74JP-9XD_2opOSHpg63gZdfRmwQnWRRNLDvOX3-u1mqg"/>
+</div>
+<div>
+<p class="text-sm font-bold text-[#1B263B]">Marta Ruiz</p>
+<p class="text-[10px] text-slate-500 uppercase font-bold tracking-tight">Permiso: Trámite Personal (4 hrs)</p>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="px-5 py-2 bg-[#1B263B] text-white text-[10px] font-black uppercase tracking-widest rounded hover:bg-slate-800 transition-all">Aprobar</button>
+<button class="px-5 py-2 bg-white border border-slate-200 text-[#1B263B] text-[10px] font-black uppercase tracking-widest rounded hover:bg-slate-50 transition-all">Rechazar</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Row 3: Calendars & Charts -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Attendance Calendar -->
+<div class="lg:col-span-1 bg-white p-6 rounded border border-slate-200 shadow-sm">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-[#1B263B]">Control de Asistencia</h3>
+<div class="flex gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+</div>
+</div>
+<div class="grid grid-cols-7 gap-1.5 mb-4">
+<span class="text-[9px] text-center font-black text-slate-400 uppercase">L</span>
+<span class="text-[9px] text-center font-black text-slate-400 uppercase">M</span>
+<span class="text-[9px] text-center font-black text-slate-400 uppercase">M</span>
+<span class="text-[9px] text-center font-black text-slate-400 uppercase">J</span>
+<span class="text-[9px] text-center font-black text-slate-400 uppercase">V</span>
+<span class="text-[9px] text-center font-black text-slate-400 uppercase">S</span>
+<span class="text-[9px] text-center font-black text-slate-400 uppercase">D</span>
+<!-- Calendar days simulation -->
+<div class="h-9 flex items-center justify-center text-[10px] rounded border border-slate-50 bg-slate-50 font-bold text-slate-400">28</div>
+<div class="h-9 flex items-center justify-center text-[10px] rounded border border-slate-50 bg-slate-50 font-bold text-slate-400">29</div>
+<div class="h-9 flex items-center justify-center text-[10px] rounded border border-slate-50 bg-slate-50 font-bold text-slate-400">30</div>
+<div class="h-9 flex items-center justify-center text-[10px] rounded border border-emerald-100 bg-emerald-50 text-emerald-700 font-black">1</div>
+<div class="h-9 flex items-center justify-center text-[10px] rounded border border-emerald-100 bg-emerald-50 text-emerald-700 font-black">2</div>
+<div class="h-9 flex items-center justify-center text-[10px] rounded border border-slate-50 text-slate-400">3</div>
+<div class="h-9 flex items-center justify-center text-[10px] rounded border border-slate-50 text-slate-400">4</div>
+<div class="h-9 flex items-center justify-center text-[10px] rounded border border-emerald-100 bg-emerald-50 text-emerald-700 font-black">5</div>
+<div class="h-9 flex items-center justify-center text-[10px] rounded border border-emerald-100 bg-emerald-50 text-emerald-700 font-black">6</div>
+<div class="h-9 flex items-center justify-center text-[10px] rounded border border-amber-100 bg-amber-50 text-amber-700 font-black">7</div>
+<div class="h-9 flex items-center justify-center text-[10px] rounded border border-emerald-100 bg-emerald-50 text-emerald-700 font-black">8</div>
+<div class="h-9 flex items-center justify-center text-[10px] rounded border border-red-100 bg-red-50 text-red-700 font-black">9</div>
+<div class="h-9 flex items-center justify-center text-[10px] rounded border border-slate-50 text-slate-400">10</div>
+<div class="h-9 flex items-center justify-center text-[10px] rounded border border-slate-50 text-slate-400">11</div>
+</div>
+<div class="mt-6 p-3 bg-slate-50 rounded border border-slate-100">
+<p class="text-[9px] font-black text-slate-400 uppercase mb-1 tracking-widest">Incidencia Crítica</p>
+<p class="text-[11px] text-[#1B263B] leading-snug font-medium">Falla en transporte logístico afectó al 12% del personal en el día 09.</p>
+</div>
+</div>
+<!-- Production Chart -->
+<div class="lg:col-span-2 bg-white p-6 rounded border border-slate-200 shadow-sm">
+<div class="flex items-center justify-between mb-8">
+<div>
+<h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-[#1B263B]">Métricas de Producción por Turno</h3>
+<p class="text-[10px] text-slate-500 font-medium">Objetivo operacional: 15,000 unidades / día</p>
+</div>
+<div class="flex gap-4">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 bg-[#1B263B] rounded-[2px]"></span>
+<span class="text-[9px] font-black uppercase text-slate-400 tracking-wider">Finalizado</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 bg-[#47607e] rounded-[2px]"></span>
+<span class="text-[9px] font-black uppercase text-slate-400 tracking-wider">En Proceso</span>
+</div>
+</div>
+</div>
+<div class="space-y-7">
+<!-- Turno 1 -->
+<div>
+<div class="flex justify-between items-end mb-2">
+<span class="text-[10px] font-black text-[#1B263B] uppercase tracking-tight">Turno Mañana (06:00 - 14:00)</span>
+<span class="text-[10px] font-black text-[#1B263B]">100% <span class="font-normal text-slate-400 ml-1">5.2k</span></span>
+</div>
+<div class="h-3 bg-slate-50 flex rounded-full overflow-hidden border border-slate-100">
+<div class="h-full bg-[#1B263B]" style="width: 100%"></div>
+</div>
+</div>
+<!-- Turno 2 -->
+<div>
+<div class="flex justify-between items-end mb-2">
+<span class="text-[10px] font-black text-[#1B263B] uppercase tracking-tight">Turno Tarde (14:00 - 22:00)</span>
+<span class="text-[10px] font-black text-[#1B263B]">78% <span class="font-normal text-slate-400 ml-1">4.1k</span></span>
+</div>
+<div class="h-3 bg-slate-50 flex rounded-full overflow-hidden border border-slate-100">
+<div class="h-full bg-[#1B263B]" style="width: 60%"></div>
+<div class="h-full bg-[#47607e]" style="width: 18%"></div>
+</div>
+</div>
+<!-- Turno 3 -->
+<div>
+<div class="flex justify-between items-end mb-2">
+<span class="text-[10px] font-black text-[#1B263B] uppercase tracking-tight">Turno Noche (22:00 - 06:00)</span>
+<span class="text-[10px] font-black text-slate-400">EN ESPERA</span>
+</div>
+<div class="h-3 bg-slate-50 flex rounded-full overflow-hidden border border-slate-100">
+<div class="h-full bg-slate-200" style="width: 0%"></div>
+</div>
+</div>
+</div>
+<div class="mt-10 pt-6 border-t border-slate-100 flex justify-between items-center">
+<div class="flex items-center gap-8">
+<div>
+<p class="text-[9px] text-slate-400 uppercase font-black tracking-widest">OEE Real</p>
+<p class="text-2xl font-black text-[#1B263B]">78.4%</p>
+</div>
+<div>
+<p class="text-[9px] text-slate-400 uppercase font-black tracking-widest">Disponibilidad</p>
+<p class="text-2xl font-black text-[#1B263B]">94.1%</p>
+</div>
+</div>
+<button class="h-10 px-6 bg-[#1B263B] text-white text-[10px] font-black uppercase tracking-widest rounded flex items-center gap-2 hover:bg-slate-800 transition-all border border-[#1B263B]">
+<span class="material-symbols-outlined text-sm" data-icon="analytics">analytics</span>
+                        Reporte Ejecutivo
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Shell) -->
+<nav class="lg:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-[#0F172A] border-t border-slate-800">
+<a class="flex flex-col items-center justify-center text-white p-2" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="text-[9px] font-black uppercase tracking-tighter mt-1">Inicio</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 p-2" href="#">
+<span class="material-symbols-outlined" data-icon="precision_manufacturing">precision_manufacturing</span>
+<span class="text-[9px] font-black uppercase tracking-tighter mt-1">Prod.</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 p-2" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="text-[9px] font-black uppercase tracking-tighter mt-1">Staff</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 p-2" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="text-[9px] font-black uppercase tracking-tighter mt-1">Perfil</span>
+</a>
+</nav>
+</body></html>

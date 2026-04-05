@@ -1,0 +1,199 @@
+<div class="erp-produccion-trabajador mx-auto max-w-6xl space-y-5 pb-4">
+  <div
+    class="flex flex-col gap-3 rounded-xl bg-[#051125] px-4 py-3 shadow-md sm:flex-row sm:items-center sm:justify-between"
+  >
+    <span class="text-base font-bold uppercase tracking-wider text-white">Ironclad Forge</span>
+    <nav class="flex flex-wrap gap-4 text-xs font-semibold text-[#47607e]" aria-label="Vista producción">
+      <span class="border-b-2 border-[#47607e] pb-0.5 text-white">Requerimientos</span>
+      <span class="opacity-80">Asignaciones</span>
+      <span class="opacity-80">Supervisión</span>
+    </nav>
+  </div>
+
+  <div>
+    <h1 class="text-balance text-lg font-black uppercase tracking-wide text-[var(--erp-login-text-primary)]">
+      Producción — vista trabajador
+    </h1>
+    <p class="mt-0.5 max-w-2xl text-xs text-[var(--erp-login-muted)]">
+      Registro de avance, takt y supervisión del turno (datos de demostración).
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 gap-5 lg:grid-cols-12">
+    <!-- Columna principal: tarea + reporte + merma -->
+    <div class="space-y-4 lg:col-span-7">
+      <section class="rounded-xl bg-[#051125] p-5 text-white shadow-lg">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-[#828da7]">Lote en curso</p>
+        <h2 class="mt-1 text-lg font-bold leading-snug">{{ task.title }}</h2>
+        <p class="mt-0.5 text-xs text-[#828da7]">SKU {{ task.sku }}</p>
+        <div class="mt-4">
+          <div class="mb-1 flex justify-between text-xs font-medium text-[#c2dcff]">
+            <span>{{ reportQty() | number }} / {{ task.target | number }} unidades</span>
+            <span>{{ reportPct() }}%</span>
+          </div>
+          <div class="h-2.5 overflow-hidden rounded-full bg-[#1b263b]">
+            <div class="h-full rounded-full bg-[#47607e] transition-[width] duration-300" [style.width.%]="reportPct()"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="rounded-xl bg-[#051125] p-5 text-white shadow-lg">
+        <h3 class="text-sm font-bold">Reportar producción</h3>
+        <div class="mt-4 flex items-center justify-center gap-4">
+          <button
+            type="button"
+            class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[#1b263b] text-2xl font-bold text-white transition-colors hover:bg-[#47607e]"
+            (click)="adjustReport(-10)"
+            aria-label="Restar 10 unidades"
+          >
+            −
+          </button>
+          <div class="min-w-[6rem] text-center">
+            <p class="text-3xl font-black tabular-nums">{{ reportQty() | number }}</p>
+            <p class="text-[10px] uppercase text-[#828da7]">Unidades</p>
+          </div>
+          <button
+            type="button"
+            class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[#1b263b] text-2xl font-bold text-white transition-colors hover:bg-[#47607e]"
+            (click)="adjustReport(10)"
+            aria-label="Sumar 10 unidades"
+          >
+            +
+          </button>
+        </div>
+        <button
+          type="button"
+          class="mt-5 w-full rounded-lg bg-[#47607e] py-3 text-sm font-bold uppercase tracking-wider text-white transition-colors hover:bg-[#5a7696]"
+          (click)="onConfirmReport()"
+        >
+          Confirmar reporte
+        </button>
+      </section>
+
+      <button
+        type="button"
+        class="flex w-full items-center justify-center gap-3 rounded-xl bg-[#ba1a1a] py-4 text-white shadow-md transition-transform active:scale-[0.99]"
+        (click)="onInformarMerma()"
+      >
+        <span class="material-symbols-outlined text-3xl" aria-hidden="true">warning</span>
+        <span class="text-base font-black uppercase tracking-wide">Informar merma</span>
+      </button>
+    </div>
+
+    <!-- Ficha técnica -->
+    <div class="space-y-4 lg:col-span-5">
+      <section class="rounded-xl bg-white p-5 shadow-sm dark:bg-[var(--erp-login-card)]">
+        <div class="mb-3 flex items-center justify-between">
+          <h4 class="font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Ficha técnica</h4>
+          <span class="rounded bg-[#c2dcff] px-2 py-0.5 text-[10px] font-bold text-[#48617e] dark:bg-[#1b263b] dark:text-[#c2dcff]">
+            Detalle
+          </span>
+        </div>
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div class="rounded-lg bg-[#f3f4f5] p-3 dark:bg-[var(--erp-login-surface)]">
+            <p class="mb-1 text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]">Insumos</p>
+            <p class="text-xs font-semibold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ insumos }}</p>
+          </div>
+          <div class="rounded-lg bg-[#f3f4f5] p-3 dark:bg-[var(--erp-login-surface)]">
+            <p class="mb-1 text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]">Maquinaria</p>
+            <p class="text-xs font-semibold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ maquinaria }}</p>
+          </div>
+        </div>
+        <div class="mt-4 rounded-lg border border-[#c5c6cd]/40 bg-[#f8f9fa] p-4 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-surface)]">
+          <p class="mb-2 text-xs font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Receta de proceso</p>
+          <ul class="space-y-1.5 text-[11px] text-[#45474d] dark:text-[var(--erp-login-muted)]">
+            @for (step of recipe; track step.n) {
+              <li class="flex justify-between gap-2">
+                <span>{{ step.n }}. {{ step.name }}</span>
+                <span class="font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ step.seconds }}s</span>
+              </li>
+            }
+          </ul>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Ritmo + actividad -->
+  <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <section class="flex flex-col items-center rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] p-5">
+      <p class="text-[10px] font-black uppercase tracking-widest text-[var(--erp-login-label)]">Ritmo / takt</p>
+      <div class="relative mt-2 h-32 w-full max-w-[240px]">
+        <div
+          class="absolute bottom-0 left-1/2 h-24 w-[13.5rem] -translate-x-1/2 rounded-t-full bg-gradient-to-r from-red-300/90 via-amber-200/90 to-emerald-300/90 dark:from-red-900/50 dark:via-amber-800/40 dark:to-emerald-800/50"
+          aria-hidden="true"
+        ></div>
+        <div
+          class="absolute bottom-0 left-1/2 h-[4.5rem] w-1 origin-bottom rounded-full bg-[#051125] dark:bg-white"
+          [style.transform]="'translateX(-50%) rotate(' + (taktNeedleDeg - 90) + 'deg)'"
+          aria-hidden="true"
+        ></div>
+      </div>
+      <p class="mt-2 text-sm font-black text-emerald-600 dark:text-emerald-400">{{ taktLabel }}</p>
+    </section>
+
+    <section class="rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] p-5">
+      <p class="text-[10px] font-black uppercase tracking-widest text-[var(--erp-login-label)]">Actividad reciente</p>
+      <ul class="mt-3 space-y-3">
+        @for (ev of activities; track ev.time + ev.text) {
+          <li class="flex gap-3 text-sm">
+            <span class="w-12 shrink-0 font-mono text-xs font-bold text-[var(--erp-login-muted)]">{{ ev.time }}</span>
+            <span class="text-[var(--erp-login-text-primary)]">{{ ev.text }}</span>
+          </li>
+        }
+      </ul>
+    </section>
+  </div>
+
+  <!-- Supervisión -->
+  <section class="rounded-xl border border-[#c5c6cd]/30 bg-white p-5 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
+    <div class="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+      <div>
+        <h3 class="font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Supervisión en tiempo real</h3>
+        <p class="text-xs text-[#45474d] dark:text-[var(--erp-login-muted)]">Avance del turno (demo)</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button
+          type="button"
+          class="rounded bg-[#edeeef] px-3 py-2 text-[10px] font-bold uppercase text-[#191c1d] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
+          (click)="onDevolucion()"
+        >
+          Devolución
+        </button>
+        <button
+          type="button"
+          class="rounded bg-[#051125] px-3 py-2 text-[10px] font-bold uppercase text-white hover:bg-[#47607e]"
+          (click)="onAprobarCierre()"
+        >
+          Aprobar cierre
+        </button>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      @for (p of peers; track p.id) {
+        <div [class]="peerCardClass(p)">
+          <div class="mb-2 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <div
+                class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#e1e3e4] text-[10px] font-black text-[#051125] dark:bg-[var(--erp-login-input-border)] dark:text-[var(--erp-login-text-primary)]"
+              >
+                {{ p.name.charAt(0) }}
+              </div>
+              <span class="truncate text-xs font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ p.name }}</span>
+            </div>
+            <span
+              class="text-xs font-bold"
+              [style.color]="p.variant === 'alert' ? '#ba1a1a' : '#47607e'"
+              >{{ p.pct }}%</span
+            >
+          </div>
+          <div class="flex gap-1">
+            @for (seg of p.segments; track $index) {
+              <div [class]="segmentClass(seg)"></div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+</div>

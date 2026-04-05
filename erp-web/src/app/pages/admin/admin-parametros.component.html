@@ -1,0 +1,314 @@
+<div class="erp-admin-parametros mx-auto max-w-[120rem] space-y-8 pb-4">
+  <header>
+    <h1 class="text-2xl font-extrabold tracking-tight text-[#051125] dark:text-[var(--erp-login-text-primary)] sm:text-3xl">
+      Parámetros del sistema
+    </h1>
+    <p class="mt-1 font-medium text-[#47607e] dark:text-[var(--erp-login-muted)]">
+      Configuración global de jornada laboral y logística de planta (demo).
+    </p>
+  </header>
+
+  <div class="grid grid-cols-12 gap-6 lg:gap-8">
+    <div class="col-span-12 space-y-8 lg:col-span-8">
+      <!-- Jornada -->
+      <section class="relative overflow-hidden rounded-lg bg-[#f3f4f5] p-5 dark:bg-[var(--erp-login-input-bg)] sm:p-6">
+        <div class="mb-6 flex items-center gap-3">
+          <span class="material-symbols-outlined text-[#1b263b] dark:text-[#c2dcff]" aria-hidden="true">calendar_month</span>
+          <h2 class="text-lg font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Días laborables y jornada</h2>
+        </div>
+        <div class="space-y-4">
+          <div
+            class="flex flex-wrap items-center gap-6 rounded border border-[#c5c6cd]/30 bg-white p-5 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)] lg:flex-nowrap lg:gap-8"
+          >
+            <div class="min-w-[140px]">
+              <span class="mb-1 block text-xs font-bold uppercase tracking-widest text-[#45474d] dark:text-[var(--erp-login-muted)]"
+                >Frecuencia</span
+              >
+              <p class="text-sm font-semibold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Lunes a viernes</p>
+            </div>
+            <div class="grid flex-1 grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+              <div>
+                <label class="mb-2 block text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]"
+                  >Entrada</label
+                >
+                <input
+                  type="time"
+                  class="w-full rounded border-0 bg-[#f8f9fa] p-2 text-sm font-bold text-[#051125] focus:ring-2 focus:ring-[#47607e] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
+                  [value]="state().monFri.entry"
+                  (input)="patchMonFri('entry', $any($event.target).value)"
+                />
+              </div>
+              <div>
+                <label class="mb-2 block text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]"
+                  >Salida</label
+                >
+                <input
+                  type="time"
+                  class="w-full rounded border-0 bg-[#f8f9fa] p-2 text-sm font-bold text-[#051125] focus:ring-2 focus:ring-[#47607e] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
+                  [value]="state().monFri.exit"
+                  (input)="patchMonFri('exit', $any($event.target).value)"
+                />
+              </div>
+              <div>
+                <label class="mb-2 block text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]"
+                  >Tolerancia (min)</label
+                >
+                <input
+                  type="number"
+                  min="0"
+                  class="w-full rounded border-0 bg-[#f8f9fa] p-2 text-sm font-bold text-[#051125] focus:ring-2 focus:ring-[#47607e] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
+                  [value]="state().monFri.tolerance"
+                  (input)="patchMonFri('tolerance', $any($event.target).value)"
+                />
+              </div>
+              <div class="flex items-end pb-2">
+                <label class="flex cursor-pointer items-center">
+                  <input
+                    type="checkbox"
+                    class="peer sr-only"
+                    [checked]="state().monFri.active"
+                    (change)="setMonFriActive($any($event.target).checked)"
+                  />
+                  <div
+                    class="relative h-5 w-10 shrink-0 rounded-full bg-[#c5c6cd] after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[#47607e] peer-checked:after:translate-x-5"
+                    aria-hidden="true"
+                  ></div>
+                  <span class="ml-3 text-xs font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Activo</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="flex flex-wrap items-center gap-6 rounded border border-[#c5c6cd]/30 bg-white p-5 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)] lg:flex-nowrap lg:gap-8"
+          >
+            <div class="min-w-[140px]">
+              <span class="mb-1 block text-xs font-bold uppercase tracking-widest text-[#45474d] dark:text-[var(--erp-login-muted)]"
+                >Frecuencia</span
+              >
+              <p class="text-sm font-semibold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Sábado</p>
+            </div>
+            <div class="grid flex-1 grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+              <div>
+                <label class="mb-2 block text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]"
+                  >Entrada</label
+                >
+                <input
+                  type="time"
+                  class="w-full rounded border-0 bg-[#f8f9fa] p-2 text-sm font-bold text-[#051125] focus:ring-2 focus:ring-[#47607e] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
+                  [value]="state().saturday.entry"
+                  (input)="patchSaturday('entry', $any($event.target).value)"
+                />
+              </div>
+              <div>
+                <label class="mb-2 block text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]"
+                  >Salida</label
+                >
+                <input
+                  type="time"
+                  class="w-full rounded border-0 bg-[#f8f9fa] p-2 text-sm font-bold text-[#051125] focus:ring-2 focus:ring-[#47607e] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
+                  [value]="state().saturday.exit"
+                  (input)="patchSaturday('exit', $any($event.target).value)"
+                />
+              </div>
+              <div>
+                <label class="mb-2 block text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]"
+                  >Tolerancia (min)</label
+                >
+                <input
+                  type="number"
+                  min="0"
+                  class="w-full rounded border-0 bg-[#f8f9fa] p-2 text-sm font-bold text-[#051125] focus:ring-2 focus:ring-[#47607e] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
+                  [value]="state().saturday.tolerance"
+                  (input)="patchSaturday('tolerance', $any($event.target).value)"
+                />
+              </div>
+              <div class="flex items-end pb-2">
+                <label class="flex cursor-pointer items-center">
+                  <input
+                    type="checkbox"
+                    class="peer sr-only"
+                    [checked]="state().saturday.active"
+                    (change)="setSaturdayActive($any($event.target).checked)"
+                  />
+                  <div
+                    class="relative h-5 w-10 shrink-0 rounded-full bg-[#c5c6cd] after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[#47607e] peer-checked:after:translate-x-5"
+                    aria-hidden="true"
+                  ></div>
+                  <span class="ml-3 text-xs font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Activo</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Descansos -->
+      <section class="rounded-lg bg-[#f3f4f5] p-5 dark:bg-[var(--erp-login-input-bg)] sm:p-6">
+        <div class="mb-6 flex items-center gap-3">
+          <span class="material-symbols-outlined text-[#1b263b] dark:text-[#c2dcff]" aria-hidden="true">coffee</span>
+          <h2 class="text-lg font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Configuración de descansos</h2>
+        </div>
+        <div class="grid gap-6 md:grid-cols-2">
+          <div class="rounded border border-[#c5c6cd]/30 bg-white p-5 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
+            <label class="mb-4 block text-[10px] font-extrabold uppercase tracking-wider text-[#45474d] dark:text-[var(--erp-login-muted)]">
+              Primer descanso (snack)
+            </label>
+            <div class="flex items-center gap-4">
+              <span class="material-symbols-outlined text-[#47607e]" aria-hidden="true">timer</span>
+              <div class="min-w-0 flex-1">
+                <input
+                  type="number"
+                  min="0"
+                  class="w-full border-0 bg-transparent p-0 text-2xl font-bold text-[#051125] focus:ring-0 dark:text-[var(--erp-login-text-primary)]"
+                  [value]="state().snackMin"
+                  (input)="patchSnack($any($event.target).value)"
+                />
+                <span class="text-xs font-medium text-[#47607e]">minutos de duración</span>
+              </div>
+            </div>
+          </div>
+          <div class="rounded border border-[#c5c6cd]/30 bg-white p-5 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
+            <label class="mb-4 block text-[10px] font-extrabold uppercase tracking-wider text-[#45474d] dark:text-[var(--erp-login-muted)]">
+              Ventana de almuerzo
+            </label>
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="material-symbols-outlined text-[#47607e]" aria-hidden="true">restaurant</span>
+              <span class="text-xs font-bold text-[#45474d] dark:text-[var(--erp-login-muted)]">Desde</span>
+              <input
+                type="time"
+                class="rounded border-0 bg-[#f3f4f5] p-1 text-sm font-bold text-[#051125] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
+                [value]="state().lunchFrom"
+                (input)="patchLunchFrom($any($event.target).value)"
+              />
+              <input
+                type="number"
+                min="0"
+                class="w-16 rounded border border-[#c5c6cd]/40 bg-[#f3f4f5] p-1 text-center text-sm font-bold dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-surface)]"
+                [value]="state().lunchDurationMin"
+                (input)="patchLunchDur($any($event.target).value)"
+              />
+              <span class="text-xs font-bold text-[#45474d] dark:text-[var(--erp-login-muted)]">min</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Festivos -->
+    <div class="col-span-12 lg:col-span-4">
+      <section class="h-full rounded-lg bg-[#f3f4f5] p-5 dark:bg-[var(--erp-login-input-bg)] sm:p-6">
+        <div class="mb-6 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-[#1b263b] dark:text-[#c2dcff]" aria-hidden="true">event_busy</span>
+            <h2 class="text-lg font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Festivos</h2>
+          </div>
+          <button
+            type="button"
+            class="text-[#47607e] transition-colors hover:text-[#051125] dark:hover:text-white"
+            (click)="onAddHoliday()"
+            aria-label="Añadir festivo"
+          >
+            <span class="material-symbols-outlined" aria-hidden="true">add_circle</span>
+          </button>
+        </div>
+        <div class="mb-6 rounded-md border border-[#c5c6cd]/30 bg-white p-4 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
+          <div class="mb-4 flex items-center justify-between">
+            <span class="text-xs font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ calMonth }}</span>
+            <div class="flex gap-1">
+              <button type="button" class="rounded p-0.5 hover:bg-[#edeeef] dark:hover:bg-[var(--erp-login-surface)]" (click)="onPrevMonth()">
+                <span class="material-symbols-outlined text-sm" aria-hidden="true">chevron_left</span>
+              </button>
+              <button type="button" class="rounded p-0.5 hover:bg-[#edeeef] dark:hover:bg-[var(--erp-login-surface)]" (click)="onNextMonth()">
+                <span class="material-symbols-outlined text-sm" aria-hidden="true">chevron_right</span>
+              </button>
+            </div>
+          </div>
+          <div class="mb-2 grid grid-cols-7 gap-1 text-center">
+            @for (d of ['L', 'M', 'X', 'J', 'V', 'S', 'D']; track d) {
+              <span class="text-[10px] font-bold text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ d }}</span>
+            }
+          </div>
+          <div class="grid grid-cols-7 gap-1">
+            @for (c of calCells; track $index) {
+              <div [class]="calCellClass(c.tone)">{{ c.label }}</div>
+            }
+          </div>
+        </div>
+        <div class="space-y-3">
+          <p
+            class="border-b border-[#c5c6cd]/20 pb-2 text-[10px] font-bold uppercase tracking-widest text-[#45474d] dark:text-[var(--erp-login-muted)]"
+          >
+            Próximos festivos
+          </p>
+          @for (h of state().holidays; track h.id) {
+            <div class="group flex items-center justify-between gap-2">
+              <div>
+                <p class="text-xs font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ h.title }}</p>
+                <p class="text-[10px] text-[#47607e]">{{ h.sub }}</p>
+              </div>
+              <button
+                type="button"
+                class="text-[#ba1a1a] opacity-0 transition-opacity group-hover:opacity-100"
+                (click)="removeHoliday(h.id)"
+                aria-label="Eliminar festivo"
+              >
+                <span class="material-symbols-outlined text-sm" aria-hidden="true">delete</span>
+              </button>
+            </div>
+          }
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="flex flex-col items-stretch gap-4 sm:items-end">
+    <div
+      class="flex max-w-lg items-start gap-3 rounded-lg border-l-4 border-[#ba1a1a] bg-[#ffb3b1]/15 p-4 dark:bg-[#55000c]/20"
+    >
+      <span class="material-symbols-outlined shrink-0 text-[#ba1a1a]" aria-hidden="true">warning</span>
+      <p class="text-xs font-medium text-[#93000a] dark:text-[#ffdad6]">
+        <span class="font-bold">Cambio crítico:</span> modificar estos parámetros puede afectar nómina y asistencia del ciclo
+        actual.
+      </p>
+    </div>
+    <div class="flex flex-wrap gap-3">
+      <button
+        type="button"
+        class="rounded px-8 py-3 text-sm font-bold text-[#051125] shadow-sm transition-colors hover:bg-[#e1e3e4] dark:text-[var(--erp-login-text-primary)] dark:hover:bg-[var(--erp-login-surface)]"
+        style="background: #e1e3e4"
+        (click)="onDiscard()"
+      >
+        Descartar
+      </button>
+      <button
+        type="button"
+        class="flex items-center gap-2 rounded bg-[#47607e] px-8 py-3 text-sm font-bold text-white shadow-lg transition-all hover:bg-[#051125]"
+        (click)="onSave()"
+      >
+        <span class="material-symbols-outlined text-sm" aria-hidden="true">save</span>
+        Guardar configuración
+      </button>
+    </div>
+  </div>
+
+  <footer class="mt-8 flex flex-col justify-between gap-4 border-t border-[#c5c6cd]/15 pt-6 text-[10px] opacity-70 sm:flex-row sm:items-center dark:border-[var(--erp-login-input-border)]">
+    <div class="flex items-center gap-2">
+      <div class="h-8 w-0.5 bg-[#47607e]" aria-hidden="true"></div>
+      <div>
+        <p class="font-bold uppercase text-[#051125] dark:text-[var(--erp-login-text-primary)]">ERP industrial</p>
+        <p class="text-[8px] text-[#47607e]">Núcleo admin v2.4.1 (demo)</p>
+      </div>
+    </div>
+    <div class="flex gap-8">
+      <div class="text-right">
+        <p class="text-[8px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]">Uptime</p>
+        <p class="font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">99,98%</p>
+      </div>
+      <div class="text-right">
+        <p class="text-[8px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]">Última sync</p>
+        <p class="font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">14:02:11</p>
+      </div>
+    </div>
+  </footer>
+</div>

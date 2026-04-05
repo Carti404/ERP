@@ -1,0 +1,210 @@
+<div class="erp-dashboard-page mx-auto max-w-6xl">
+  <div>
+    <h1 class="text-balance text-lg font-black uppercase tracking-wide text-[var(--erp-login-text-primary)] sm:text-xl">
+      Resumen operativo
+    </h1>
+    <p class="mt-0.5 max-w-xl text-xs text-[var(--erp-login-muted)]">
+      Datos de demostración. Se conectarán a la API cuando el backend esté listo.
+    </p>
+  </div>
+
+  <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    @for (k of kpis; track k.id) {
+      <article class="erp-kpi-card p-3 sm:p-4" [attr.data-tone]="k.tone">
+        <div class="erp-kpi-card__stripe" aria-hidden="true"></div>
+        <div class="relative z-10 flex gap-3">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-start justify-between gap-2">
+              <p class="text-[9px] font-black uppercase tracking-widest text-[var(--erp-login-label)]">
+                {{ k.label }}
+              </p>
+              <div class="erp-kpi-card__icon shrink-0" aria-hidden="true">
+                <span class="material-symbols-outlined text-lg">{{ kpiIcon(k.id) }}</span>
+              </div>
+            </div>
+            <p class="erp-kpi-value mt-2 leading-none">{{ k.value }}</p>
+            <div class="mt-1.5 flex flex-wrap items-center gap-1.5">
+              <span [class]="trendClass(k.trend)">
+                <span class="material-symbols-outlined text-sm" aria-hidden="true">{{ trendIcon(k.trend) }}</span>
+                {{ trendLabel(k.trend) }}
+              </span>
+              <p class="text-[11px] leading-snug text-[var(--erp-login-muted)]">{{ k.sub }}</p>
+            </div>
+          </div>
+          <div class="flex w-[4.25rem] shrink-0 flex-col justify-end">
+            <app-kpi-mini-chart [chartId]="k.id" [chart]="k.chart" [accent]="toneHex(k.tone)" />
+          </div>
+        </div>
+      </article>
+    }
+  </div>
+
+  <!-- Calendario (1) + métricas por turno (2) — mismo orden que el diseño acordado -->
+  <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-3 lg:gap-6">
+    <div class="erp-stitch-panel lg:col-span-1">
+      <div class="mb-4 flex items-center justify-between sm:mb-5">
+        <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--erp-login-text-primary)]">
+          {{ attendanceCalendar.title }}
+        </h3>
+        <div class="flex gap-1" aria-hidden="true" title="Leyenda: ok, atención, crítico">
+          <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+          <span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+          <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+        </div>
+      </div>
+      <div class="grid grid-cols-7 gap-1.5">
+        @for (w of attendanceCalendar.weekDays; track $index) {
+          <span
+            class="text-center text-[9px] font-black uppercase text-[var(--erp-login-label)]"
+            >{{ w }}</span
+          >
+        }
+        @for (cell of attendanceCalendar.days; track $index) {
+          <div [class]="calDayClass(cell.kind)">{{ cell.d }}</div>
+        }
+      </div>
+      <div class="erp-cal-critical">
+        <p class="mb-1 text-[9px] font-black uppercase tracking-widest text-[var(--erp-login-label)]">
+          {{ attendanceCalendar.critical.title }}
+        </p>
+        <p class="text-[11px] font-medium leading-snug text-[var(--erp-login-text-primary)]">
+          {{ attendanceCalendar.critical.body }}
+        </p>
+      </div>
+    </div>
+
+    <div class="erp-stitch-panel lg:col-span-2">
+      <div class="mb-5 flex flex-col gap-4 sm:mb-6 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--erp-login-text-primary)]">
+            {{ shiftProduction.title }}
+          </h3>
+          <p class="mt-1 text-[10px] font-medium text-[var(--erp-login-muted)]">
+            {{ shiftProduction.objectiveLabel }}
+          </p>
+        </div>
+        <div class="flex flex-wrap gap-4">
+          <div class="flex items-center gap-2">
+            <span
+              class="h-2.5 w-2.5 shrink-0 rounded-[2px]"
+              style="background: var(--stitch-shift-done)"
+            ></span>
+            <span class="text-[9px] font-black uppercase tracking-wider text-[var(--erp-login-label)]">{{
+              shiftProduction.legendDone
+            }}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span
+              class="h-2.5 w-2.5 shrink-0 rounded-[2px]"
+              style="background: var(--stitch-shift-progress)"
+            ></span>
+            <span class="text-[9px] font-black uppercase tracking-wider text-[var(--erp-login-label)]">{{
+              shiftProduction.legendProgress
+            }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-5">
+        @for (shift of shiftProduction.shifts; track shift.id) {
+          <div>
+            <div class="mb-2 flex flex-wrap items-end justify-between gap-2">
+              <span class="text-[10px] font-black uppercase tracking-tight text-[var(--erp-login-text-primary)]">
+                {{ shift.name }} ({{ shift.schedule }})
+              </span>
+              <span class="text-[10px] font-black text-[var(--erp-login-text-primary)]">
+                @if (shift.statusSub) {
+                  {{ shift.statusMain }}
+                  <span class="ml-1 font-normal text-[var(--erp-login-muted)]">{{ shift.statusSub }}</span>
+                } @else {
+                  <span class="text-[var(--erp-login-muted)]">{{ shift.statusMain }}</span>
+                }
+              </span>
+            </div>
+            <div class="erp-shift-track">
+              @for (seg of shift.segments; track $index) {
+                <div
+                  class="erp-shift-seg"
+                  [class.erp-shift-seg--done]="seg.kind === 'done'"
+                  [class.erp-shift-seg--progress]="seg.kind === 'progress'"
+                  [class.erp-shift-seg--idle]="seg.kind === 'idle'"
+                  [style.width.%]="seg.pct"
+                ></div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <div
+        class="mt-6 flex flex-col gap-4 border-t border-[var(--erp-login-input-border)] pt-5 sm:mt-8 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <div class="flex flex-wrap items-center gap-6 sm:gap-8">
+          <div>
+            <p class="text-[9px] font-black uppercase tracking-widest text-[var(--erp-login-label)]">
+              {{ shiftProduction.oeeLabel }}
+            </p>
+            <p class="text-2xl font-black text-[var(--erp-login-text-primary)]">{{ shiftProduction.oeeValue }}</p>
+          </div>
+          <div>
+            <p class="text-[9px] font-black uppercase tracking-widest text-[var(--erp-login-label)]">
+              {{ shiftProduction.availabilityLabel }}
+            </p>
+            <p class="text-2xl font-black text-[var(--erp-login-text-primary)]">
+              {{ shiftProduction.availabilityValue }}
+            </p>
+          </div>
+        </div>
+        <button type="button" class="erp-stitch-cta shrink-0" (click)="onExecutiveReport()">
+          <span class="material-symbols-outlined text-base" aria-hidden="true">analytics</span>
+          {{ shiftProduction.executiveCta }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <section class="mt-8">
+    <div class="erp-alerts-panel overflow-hidden">
+      <div class="erp-dash-card-heading">
+        <h2 class="text-xs font-black uppercase tracking-widest text-[var(--erp-login-label)]">
+          Actividad y alertas
+        </h2>
+      </div>
+      <table class="erp-admin-activity-table">
+        <thead>
+          <tr>
+            <th scope="col">Actividad</th>
+            <th scope="col" class="erp-admin-activity-table__col-time">Cuándo</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (a of alerts; track a.id) {
+            <tr
+              class="erp-alert-row"
+              [class.erp-alert-row--warning]="a.type === 'warning'"
+              [class.erp-alert-row--info]="a.type === 'info'"
+              [class.erp-alert-row--success]="a.type === 'success'"
+            >
+              <td>
+                <div class="flex items-start gap-3">
+                  <span
+                    class="material-symbols-outlined mt-0.5 shrink-0 text-xl"
+                    [class.text-amber-500]="a.type === 'warning'"
+                    [class.text-emerald-500]="a.type === 'success'"
+                    [style.color]="a.type === 'info' ? '#3b82f6' : null"
+                    aria-hidden="true"
+                    >{{
+                      a.type === 'warning' ? 'warning' : a.type === 'info' ? 'sync' : 'check_circle'
+                    }}</span
+                  >
+                  <span class="text-sm font-semibold text-[var(--erp-login-text-primary)]">{{ a.title }}</span>
+                </div>
+              </td>
+              <td class="erp-admin-activity-table__cell-time">{{ a.time }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

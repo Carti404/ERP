@@ -1,0 +1,62 @@
+---
+description: Prácticas Angular y TypeScript (standalone, signals, accesibilidad, templates)
+globs: frontend/**/*.ts,frontend/**/*.html
+alwaysApply: false
+---
+
+# Angular y TypeScript – Mundo Terapeuta
+
+Escribir código funcional, mantenible, performante y accesible siguiendo buenas prácticas de Angular y TypeScript.
+
+## TypeScript
+
+- Usar strict type checking.
+- Preferir inferencia de tipos cuando sea obvia.
+- Evitar `any`; usar `unknown` cuando el tipo sea incierto.
+
+## Angular (componentes y estructura)
+
+- Usar **standalone components**; no NgModules para features.
+- No escribir `standalone: true` en decoradores (por defecto en Angular v20+).
+- Usar **signals** para estado.
+- Implementar **lazy loading** en rutas de features.
+- No usar `@HostBinding` ni `@HostListener`; poner bindings de host en el objeto `host` del decorador `@Component` o `@Directive`.
+- Usar `NgOptimizedImage` para todas las imágenes estáticas (no aplica para imágenes inline base64).
+
+## Accesibilidad
+
+- Debe pasar todas las comprobaciones AXE.
+- Cumplir WCAG AA (gestión de foco, contraste, atributos ARIA).
+
+## Componentes
+
+- Componentes pequeños y una sola responsabilidad.
+- Usar funciones `input()` y `output()` en lugar de decoradores.
+- Usar `computed()` para estado derivado.
+- Definir `changeDetection: ChangeDetectionStrategy.OnPush` en `@Component`.
+- Preferir templates inline en componentes pequeños.
+- Preferir **Reactive forms** frente a Template-driven.
+- No usar `ngClass`; usar bindings de `class`.
+- No usar `ngStyle`; usar bindings de `style`.
+- En templates/estilos externos, usar rutas relativas al archivo TS del componente.
+
+## Estado (signals)
+
+- Usar signals para estado local del componente.
+- Usar `computed()` para estado derivado.
+- Mantener transformaciones puras y predecibles.
+- No usar `mutate` en signals; usar `update` o `set`.
+
+## Templates
+
+- Mantener templates simples; evitar lógica compleja.
+- Usar **control flow nativo** (`@if`, `@for`, `@switch`) en lugar de `*ngIf`, `*ngFor`, `*ngSwitch`.
+- Usar el **async pipe** para observables.
+- No asumir que hay globals en template (ej. `new Date()`).
+- No escribir arrow functions en templates (no soportadas).
+
+## Servicios
+
+- Un servicio = una responsabilidad.
+- Usar `providedIn: 'root'` para singletons.
+- Usar la función `inject()` en lugar de inyección por constructor.

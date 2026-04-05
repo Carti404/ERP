@@ -1,0 +1,171 @@
+<div class="erp-trabajador-perfil mx-auto max-w-6xl space-y-6 pb-4">
+  <header>
+    <h1 class="text-balance text-lg font-black uppercase tracking-wide text-[var(--erp-login-text-primary)] sm:text-xl">
+      Perfil y preferencias
+    </h1>
+    <p class="mt-0.5 max-w-2xl text-xs text-[var(--erp-login-muted)]">
+      Misma información que en la vista móvil de Stitch, reorganizada para pantallas anchas.
+    </p>
+  </header>
+
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8 lg:items-start">
+    <!-- Columna izquierda: identidad + color -->
+    <div class="space-y-6">
+      <section class="relative overflow-hidden rounded-xl bg-[#f3f4f5] p-6 dark:bg-[var(--erp-login-input-bg)]">
+        <div class="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center">
+          <div
+            class="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg border-2 border-[#47607e] bg-[#e7e8e9] text-2xl font-black text-[#051125] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
+            aria-hidden="true"
+          >
+            {{ displayName().charAt(0) }}
+          </div>
+          <div class="min-w-0">
+            <h2 class="text-xl font-bold leading-tight text-[#051125] dark:text-[var(--erp-login-text-primary)]">
+              {{ displayName() }}
+            </h2>
+            <p class="text-sm font-medium text-[#47607e]">{{ job }}</p>
+            <div
+              class="mt-2 inline-flex items-center rounded bg-[#051125] px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white"
+            >
+              {{ badge }}
+            </div>
+          </div>
+        </div>
+        <span
+          class="material-symbols-outlined pointer-events-none absolute -bottom-4 -right-4 text-[8rem] opacity-10 text-[#051125] dark:text-white"
+          style="font-variation-settings: 'wght' 700"
+          aria-hidden="true"
+          >settings_accessibility</span
+        >
+      </section>
+
+      <section class="space-y-3">
+        <div class="flex items-center gap-2 px-1">
+          <span class="material-symbols-outlined text-sm text-[#47607e]" aria-hidden="true">palette</span>
+          <h3 class="text-xs font-bold uppercase tracking-widest text-[#45474d] dark:text-[var(--erp-login-muted)]">
+            Color identificador
+          </h3>
+        </div>
+        <div class="rounded-xl bg-white p-5 dark:bg-[var(--erp-login-card)]">
+          <p class="mb-4 text-xs text-[#45474d] dark:text-[var(--erp-login-muted)]">
+            Color para tu visibilidad en calendarios compartidos.
+          </p>
+          <div class="grid grid-cols-4 gap-3 sm:grid-cols-4 lg:grid-cols-4 xl:max-w-md">
+            @for (c of palette; track c) {
+              <button
+                type="button"
+                class="aspect-square h-12 w-full max-w-[3rem] rounded-lg border-2 border-transparent shadow-sm transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#47607e] sm:h-14 sm:max-w-none"
+                [style.background-color]="c"
+                [class.ring-2]="isColorSelected(c)"
+                [class.ring-offset-2]="isColorSelected(c)"
+                [class.ring-[#051125]]="isColorSelected(c)"
+                [class.dark:ring-white]="isColorSelected(c)"
+                [attr.aria-pressed]="isColorSelected(c)"
+                [attr.aria-label]="'Color ' + c"
+                (click)="selectColor(c)"
+              ></button>
+            }
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Columna derecha: PIN + ajustes -->
+    <div class="space-y-6">
+      <section class="space-y-3">
+        <div class="flex items-center gap-2 px-1">
+          <span class="material-symbols-outlined text-sm text-[#47607e]" aria-hidden="true">lock_person</span>
+          <h3 class="text-xs font-bold uppercase tracking-widest text-[#45474d] dark:text-[var(--erp-login-muted)]">
+            Seguridad de acceso
+          </h3>
+        </div>
+        <div class="rounded-xl bg-white p-5 dark:bg-[var(--erp-login-card)]">
+          <label class="mb-3 block text-xs font-semibold text-[#051125] dark:text-[var(--erp-login-text-primary)]">
+            Actualizar PIN de 4 dígitos
+          </label>
+          <div class="flex max-w-md justify-between gap-2 sm:gap-3">
+            @for (i of [0, 1, 2, 3]; track i) {
+              <input
+                class="h-12 w-full max-w-[4rem] rounded-lg border-0 bg-[#edeeef] text-center text-xl font-bold text-[#051125] focus:ring-2 focus:ring-[#47607e] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)] sm:h-14"
+                maxlength="1"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                type="password"
+                placeholder="•"
+                [value]="pinDigits()[i]"
+                (input)="setPinDigit(i, $any($event.target).value)"
+                [attr.aria-label]="'Dígito PIN ' + (i + 1)"
+              />
+            }
+          </div>
+          <button
+            type="button"
+            class="mt-4 flex h-12 w-full max-w-md items-center justify-center gap-2 rounded-lg bg-[#1b263b] font-bold text-white transition-colors hover:bg-[#47607e] dark:bg-[#1b263b]"
+            (click)="onUpdatePin()"
+          >
+            Actualizar PIN
+          </button>
+        </div>
+      </section>
+
+      <section class="space-y-3">
+        <div class="flex items-center gap-2 px-1">
+          <span class="material-symbols-outlined text-sm text-[#47607e]" aria-hidden="true">settings</span>
+          <h3 class="text-xs font-bold uppercase tracking-widest text-[#45474d] dark:text-[var(--erp-login-muted)]">
+            Configuración de interfaz
+          </h3>
+        </div>
+        <div class="space-y-4 rounded-xl bg-white p-5 dark:bg-[var(--erp-login-card)]">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p class="text-sm font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Alertas de notificación</p>
+              <p class="text-xs text-[#45474d] dark:text-[var(--erp-login-muted)]">Sonido de alta prioridad (demo)</p>
+            </div>
+            <label class="flex cursor-pointer items-center">
+              <input
+                type="checkbox"
+                class="peer sr-only"
+                [checked]="notificationsOn()"
+                (change)="setNotifications($any($event.target).checked)"
+              />
+              <div
+                class="relative h-6 w-11 shrink-0 rounded-full bg-[#e1e3e4] after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all peer-checked:bg-[#47607e] peer-checked:after:translate-x-5"
+                aria-hidden="true"
+              ></div>
+            </label>
+          </div>
+          <div class="flex flex-wrap items-center justify-between gap-4 border-t border-[#edeeef] pt-4 dark:border-[var(--erp-login-input-border)]">
+            <div>
+              <p class="text-sm font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Modo oscuro industrial</p>
+              <p class="text-xs text-[#45474d] dark:text-[var(--erp-login-muted)]">Misma preferencia que el botón del panel superior</p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              class="relative h-6 w-11 shrink-0 rounded-full bg-[#e1e3e4] transition-colors"
+              [class.bg-[#47607e]]="theme.isDark()"
+              [attr.aria-checked]="theme.isDark()"
+              (click)="theme.toggle()"
+            >
+              <span
+                class="absolute top-0.5 left-0.5 block h-5 w-5 rounded-full bg-white shadow transition-transform"
+                [style.transform]="theme.isDark() ? 'translateX(1.25rem)' : 'none'"
+              ></span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <section class="rounded-xl border-2 border-[#E63946]/30 bg-white p-4 dark:bg-[var(--erp-login-card)]">
+    <button
+      type="button"
+      class="flex h-12 w-full items-center justify-center gap-2 rounded-lg font-bold text-[#E63946] transition-colors hover:bg-[#E63946]/10"
+      (click)="onLogoutTerminal()"
+    >
+      <span class="material-symbols-outlined text-sm" aria-hidden="true">logout</span>
+      Cerrar sesión en este terminal
+    </button>
+  </section>
+</div>

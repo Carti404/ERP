@@ -1,0 +1,207 @@
+<div class="erp-trabajador-asistencias mx-auto max-w-6xl space-y-5 pb-4">
+  <div
+    class="flex flex-col gap-2 rounded-xl bg-[#051125] px-4 py-3 shadow-md sm:flex-row sm:items-center sm:justify-between"
+  >
+    <span class="text-sm font-bold uppercase tracking-wider text-white">Industrial ERP</span>
+    <div class="flex items-center gap-2">
+      <button type="button" class="rounded-lg p-2 text-[#47607e] hover:text-white" aria-label="Notificaciones">
+        <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
+      </button>
+    </div>
+  </div>
+
+  <div>
+    <h1 class="text-balance text-lg font-black uppercase tracking-wide text-[var(--erp-login-text-primary)]">
+      Mi asistencia
+    </h1>
+    <p class="mt-0.5 text-xs text-[var(--erp-login-muted)]">
+      Calendario, estadísticas y justificaciones (demo).
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+    <!-- Calendario + stats -->
+    <div class="space-y-4">
+      <section class="rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] p-4 shadow-sm">
+        <h2 class="text-[10px] font-black uppercase tracking-widest text-[var(--erp-login-label)]">Seguimiento de asistencia</h2>
+        <p class="mt-1 text-sm font-bold text-[var(--erp-login-text-primary)]">{{ mesLabel }}</p>
+        <div class="mt-4 grid grid-cols-7 gap-1">
+          @for (w of weekDays; track w) {
+            <span class="py-1 text-center text-[9px] font-black uppercase text-[var(--erp-login-muted)]">{{ w }}</span>
+          }
+          @for (cell of calendarDays; track $index) {
+            @if (cell.d === null) {
+              <span class="aspect-square"></span>
+            } @else {
+              <button
+                type="button"
+                class="relative flex aspect-square items-center justify-center rounded-full text-[11px] font-bold text-[#051125] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#47607e] dark:text-[var(--erp-login-text-primary)]"
+                [class.bg-slate-200]="isDaySelected(cell)"
+                [class.dark:bg-slate-700]="isDaySelected(cell)"
+                [class.ring-2]="isDaySelected(cell)"
+                [class.ring-slate-500]="isDaySelected(cell)"
+                (click)="pickDay(cell)"
+                [attr.aria-label]="'Día ' + cell.d"
+              >
+                {{ cell.d }}
+                @if (cell.estado === 'punctual') {
+                  <span
+                    class="material-symbols-outlined pointer-events-none absolute bottom-0.5 text-[14px] leading-none text-[#051125] dark:text-slate-200"
+                    aria-hidden="true"
+                    >check_circle</span
+                  >
+                }
+                @if (cell.estado === 'delay') {
+                  <span
+                    class="material-symbols-outlined pointer-events-none absolute bottom-0.5 text-[14px] leading-none text-[#47607e]"
+                    aria-hidden="true"
+                    >schedule</span
+                  >
+                }
+                @if (cell.estado === 'absence') {
+                  <span
+                    class="material-symbols-outlined pointer-events-none absolute bottom-0.5 text-[14px] leading-none text-red-600"
+                    aria-hidden="true"
+                    >cancel</span
+                  >
+                }
+              </button>
+            }
+          }
+        </div>
+        <div class="mt-4 flex flex-wrap gap-4 border-t border-[var(--erp-login-input-border)] pt-3 text-[9px] font-bold uppercase text-[var(--erp-login-muted)]">
+          <span class="inline-flex items-center gap-1"><span class="material-symbols-outlined text-sm">check_circle</span> Puntual</span>
+          <span class="inline-flex items-center gap-1"><span class="material-symbols-outlined text-sm">schedule</span> Retraso</span>
+          <span class="inline-flex items-center gap-1"><span class="material-symbols-outlined text-sm">cancel</span> Ausencia</span>
+        </div>
+      </section>
+
+      <section class="rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] p-4 shadow-sm">
+        <h2 class="text-[10px] font-black uppercase tracking-widest text-[var(--erp-login-label)]">Estadísticas del mes</h2>
+        <div class="mt-4 grid grid-cols-3 gap-2 text-center">
+          <div class="rounded-lg bg-[#f3f4f5] p-3 dark:bg-[var(--erp-login-surface)]">
+            <p class="text-2xl font-black text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ stats.punctual }}</p>
+            <p class="text-[9px] font-bold uppercase text-[var(--erp-login-muted)]">Puntuales</p>
+          </div>
+          <div class="rounded-lg bg-[#f3f4f5] p-3 dark:bg-[var(--erp-login-surface)]">
+            <p class="text-2xl font-black text-[#47607e]">{{ stats.delays }}</p>
+            <p class="text-[9px] font-bold uppercase text-[var(--erp-login-muted)]">Retrasos</p>
+          </div>
+          <div class="rounded-lg bg-[#f3f4f5] p-3 dark:bg-[var(--erp-login-surface)]">
+            <p class="text-2xl font-black text-red-600 dark:text-red-400">{{ stats.absences }}</p>
+            <p class="text-[9px] font-bold uppercase text-[var(--erp-login-muted)]">Ausencias</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Formulario justificación -->
+    <section class="rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] p-4 shadow-sm">
+      <h2 class="text-[10px] font-black uppercase tracking-widest text-[var(--erp-login-label)]">Nueva justificación</h2>
+      <div class="mt-4 space-y-3">
+        <div>
+          <label class="text-[10px] font-bold uppercase text-[var(--erp-login-muted)]" for="just-type">Tipo</label>
+          <select
+            id="just-type"
+            class="mt-1 w-full rounded-lg border border-[var(--erp-login-input-border)] bg-[var(--erp-login-input-bg)] px-3 py-2 text-sm text-[var(--erp-login-text-primary)] focus:outline-none focus:ring-2 focus:ring-[#47607e]"
+            [value]="justTypeId()"
+            (change)="onJustTypeChange($any($event.target).value)"
+          >
+            @for (t of justTypes; track t.id) {
+              <option [value]="t.id">{{ t.label }}</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label class="text-[10px] font-bold uppercase text-[var(--erp-login-muted)]" for="just-date">Fecha</label>
+          <input
+            id="just-date"
+            type="date"
+            class="mt-1 w-full rounded-lg border border-[var(--erp-login-input-border)] bg-[var(--erp-login-input-bg)] px-3 py-2 text-sm text-[var(--erp-login-text-primary)] focus:outline-none focus:ring-2 focus:ring-[#47607e]"
+          />
+        </div>
+        <div>
+          <label class="text-[10px] font-bold uppercase text-[var(--erp-login-muted)]" for="just-shift">Turno</label>
+          <select
+            id="just-shift"
+            class="mt-1 w-full rounded-lg border border-[var(--erp-login-input-border)] bg-[var(--erp-login-input-bg)] px-3 py-2 text-sm text-[var(--erp-login-text-primary)] focus:outline-none focus:ring-2 focus:ring-[#47607e]"
+            [value]="shiftId()"
+            (change)="onShiftChange($any($event.target).value)"
+          >
+            @for (s of shifts; track s.id) {
+              <option [value]="s.id">{{ s.label }}</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label class="text-[10px] font-bold uppercase text-[var(--erp-login-muted)]" for="just-reason">Motivo</label>
+          <textarea
+            id="just-reason"
+            rows="3"
+            class="mt-1 w-full resize-y rounded-lg border border-[var(--erp-login-input-border)] bg-[var(--erp-login-input-bg)] px-3 py-2 text-sm text-[var(--erp-login-text-primary)] placeholder:text-[var(--erp-login-muted)] focus:outline-none focus:ring-2 focus:ring-[#47607e]"
+            placeholder="Describe el contexto con detalle…"
+            [value]="reasonText()"
+            (input)="onReasonInput($any($event.target).value)"
+          ></textarea>
+        </div>
+        <button
+          type="button"
+          class="flex w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-[var(--erp-login-input-border)] py-8 text-[var(--erp-login-muted)] transition-colors hover:border-[#47607e] hover:text-[#47607e]"
+          (click)="onUploadClick()"
+        >
+          <span class="material-symbols-outlined text-3xl" aria-hidden="true">upload_file</span>
+          <span class="mt-2 text-[10px] font-bold uppercase">Arrastra archivo o pulsa para subir</span>
+        </button>
+        <div class="flex justify-end gap-2 pt-2">
+          <button
+            type="button"
+            class="rounded-lg border border-[var(--erp-login-input-border)] px-4 py-2 text-xs font-bold uppercase text-[var(--erp-login-text-primary)]"
+            (click)="onCancelForm()"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="rounded-lg bg-[#051125] px-4 py-2 text-xs font-bold uppercase text-white hover:bg-[#47607e]"
+            (click)="onSubmitForm()"
+          >
+            Enviar solicitud
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Historial -->
+  <section class="rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] p-4 shadow-sm">
+    <h2 class="text-[10px] font-black uppercase tracking-widest text-[var(--erp-login-label)]">Historial reciente</h2>
+    <div class="mt-4 overflow-x-auto">
+      <table class="w-full min-w-[20rem] border-collapse text-left text-sm">
+        <thead>
+          <tr class="border-b border-[var(--erp-login-input-border)] text-[10px] font-bold uppercase text-[var(--erp-login-muted)]">
+            <th class="pb-2 pr-2">Estado</th>
+            <th class="pb-2 pr-2">Tipo</th>
+            <th class="pb-2 pr-2">Fecha</th>
+            <th class="pb-2">Descripción</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[var(--erp-login-input-border)]">
+          @for (row of historial; track row.id) {
+            <tr>
+              <td class="py-3 pr-2 align-top">
+                <span
+                  class="inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase"
+                  [ngClass]="statusBadgeClass(row)"
+                  >{{ statusLabel(row) }}</span
+                >
+              </td>
+              <td class="py-3 pr-2 align-top font-medium text-[var(--erp-login-text-primary)]">{{ row.type }}</td>
+              <td class="py-3 pr-2 align-top text-xs text-[var(--erp-login-muted)]">{{ row.date }}</td>
+              <td class="py-3 align-top text-xs text-[var(--erp-login-text-primary)]">{{ row.description }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

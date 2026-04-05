@@ -1,0 +1,286 @@
+<div class="erp-admin-personal mx-auto max-w-[120rem] space-y-8 pb-4">
+  <div class="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+    <div>
+      <h1 class="mb-2 text-2xl font-bold tracking-tight text-[#051125] dark:text-[var(--erp-login-text-primary)] sm:text-3xl">
+        Gestión de personal
+      </h1>
+      <p class="max-w-2xl text-sm text-[#45474d] dark:text-[var(--erp-login-muted)]">
+        Administración centralizada de operarios, perfiles y control de acceso (demo).
+      </p>
+    </div>
+    <button
+      type="button"
+      class="flex h-12 shrink-0 items-center justify-center gap-2 rounded-lg bg-[#1b263b] px-6 font-semibold text-white shadow-md transition-all hover:bg-[#051125] active:scale-[0.98]"
+      (click)="onAddWorker()"
+    >
+      <span class="material-symbols-outlined text-lg" aria-hidden="true">add</span>
+      Añadir trabajador
+    </button>
+  </div>
+
+  <div class="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
+    <div class="rounded-xl border-l-4 border-[#051125] bg-[#f3f4f5] p-5 dark:bg-[var(--erp-login-input-bg)]">
+      <div class="mb-4 flex items-start justify-between">
+        <span class="material-symbols-outlined text-3xl text-[#051125] dark:text-[var(--erp-login-text-primary)]" aria-hidden="true">{{
+          kpis.total.icon
+        }}</span>
+        <span class="text-xs font-bold uppercase tracking-wider text-[#45474d] dark:text-[var(--erp-login-muted)]">Total</span>
+      </div>
+      <div class="text-4xl font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ kpis.total.value }}</div>
+      <div class="mt-2 flex items-center gap-1 text-sm text-[#47607e]">
+        <span class="material-symbols-outlined text-sm" aria-hidden="true">trending_up</span>
+        {{ kpis.total.sub }}
+      </div>
+    </div>
+    <div class="rounded-xl border-l-4 border-[#47607e] bg-[#f3f4f5] p-5 dark:bg-[var(--erp-login-input-bg)]">
+      <div class="mb-4 flex items-start justify-between">
+        <span class="material-symbols-outlined text-3xl text-[#47607e]" aria-hidden="true">{{ kpis.active.icon }}</span>
+        <span class="text-xs font-bold uppercase tracking-wider text-[#45474d] dark:text-[var(--erp-login-muted)]">Activos</span>
+      </div>
+      <div class="text-4xl font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ kpis.active.value }}</div>
+      <div class="mt-2 text-sm text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ kpis.active.sub }}</div>
+    </div>
+    <div class="rounded-xl border-l-4 border-[#fe4b55] bg-[#f3f4f5] p-5 dark:bg-[var(--erp-login-input-bg)]">
+      <div class="mb-4 flex items-start justify-between">
+        <span class="material-symbols-outlined text-3xl text-[#fe4b55]" aria-hidden="true">{{ kpis.leave.icon }}</span>
+        <span class="text-xs font-bold uppercase tracking-wider text-[#45474d] dark:text-[var(--erp-login-muted)]">En licencia</span>
+      </div>
+      <div class="text-4xl font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ kpis.leave.value }}</div>
+      <div class="mt-2 text-sm font-medium text-[#fe4b55]">{{ kpis.leave.sub }}</div>
+    </div>
+  </div>
+
+  <div class="overflow-hidden rounded-xl border border-[#c5c6cd]/20 bg-white shadow-sm dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
+    <div class="flex flex-wrap items-center gap-3 border-b border-[#c5c6cd]/15 p-4 sm:p-6 dark:border-[var(--erp-login-input-border)]">
+      <div class="relative min-w-[200px] flex-1">
+        <span
+          class="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#45474d] dark:text-[var(--erp-login-muted)]"
+          aria-hidden="true"
+          >search</span
+        >
+        <input
+          type="search"
+          class="w-full rounded-lg border border-[#c5c6cd]/40 bg-[#f3f4f5] py-2.5 pl-10 pr-4 text-sm focus:border-transparent focus:ring-2 focus:ring-[#47607e] dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-input-bg)] dark:text-[var(--erp-login-text-primary)]"
+          placeholder="Filtrar por nombre, ID o puesto…"
+          aria-label="Filtrar trabajadores"
+        />
+      </div>
+      <select
+        class="rounded-lg border border-[#c5c6cd]/40 bg-[#f3f4f5] px-4 py-2.5 text-sm focus:ring-[#47607e] dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-input-bg)] dark:text-[var(--erp-login-text-primary)]"
+        aria-label="Rol"
+      >
+        <option>Todos los roles</option>
+        <option>Admin</option>
+        <option>Trabajador</option>
+        <option>Supervisor</option>
+      </select>
+      <select
+        class="rounded-lg border border-[#c5c6cd]/40 bg-[#f3f4f5] px-4 py-2.5 text-sm focus:ring-[#47607e] dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-input-bg)] dark:text-[var(--erp-login-text-primary)]"
+        aria-label="Departamento"
+      >
+        <option>Departamento</option>
+        <option>Producción</option>
+        <option>Mantenimiento</option>
+        <option>Logística</option>
+      </select>
+      <button
+        type="button"
+        class="rounded-lg bg-[#e7e8e9] p-2.5 text-[#051125] transition-colors hover:bg-[#e1e3e4] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
+        (click)="onFilter()"
+        aria-label="Más filtros"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">filter_list</span>
+      </button>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-left">
+        <thead>
+          <tr class="bg-[#f3f4f5] text-[#45474d] dark:bg-[var(--erp-login-input-bg)] dark:text-[var(--erp-login-muted)]">
+            <th class="px-4 py-3 text-xs font-bold uppercase tracking-widest sm:px-6">Trabajador</th>
+            <th class="px-4 py-3 text-xs font-bold uppercase tracking-widest sm:px-6">Puesto</th>
+            <th class="hidden px-6 py-3 text-xs font-bold uppercase tracking-widest md:table-cell">Antigüedad</th>
+            <th class="px-4 py-3 text-xs font-bold uppercase tracking-widest sm:px-6">Rol / PIN</th>
+            <th class="hidden px-6 py-3 text-xs font-bold uppercase tracking-widest lg:table-cell">Color</th>
+            <th class="px-4 py-3 text-right text-xs font-bold uppercase tracking-widest sm:px-6">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#c5c6cd]/10 dark:divide-[var(--erp-login-input-border)]">
+          @for (w of workers; track w.id) {
+            <tr
+              class="group transition-colors hover:bg-[#f3f4f5]/60 dark:hover:bg-[var(--erp-login-surface)]"
+              [class.opacity-75]="w.inactive"
+              [class.bg-[#edeeef]/50]="w.inactive"
+            >
+              <td class="px-4 py-3 sm:px-6 sm:py-4">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#e7e8e9] text-xs font-bold text-[#051125] dark:bg-[var(--erp-login-input-border)] dark:text-[var(--erp-login-text-primary)]"
+                  >
+                    {{ w.initials }}
+                  </div>
+                  <div>
+                    <p
+                      class="text-sm font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]"
+                      [class.text-[#45474d]]="w.inactive"
+                      [class.line-through]="w.inactive"
+                    >
+                      {{ w.name }}
+                    </p>
+                    <p
+                      class="mt-1 inline-block rounded bg-[#edeeef] px-1.5 py-0.5 font-mono text-[10px] text-[#45474d] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-muted)]"
+                    >
+                      {{ w.workerCode }}
+                    </p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 py-3 sm:px-6 sm:py-4">
+                <span
+                  class="text-sm font-medium text-[#051125] dark:text-[var(--erp-login-text-primary)]"
+                  [class.text-[#45474d]]="w.inactive"
+                  >{{ w.roleTitle }}</span
+                >
+                <p class="text-xs text-[#45474d] dark:text-[var(--erp-login-muted)]">
+                  {{ w.statusSub ?? w.department }}
+                </p>
+              </td>
+              <td class="hidden px-6 py-4 md:table-cell">
+                <span class="text-sm text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ w.seniority }}</span>
+              </td>
+              <td class="px-4 py-3 sm:px-6 sm:py-4">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span [class]="roleBadgeClass(w)">{{ w.roleType === 'admin' ? 'Admin' : 'Worker' }}</span>
+                  <span
+                    class="material-symbols-outlined text-sm"
+                    [class]="pinIconClass(w.pinState)"
+                    [attr.title]="pinTitle(w.pinState)"
+                    aria-hidden="true"
+                    >{{ pinIcon(w.pinState) }}</span
+                  >
+                </div>
+              </td>
+              <td class="hidden px-6 py-4 lg:table-cell">
+                <div class="h-4 w-4 rounded-full shadow-sm" [class]="w.colorDotClass"></div>
+              </td>
+              <td class="px-4 py-3 text-right sm:px-6 sm:py-4">
+                <div
+                  class="flex justify-end gap-1 sm:gap-2"
+                  [class.opacity-100]="w.inactive"
+                  [class.sm:opacity-0]="!w.inactive"
+                  [class.sm:group-hover:opacity-100]="!w.inactive"
+                >
+                  <button
+                    type="button"
+                    class="rounded-lg p-2 text-[#47607e] transition-colors hover:bg-[#c2dcff]"
+                    (click)="onRowHistory(w)"
+                    title="Historial"
+                  >
+                    <span class="material-symbols-outlined" aria-hidden="true">history</span>
+                  </button>
+                  @if (!w.inactive) {
+                    <button
+                      type="button"
+                      class="rounded-lg p-2 text-[#051125] transition-colors hover:bg-[#e7e8e9] dark:text-[var(--erp-login-text-primary)] dark:hover:bg-[var(--erp-login-surface)]"
+                      (click)="onRowEdit(w)"
+                      title="Editar"
+                    >
+                      <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+                    </button>
+                    <button
+                      type="button"
+                      class="rounded-lg p-2 text-[#ba1a1a] transition-colors hover:bg-[#ffdad6]"
+                      (click)="onRowDeactivate(w)"
+                      title="Baja"
+                    >
+                      <span class="material-symbols-outlined" aria-hidden="true">person_off</span>
+                    </button>
+                  } @else {
+                    <button
+                      type="button"
+                      class="rounded-lg bg-[#1b263b] px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white"
+                      (click)="onReactivate(w)"
+                    >
+                      Reactivar
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div
+      class="flex flex-col items-stretch justify-between gap-3 bg-[#f3f4f5] px-4 py-3 sm:flex-row sm:items-center sm:px-6 dark:bg-[var(--erp-login-input-bg)]"
+    >
+      <span class="text-xs font-medium text-[#45474d] dark:text-[var(--erp-login-muted)]">Mostrando 1–10 de 248 trabajadores</span>
+      <div class="flex flex-wrap items-center gap-1">
+        <button
+          type="button"
+          class="flex h-8 w-8 items-center justify-center rounded bg-[#e7e8e9] text-[#051125] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
+          (click)="onPage(0)"
+        >
+          <span class="material-symbols-outlined text-sm" aria-hidden="true">chevron_left</span>
+        </button>
+        <button
+          type="button"
+          class="flex h-8 w-8 items-center justify-center rounded bg-[#051125] text-xs font-bold text-white"
+          (click)="onPage(1)"
+        >
+          1
+        </button>
+        <button
+          type="button"
+          class="flex h-8 w-8 items-center justify-center rounded border border-[#c5c6cd]/40 bg-white text-xs text-[#051125] dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)] dark:text-[var(--erp-login-text-primary)]"
+          (click)="onPage(2)"
+        >
+          2
+        </button>
+        <button
+          type="button"
+          class="flex h-8 w-8 items-center justify-center rounded border border-[#c5c6cd]/40 bg-white text-xs text-[#051125] dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)] dark:text-[var(--erp-login-text-primary)]"
+          (click)="onPage(3)"
+        >
+          3
+        </button>
+        <span class="px-2 text-[#45474d] dark:text-[var(--erp-login-muted)]">…</span>
+        <button
+          type="button"
+          class="flex h-8 w-8 items-center justify-center rounded border border-[#c5c6cd]/40 bg-white text-xs text-[#051125] dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)] dark:text-[var(--erp-login-text-primary)]"
+          (click)="onPage(25)"
+        >
+          25
+        </button>
+        <button
+          type="button"
+          class="flex h-8 w-8 items-center justify-center rounded bg-[#e7e8e9] text-[#051125] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
+          (click)="onPage(99)"
+        >
+          <span class="material-symbols-outlined text-sm" aria-hidden="true">chevron_right</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer
+    class="flex flex-col justify-between gap-4 border-t border-[#c5c6cd]/20 pt-6 sm:flex-row sm:items-center dark:border-[var(--erp-login-input-border)]"
+  >
+    <div class="flex flex-wrap items-center gap-4">
+      <div class="flex items-center gap-1.5">
+        <div class="h-2 w-2 rounded-full bg-[#47607e]" aria-hidden="true"></div>
+        <span class="text-[10px] font-bold uppercase tracking-widest text-[#45474d] dark:text-[var(--erp-login-muted)]"
+          >Identificadores únicos</span
+        >
+      </div>
+      <div class="flex items-center gap-1.5">
+        <div class="h-2 w-2 rounded-full bg-[#ba1a1a]" aria-hidden="true"></div>
+        <span class="text-[10px] font-bold uppercase tracking-widest text-[#45474d] dark:text-[var(--erp-login-muted)]"
+          >Alertas de PIN</span
+        >
+      </div>
+    </div>
+    <p class="font-mono text-[10px] text-[#45474d]/60 dark:text-[var(--erp-login-muted)]">PERSONNEL_CORE v4.2 · demo</p>
+  </footer>
+</div>

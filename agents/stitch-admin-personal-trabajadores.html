@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Personnel Core - Gestión de Personal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed-dim": "#afc9ea",
+                    "surface": "#f8f9fa",
+                    "on-surface": "#191c1d",
+                    "on-secondary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "background": "#f8f9fa",
+                    "primary-fixed": "#d7e2ff",
+                    "on-error-container": "#93000a",
+                    "inverse-on-surface": "#f0f1f2",
+                    "primary-fixed-dim": "#bbc6e2",
+                    "on-primary-container": "#828da7",
+                    "tertiary-container": "#55000c",
+                    "on-tertiary-container": "#fe4b55",
+                    "outline": "#75777d",
+                    "surface-variant": "#e1e3e4",
+                    "on-primary-fixed": "#101b30",
+                    "on-tertiary-fixed": "#410007",
+                    "surface-container": "#edeeef",
+                    "on-tertiary": "#ffffff",
+                    "primary": "#051125",
+                    "surface-container-lowest": "#ffffff",
+                    "on-background": "#191c1d",
+                    "error": "#ba1a1a",
+                    "surface-container-low": "#f3f4f5",
+                    "inverse-surface": "#2e3132",
+                    "tertiary-fixed-dim": "#ffb3b1",
+                    "on-secondary-container": "#48617e",
+                    "inverse-primary": "#bbc6e2",
+                    "secondary-container": "#c2dcff",
+                    "surface-container-high": "#e7e8e9",
+                    "surface-bright": "#f8f9fa",
+                    "on-secondary-fixed-variant": "#2f4865",
+                    "on-primary-fixed-variant": "#3c475d",
+                    "primary-container": "#1b263b",
+                    "on-secondary-fixed": "#001d36",
+                    "tertiary-fixed": "#ffdad8",
+                    "secondary-fixed": "#d1e4ff",
+                    "on-surface-variant": "#45474d",
+                    "on-tertiary-fixed-variant": "#92001c",
+                    "on-error": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "surface-container-highest": "#e1e3e4",
+                    "surface-dim": "#d9dadb",
+                    "tertiary": "#2e0004",
+                    "outline-variant": "#c5c6cd",
+                    "surface-tint": "#545e76",
+                    "secondary": "#47607e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 h-16 bg-[#051125] dark:bg-slate-950 flex justify-between items-center px-6">
+<div class="flex items-center gap-4">
+<span class="text-xl font-bold text-white uppercase tracking-wider font-['Inter']">Personnel Core</span>
+<div class="hidden md:flex items-center ml-8 gap-1">
+<div class="px-4 py-2 text-white bg-[#1B263B] rounded-lg cursor-default">
+<span class="text-sm font-semibold">Gestión</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="bg-[#1B263B] border-none rounded-lg py-2 pl-10 pr-4 text-sm text-slate-100 focus:ring-2 focus:ring-secondary w-64" placeholder="Buscar trabajador..." type="text"/>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-slate-400 hover:bg-[#47607E] hover:text-white transition-colors rounded-full relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 text-slate-400 hover:bg-[#47607E] hover:text-white transition-colors rounded-full">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-8 w-px bg-slate-700 mx-2"></div>
+<img alt="Administrator profile" class="w-9 h-9 rounded-full object-cover border-2 border-secondary" data-alt="professional headshot of a senior industrial manager in a dark suit against a neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkn3zjykvC_vhW593G9nQ_Kfxyk6W-XGY065hQE4K7_bmZkLr1FAmoLjbcOlHJT1ng-a1d1id2JMcDEnS81Q71N7YrNItyBl5YNlRGib0QHcbabp7NC3QvclMIqI4aqNMlQTVmmAp7ajNn0ZtNyX3YSCx5cQE1Pji8RFW8Vit4WwdJVk8C9D6-O014qC4h_cEGim2QlvgAyf-T91cDotV86nJnzksGa4Gvou4D2l3l7hKJeNH3i4xLUjwOwFgaXPMSquhy9uKxZbE"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 bg-[#F8F9FA] dark:bg-slate-900 border-r border-slate-200/15 flex flex-col py-4">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined">engineering</span>
+</div>
+<div>
+<p class="text-sm font-bold text-primary">Industrial Admin</p>
+<p class="text-xs text-slate-500">Zone 4 Production</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1 px-3">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all rounded-lg font-['Inter'] text-sm font-medium" href="#">
+<span class="material-symbols-outlined">dashboard</span> Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 bg-slate-200 dark:bg-slate-800 text-[#051125] border-l-4 border-[#47607E] transition-all rounded-r-lg font-['Inter'] text-sm font-bold" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">groups</span> Workforce
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all rounded-lg font-['Inter'] text-sm font-medium" href="#">
+<span class="material-symbols-outlined">calendar_today</span> Schedules
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all rounded-lg font-['Inter'] text-sm font-medium" href="#">
+<span class="material-symbols-outlined">engineering</span> Safety Ops
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all rounded-lg font-['Inter'] text-sm font-medium" href="#">
+<span class="material-symbols-outlined">analytics</span> Analytics
+            </a>
+</nav>
+<div class="mt-auto px-3 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-100 transition-all rounded-lg font-['Inter'] text-sm font-medium" href="#">
+<span class="material-symbols-outlined">help_outline</span> Support
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-100 transition-all rounded-lg font-['Inter'] text-sm font-medium" href="#">
+<span class="material-symbols-outlined">logout</span> Logout
+            </a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 mt-16 p-8 min-h-screen">
+<!-- Header & CTA Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+<div>
+<h1 class="text-3xl font-bold text-primary tracking-tight mb-2">Gestión de Personal</h1>
+<p class="text-on-surface-variant max-w-2xl">Administración centralizada de operarios, perfiles de seguridad y control de acceso para la Zona 4.</p>
+</div>
+<button class="h-12 px-6 bg-primary-container text-white rounded-lg font-semibold flex items-center gap-2 hover:bg-primary transition-all active:scale-95 shadow-md">
+<span class="material-symbols-outlined">add</span>
+                + Añadir Nuevo Trabajador
+            </button>
+</div>
+<!-- Bento Grid Summary Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+<div class="bg-surface-container-low p-6 rounded-xl border-l-4 border-primary">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-primary text-3xl">groups</span>
+<span class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Workers</span>
+</div>
+<div class="text-4xl font-bold text-primary">248</div>
+<div class="mt-2 text-sm text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">trending_up</span> +12 este mes
+                </div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl border-l-4 border-secondary">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-secondary text-3xl">check_circle</span>
+<span class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Active</span>
+</div>
+<div class="text-4xl font-bold text-primary">231</div>
+<div class="mt-2 text-sm text-on-surface-variant">93% Capacidad operativa</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl border-l-4 border-tertiary-container">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-tertiary-container text-3xl">event_busy</span>
+<span class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">On Leave</span>
+</div>
+<div class="text-4xl font-bold text-primary">17</div>
+<div class="mt-2 text-sm text-tertiary-container font-medium">Bajas temporales activas</div>
+</div>
+</div>
+<!-- Filters and Table Surface -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<!-- Table Header / Filters -->
+<div class="p-6 flex flex-wrap items-center gap-4 border-b border-outline-variant/15">
+<div class="flex-1 min-w-[300px] relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low border-outline-variant/30 rounded-lg py-2.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-secondary focus:border-transparent" placeholder="Filtrar por nombre, ID o puesto..." type="text"/>
+</div>
+<select class="bg-surface-container-low border-outline-variant/30 rounded-lg text-sm px-4 py-2.5 focus:ring-secondary">
+<option>Todos los Roles</option>
+<option>Admin</option>
+<option>Worker</option>
+<option>Supervisor</option>
+</select>
+<select class="bg-surface-container-low border-outline-variant/30 rounded-lg text-sm px-4 py-2.5 focus:ring-secondary">
+<option>Departamento</option>
+<option>Producción</option>
+<option>Mantenimiento</option>
+<option>Logística</option>
+</select>
+<button class="p-2.5 bg-surface-container-high rounded-lg text-primary hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+<!-- Rugged Data Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant">
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-widest">Trabajador</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-widest">Puesto</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-widest">Antigüedad</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-widest">Rol / PIN</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-widest">Color</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-widest text-right">Acciones</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img alt="Worker profile" class="w-10 h-10 rounded-lg object-cover grayscale group-hover:grayscale-0 transition-all" data-alt="middle-aged man with a friendly expression wearing high-visibility vest and a blue hard hat" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA71Cc7xsGa1eKSiqU5UZ5ET4phzvYJ6idozJdiEbcHoGt_rZGiWoYHpekrQl6OF6C9QHw7gR6eLyCAx7knZR_UgGwq6pTv3gFUDz5OtpRFDk2OeARJuUk2LM0Wj5z6hr_NzOMo_uEVwzlflST9mal3QwLHH5dWWrO5QuKyFDlVnBs4exAtlAj3hvNLWSfVZl7iSH2MJZ9KGLq09kBjrPzRSv6pL1XGJ1iTty160jsY0nV31t7TP2xW70G6kiLgWxKorRl1FodGAfA"/>
+<div>
+<p class="text-sm font-bold text-primary">Marco Antonio Solis</p>
+<p class="text-[10px] font-mono text-on-surface-variant bg-surface-container px-1.5 py-0.5 rounded inline-block mt-1">ID-88291-X</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-sm text-primary font-medium">Operario Especialista</span>
+<p class="text-xs text-on-surface-variant">Línea de Ensamblaje A</p>
+</td>
+<td class="px-6 py-4">
+<span class="text-sm text-primary">4 años, 2 meses</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="px-2 py-1 bg-surface-container-high rounded text-[10px] font-bold uppercase text-on-primary-fixed-variant">Worker</span>
+<span class="material-symbols-outlined text-secondary text-sm" title="PIN Activo">lock_open</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="w-4 h-4 rounded-full bg-blue-500 shadow-sm ring-2 ring-white"></div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 text-secondary hover:bg-secondary-container rounded-lg transition-colors" title="Ver Historial">
+<span class="material-symbols-outlined">history</span>
+</button>
+<button class="p-2 text-primary hover:bg-surface-container-high rounded-lg transition-colors" title="Editar">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="p-2 text-error hover:bg-error-container rounded-lg transition-colors" title="Baja">
+<span class="material-symbols-outlined">person_off</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img alt="Worker profile" class="w-10 h-10 rounded-lg object-cover grayscale group-hover:grayscale-0 transition-all" data-alt="professional woman in manufacturing leadership, wearing safety glasses and a focused expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0LjyCYza_PGKujIHpuLiy1u5et6p8jt02GW7UwIY-qp7_Q-uW3TGnjhOWoewk4ulB7NvN6KhW7h1CxxTUnh0B5alp083BklJi9A0Ss1vjnSmV2LGLXy1SSO1fjkJn7cu5u-WJT1VgfarkWjSiGcSVxOMqqrMeeZX_ZsE9snY_H_e3L17JJDyG_nDS5jTs6wuFwjihOB_775B5ssiOXLbIaDDiiJRUHG4soET_NJvZeLtMiSz6b5tXJ40iriPi2pg8-nSxCQ5PPm8"/>
+<div>
+<p class="text-sm font-bold text-primary">Elena Rodriguez</p>
+<p class="text-[10px] font-mono text-on-surface-variant bg-surface-container px-1.5 py-0.5 rounded inline-block mt-1">ID-90112-S</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-sm text-primary font-medium">Jefa de Turno</span>
+<p class="text-xs text-on-surface-variant">Control de Calidad</p>
+</td>
+<td class="px-6 py-4">
+<span class="text-sm text-primary">7 años, 8 meses</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="px-2 py-1 bg-primary-container text-white rounded text-[10px] font-bold uppercase">Admin</span>
+<span class="material-symbols-outlined text-secondary text-sm" title="PIN Activo">lock_open</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="w-4 h-4 rounded-full bg-emerald-500 shadow-sm ring-2 ring-white"></div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 text-secondary hover:bg-secondary-container rounded-lg transition-colors" title="Ver Historial">
+<span class="material-symbols-outlined">history</span>
+</button>
+<button class="p-2 text-primary hover:bg-surface-container-high rounded-lg transition-colors" title="Editar">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="p-2 text-error hover:bg-error-container rounded-lg transition-colors" title="Baja">
+<span class="material-symbols-outlined">person_off</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img alt="Worker profile" class="w-10 h-10 rounded-lg object-cover grayscale group-hover:grayscale-0 transition-all" data-alt="portrait of a young technician in a modern workshop with tools in the blurred background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWRu7LJvKwiDEamOFmyaUthSr1riveti1hxU-dOs-7GWT59tf-GVk4JybzSj7rGgc9RpFyfX-SRXtQWfy4GQggA2ZBVz2VjfYg3uNfHF2-XOPRtIxccp6od2dWJ_sQcMl_-3Tj1jqrpAKoX7jwtOsLbhZBjjUN9ERDUidzQHZ6yGXz1CpLD8aQyeYb_IB9nn4jcG0mYLzfPCyCBDO9QmtWiDpv-bGggheXCYwRnzFN2S0Qgr83sPc3qReqzJOqrS37R4Ol9csG0B4"/>
+<div>
+<p class="text-sm font-bold text-primary">Javier Mendez</p>
+<p class="text-[10px] font-mono text-on-surface-variant bg-surface-container px-1.5 py-0.5 rounded inline-block mt-1">ID-44501-M</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-sm text-primary font-medium">Mantenimiento</span>
+<p class="text-xs text-on-surface-variant">Electricidad</p>
+</td>
+<td class="px-6 py-4">
+<span class="text-sm text-primary">1 año, 1 mes</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="px-2 py-1 bg-surface-container-high rounded text-[10px] font-bold uppercase text-on-primary-fixed-variant">Worker</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm" title="PIN Inactivo">lock_clock</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="w-4 h-4 rounded-full bg-amber-500 shadow-sm ring-2 ring-white"></div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 text-secondary hover:bg-secondary-container rounded-lg transition-colors" title="Ver Historial">
+<span class="material-symbols-outlined">history</span>
+</button>
+<button class="p-2 text-primary hover:bg-surface-container-high rounded-lg transition-colors" title="Editar">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="p-2 text-error hover:bg-error-container rounded-lg transition-colors" title="Baja">
+<span class="material-symbols-outlined">person_off</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4 (Inactive state visualization) -->
+<tr class="bg-surface-container/30 opacity-75 group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img alt="Worker profile" class="w-10 h-10 rounded-lg object-cover grayscale" data-alt="middle-aged man looking thoughtful, wearing a simple button-down shirt" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhd-hfl09fBD81uOOaUzcvEr8Dqj_3YlOLprkvEPQH07QOGTYo4Bw3lJLlZCvDF7fWLjOaWIuWWPYjTM8J0XLzi_eTqJ3lSR4l4dPo458NRUCrYB0zKun6CuuIchGtvEdk0JVncrw8d16kI0jXZ4TXhT2TLRqHYySuh6zTx2VJjoE1ep4CDTym3vb9lqanCvVhXKOMiAQ1qODCU1yn7Citc27q_PU76axc9v9keoyTV3x-P1mRxzK9jLw_0D3WfK0_eq6SD5ZmhlI"/>
+<div>
+<p class="text-sm font-bold text-on-surface-variant line-through">Lucas Ferreira</p>
+<p class="text-[10px] font-mono text-on-surface-variant bg-surface-container px-1.5 py-0.5 rounded inline-block mt-1">ID-12290-L</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-sm text-on-surface-variant">Logística</span>
+<p class="text-[10px] font-bold text-tertiary-container uppercase tracking-tight">De Baja</p>
+</td>
+<td class="px-6 py-4">
+<span class="text-sm text-on-surface-variant">9 meses</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="px-2 py-1 bg-surface-variant rounded text-[10px] font-bold uppercase text-on-surface-variant">Worker</span>
+<span class="material-symbols-outlined text-error text-sm">lock</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="w-4 h-4 rounded-full bg-slate-400 shadow-sm ring-2 ring-white"></div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 text-secondary hover:bg-secondary-container rounded-lg transition-colors" title="Ver Historial">
+<span class="material-symbols-outlined">history</span>
+</button>
+<button class="px-3 py-1.5 bg-primary-container text-white text-[10px] font-bold rounded-lg uppercase tracking-wider">Reactivar</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-6 py-4 bg-surface-container-low flex items-center justify-between">
+<span class="text-xs text-on-surface-variant font-medium">Mostrando 1-10 de 248 trabajadores</span>
+<div class="flex items-center gap-1">
+<button class="w-8 h-8 flex items-center justify-center rounded bg-surface-container-high text-primary hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-primary text-white font-bold text-xs">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-surface-container-lowest text-primary border border-outline-variant/30 text-xs hover:bg-surface-container transition-colors">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-surface-container-lowest text-primary border border-outline-variant/30 text-xs hover:bg-surface-container transition-colors">3</button>
+<span class="px-2 text-on-surface-variant">...</span>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-surface-container-lowest text-primary border border-outline-variant/30 text-xs hover:bg-surface-container transition-colors">25</button>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-surface-container-high text-primary hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- System Logic / Footnote -->
+<div class="mt-8 flex items-center justify-between border-t border-outline-variant/20 pt-6">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1.5">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<span class="text-[10px] font-bold uppercase text-on-surface-variant tracking-widest">Identificadores Únicos</span>
+</div>
+<div class="flex items-center gap-1.5">
+<div class="w-2 h-2 rounded-full bg-error"></div>
+<span class="text-[10px] font-bold uppercase text-on-surface-variant tracking-widest">Alertas de PIN</span>
+</div>
+</div>
+<p class="text-[10px] text-on-surface-variant/60 font-mono">PERSONNEL_CORE_SYS v4.2 // SECURITY_ENFORCED</p>
+</div>
+</main>
+</body></html>
