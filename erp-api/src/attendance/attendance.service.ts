@@ -63,7 +63,8 @@ export class AttendanceService {
       const calculatedStatus = 'Puntual'; 
 
       record = this.recordRepository.create({
-        userId,
+        user: { id: userId },
+        userId: userId, // To be safe we pass both
         workDate: today,
         status: calculatedStatus,
       });

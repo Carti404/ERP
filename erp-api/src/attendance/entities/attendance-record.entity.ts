@@ -20,7 +20,7 @@ export class AttendanceRecord {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column({ name: 'user_id' })
+  @Column({ name: 'user_id', insert: false, update: false })
   userId: string;
 
   // Fecha del día laboral registrado (YYYY-MM-DD)

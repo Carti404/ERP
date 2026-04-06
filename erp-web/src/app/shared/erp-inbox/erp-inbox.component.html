@@ -31,7 +31,7 @@
   </div>
 
   <div
-    class="erp-admin-inbox-layout flex min-h-[min(70vh,720px)] flex-1 flex-col overflow-hidden rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] lg:min-h-[calc(100svh-10.5rem)] lg:flex-row dark:border-[rgb(255_255_255/0.09)]"
+    class="erp-admin-inbox-layout flex min-h-[600px] flex-1 flex-col overflow-hidden rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] lg:h-[calc(100svh-10.5rem)] lg:min-h-0 lg:flex-row dark:border-[rgb(255_255_255/0.09)]"
   >
     <aside class="erp-admin-inbox-sidebar hidden w-56 shrink-0 flex-col lg:flex" aria-label="Carpetas de mensajería">
       <div class="px-4 pb-3 pt-4">
@@ -287,6 +287,21 @@
         </div>
       }
     </section>
+  </div>
+
+  <div class="mt-2 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-[var(--erp-login-muted)] dark:border-[rgb(255_255_255/0.09)]">
+    <div class="flex items-center gap-2 text-[var(--erp-login-text-primary)]">
+      <span class="h-2 w-2 rounded-full bg-[#ef4444] ring-2 ring-[#ef4444]/20" aria-hidden="true"></span>
+      <span>Alta Prioridad</span>
+    </div>
+    <div class="flex items-center gap-2 text-[var(--erp-login-text-primary)]">
+      <span class="h-2 w-2 rounded-full bg-[#f59e0b] ring-2 ring-[#f59e0b]/20" aria-hidden="true"></span>
+      <span>Media Prioridad</span>
+    </div>
+    <div class="flex items-center gap-2 text-[var(--erp-login-text-primary)]">
+      <span class="h-2 w-2 rounded-full bg-[#10b981] ring-2 ring-[#10b981]/20" aria-hidden="true"></span>
+      <span>Baja Prioridad</span>
+    </div>
   </div>
 
   @if (composeOpen()) {

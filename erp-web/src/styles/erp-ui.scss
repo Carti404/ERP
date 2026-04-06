@@ -1458,17 +1458,17 @@ html.dark .erp-worker-events-panel .erp-worker-events-table-wrap {
 /** Indicador de mensaje no leído en la lista del buzón */
 .erp-mailbox-unread-dot {
   margin-top: 0.4rem;
-  width: 0.5rem;
-  height: 0.5rem;
+  width: 0.55rem;
+  height: 0.55rem;
   border-radius: 9999px;
-  background: #47607e;
-  box-shadow: 0 0 0 2px color-mix(in srgb, #47607e 30%, transparent);
-  animation: erp-mailbox-unread-pulse 2.2s ease-in-out infinite;
+  background: #3b82f6;
+  box-shadow: 0 0 0 2px color-mix(in srgb, #3b82f6 25%, transparent);
+  animation: erp-mailbox-unread-pulse 2s ease-in-out infinite;
 }
 
 .dark .erp-mailbox-unread-dot {
   background: var(--erp-login-accent);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--erp-login-accent) 35%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--erp-login-accent) 25%, transparent);
 }
 
 @keyframes erp-mailbox-unread-pulse {
@@ -1478,8 +1478,8 @@ html.dark .erp-worker-events-panel .erp-worker-events-table-wrap {
     transform: scale(1);
   }
   50% {
-    opacity: 0.72;
-    transform: scale(0.88);
+    opacity: 0.8;
+    transform: scale(1.15);
   }
 }
 
@@ -1717,7 +1717,7 @@ html.dark .erp-worker-events-panel .erp-worker-events-table-wrap {
   z-index: 1;
   height: 3px;
   border-radius: 0.75rem 0.75rem 0 0;
-  background: linear-gradient(90deg, #0ea5e9, #8b5cf6, #e63946, #10b981);
+  background: linear-gradient(90deg, #0ea5e9, #3b82f6);
   pointer-events: none;
 }
 
@@ -1950,7 +1950,7 @@ html.dark .erp-worker-events-panel .erp-worker-events-table-wrap {
   right: 0;
   top: 0;
   height: 2px;
-  background: linear-gradient(90deg, #0ea5e9, #8b5cf6, #e63946);
+  background: linear-gradient(90deg, #0ea5e9, #3b82f6);
   opacity: 0.9;
   pointer-events: none;
 }
@@ -2122,7 +2122,7 @@ html.dark .erp-worker-events-panel .erp-worker-events-table-wrap {
   right: 0;
   top: 0;
   height: 3px;
-  background: linear-gradient(90deg, #0ea5e9, #8b5cf6, #e63946, #10b981);
+  background: linear-gradient(90deg, #0ea5e9, #3b82f6);
   pointer-events: none;
 }
 

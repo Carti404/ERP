@@ -36,6 +36,8 @@ export class TrabajadorHomeComponent {
     importance: string;
   }[] = [];
 
+  protected unreadCount = 0;
+
   protected readonly hasUrgentAlert = false;
 
   protected readonly events: readonly {
@@ -117,6 +119,8 @@ export class TrabajadorHomeComponent {
     this.messagesApi.list('inbox').subscribe({
       next: (rows) => {
         const unread = rows.filter((r) => !r.read);
+        this.unreadCount = unread.length;
+
         const pScores: Record<string, number> = { HIGH: 3, MEDIUM: 2, LOW: 1 };
         unread.sort((a, b) => {
           const sA = pScores[a.importance] || 0;
