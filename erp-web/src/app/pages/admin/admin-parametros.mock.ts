@@ -1,14 +1,10 @@
-/** Parámetros del sistema — administrador (demo, Stitch). */
+/** Valores iniciales de pantalla hasta que responde el API (misma forma que el backend). */
 
-export interface AdminParametrosHolidayMock {
+export interface AdminParametrosHolidayRow {
   readonly id: string;
   readonly title: string;
   readonly sub: string;
-}
-
-export interface AdminParametrosCalendarCellMock {
-  readonly label: string;
-  readonly tone: 'muted' | 'day' | 'holiday';
+  readonly date: string;
 }
 
 export const ADMIN_PARAMETROS_INITIAL = {
@@ -28,41 +24,17 @@ export const ADMIN_PARAMETROS_INITIAL = {
   lunchFrom: '12:00',
   lunchDurationMin: 60,
   holidays: [
-    { id: 'h1', title: '1 de mayo', sub: 'Día del trabajador' },
-    { id: 'h2', title: '21 de mayo', sub: 'Glorias navales' },
-  ] as AdminParametrosHolidayMock[],
+    {
+      id: 'local-seed',
+      title: '1 de mayo',
+      sub: 'Día del trabajador',
+      date: '2024-05-01',
+    },
+    {
+      id: 'local-seed-2',
+      title: '21 de mayo',
+      sub: 'Glorias navales',
+      date: '2024-05-21',
+    },
+  ] as AdminParametrosHolidayRow[],
 } as const;
-
-export const ADMIN_PARAMETROS_CAL_MONTH = 'Mayo 2024';
-
-/** Mini calendario (rejilla fija demo). */
-export const ADMIN_PARAMETROS_CAL_CELLS: AdminParametrosCalendarCellMock[] = [
-  { label: '29', tone: 'muted' },
-  { label: '30', tone: 'muted' },
-  { label: '1', tone: 'holiday' },
-  { label: '2', tone: 'day' },
-  { label: '3', tone: 'day' },
-  { label: '4', tone: 'day' },
-  { label: '5', tone: 'day' },
-  { label: '6', tone: 'day' },
-  { label: '7', tone: 'day' },
-  { label: '8', tone: 'day' },
-  { label: '9', tone: 'day' },
-  { label: '10', tone: 'day' },
-  { label: '11', tone: 'day' },
-  { label: '12', tone: 'day' },
-  { label: '13', tone: 'day' },
-  { label: '14', tone: 'day' },
-  { label: '15', tone: 'day' },
-  { label: '16', tone: 'day' },
-  { label: '17', tone: 'day' },
-  { label: '18', tone: 'day' },
-  { label: '19', tone: 'day' },
-  { label: '20', tone: 'day' },
-  { label: '21', tone: 'holiday' },
-  { label: '22', tone: 'day' },
-  { label: '23', tone: 'day' },
-  { label: '24', tone: 'day' },
-  { label: '25', tone: 'day' },
-  { label: '26', tone: 'day' },
-];

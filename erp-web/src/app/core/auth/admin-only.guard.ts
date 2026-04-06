@@ -1,10 +1,10 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 
-import { AuthMockService } from './auth-mock.service';
+import { AuthService } from './auth.service';
 
 export const adminOnlyGuard: CanActivateFn = () => {
-  const auth = inject(AuthMockService);
+  const auth = inject(AuthService);
   const router = inject(Router);
   const s = auth.session();
   if (!s) {

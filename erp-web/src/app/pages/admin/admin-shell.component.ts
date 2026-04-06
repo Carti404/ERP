@@ -1,7 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
-import { AuthMockService } from '../../core/auth/auth-mock.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { ErpThemeService } from '../../core/theme/erp-theme.service';
 
 /** Estado operativo de planta (mock hasta API). */
@@ -23,7 +23,7 @@ export class AdminShellComponent {
   private static readonly SCROLL_DELTA_MIN = 10;
   private static readonly TOP_THRESHOLD = 12;
 
-  private readonly auth = inject(AuthMockService);
+  private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   protected readonly theme = inject(ErpThemeService);
 

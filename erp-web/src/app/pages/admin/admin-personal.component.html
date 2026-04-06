@@ -5,7 +5,7 @@
         Gestión de personal
       </h1>
       <p class="max-w-2xl text-sm text-[#45474d] dark:text-[var(--erp-login-muted)]">
-        Administración centralizada de operarios, perfiles y control de acceso (demo).
+        Alta de trabajadores con PIN de 4 dígitos único entre usuarios activos.
       </p>
     </div>
     <button
@@ -21,34 +21,43 @@
   <div class="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
     <div class="rounded-xl border-l-4 border-[#051125] bg-[#f3f4f5] p-5 dark:bg-[var(--erp-login-input-bg)]">
       <div class="mb-4 flex items-start justify-between">
-        <span class="material-symbols-outlined text-3xl text-[#051125] dark:text-[var(--erp-login-text-primary)]" aria-hidden="true">{{
-          kpis.total.icon
-        }}</span>
+        <span class="material-symbols-outlined text-3xl text-[#051125] dark:text-[var(--erp-login-text-primary)]" aria-hidden="true"
+          >groups</span
+        >
         <span class="text-xs font-bold uppercase tracking-wider text-[#45474d] dark:text-[var(--erp-login-muted)]">Total</span>
       </div>
-      <div class="text-4xl font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ kpis.total.value }}</div>
+      <div class="text-4xl font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ kpiTotal }}</div>
       <div class="mt-2 flex items-center gap-1 text-sm text-[#47607e]">
         <span class="material-symbols-outlined text-sm" aria-hidden="true">trending_up</span>
-        {{ kpis.total.sub }}
+        En sistema
       </div>
     </div>
     <div class="rounded-xl border-l-4 border-[#47607e] bg-[#f3f4f5] p-5 dark:bg-[var(--erp-login-input-bg)]">
       <div class="mb-4 flex items-start justify-between">
-        <span class="material-symbols-outlined text-3xl text-[#47607e]" aria-hidden="true">{{ kpis.active.icon }}</span>
+        <span class="material-symbols-outlined text-3xl text-[#47607e]" aria-hidden="true">how_to_reg</span>
         <span class="text-xs font-bold uppercase tracking-wider text-[#45474d] dark:text-[var(--erp-login-muted)]">Activos</span>
       </div>
-      <div class="text-4xl font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ kpis.active.value }}</div>
-      <div class="mt-2 text-sm text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ kpis.active.sub }}</div>
+      <div class="text-4xl font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ kpiActive }}</div>
+      <div class="mt-2 text-sm text-[#45474d] dark:text-[var(--erp-login-muted)]">Con acceso al sistema</div>
     </div>
     <div class="rounded-xl border-l-4 border-[#fe4b55] bg-[#f3f4f5] p-5 dark:bg-[var(--erp-login-input-bg)]">
       <div class="mb-4 flex items-start justify-between">
-        <span class="material-symbols-outlined text-3xl text-[#fe4b55]" aria-hidden="true">{{ kpis.leave.icon }}</span>
+        <span class="material-symbols-outlined text-3xl text-[#fe4b55]" aria-hidden="true">event_busy</span>
         <span class="text-xs font-bold uppercase tracking-wider text-[#45474d] dark:text-[var(--erp-login-muted)]">En licencia</span>
       </div>
-      <div class="text-4xl font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ kpis.leave.value }}</div>
-      <div class="mt-2 text-sm font-medium text-[#fe4b55]">{{ kpis.leave.sub }}</div>
+      <div class="text-4xl font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">0</div>
+      <div class="mt-2 text-sm font-medium text-[#fe4b55]">Próximamente</div>
     </div>
   </div>
+
+  @if (loadError()) {
+    <div
+      class="rounded-lg border border-[#ba1a1a]/40 bg-[#ffdad6] px-4 py-3 text-sm text-[#410002] dark:border-[#ba1a1a] dark:bg-[#93000a]/20 dark:text-[#ffb4ab]"
+      role="alert"
+    >
+      {{ loadError() }}
+    </div>
+  }
 
   <div class="overflow-hidden rounded-xl border border-[#c5c6cd]/20 bg-white shadow-sm dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
     <div class="flex flex-wrap items-center gap-3 border-b border-[#c5c6cd]/15 p-4 sm:p-6 dark:border-[var(--erp-login-input-border)]">
@@ -61,27 +70,21 @@
         <input
           type="search"
           class="w-full rounded-lg border border-[#c5c6cd]/40 bg-[#f3f4f5] py-2.5 pl-10 pr-4 text-sm focus:border-transparent focus:ring-2 focus:ring-[#47607e] dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-input-bg)] dark:text-[var(--erp-login-text-primary)]"
-          placeholder="Filtrar por nombre, ID o puesto…"
+          placeholder="Buscar por nombre o usuario…"
           aria-label="Filtrar trabajadores"
+          [value]="searchQuery()"
+          (input)="onSearchInput($event)"
         />
       </div>
       <select
         class="rounded-lg border border-[#c5c6cd]/40 bg-[#f3f4f5] px-4 py-2.5 text-sm focus:ring-[#47607e] dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-input-bg)] dark:text-[var(--erp-login-text-primary)]"
         aria-label="Rol"
+        [value]="roleFilter()"
+        (change)="onRoleFilterChange($event)"
       >
-        <option>Todos los roles</option>
-        <option>Admin</option>
-        <option>Trabajador</option>
-        <option>Supervisor</option>
-      </select>
-      <select
-        class="rounded-lg border border-[#c5c6cd]/40 bg-[#f3f4f5] px-4 py-2.5 text-sm focus:ring-[#47607e] dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-input-bg)] dark:text-[var(--erp-login-text-primary)]"
-        aria-label="Departamento"
-      >
-        <option>Departamento</option>
-        <option>Producción</option>
-        <option>Mantenimiento</option>
-        <option>Logística</option>
+        <option value="">Todos los roles</option>
+        <option value="admin">Admin</option>
+        <option value="worker">Trabajador</option>
       </select>
       <button
         type="button"
@@ -93,170 +96,156 @@
       </button>
     </div>
 
-    <div class="overflow-x-auto">
-      <table class="w-full border-collapse text-left">
-        <thead>
-          <tr class="bg-[#f3f4f5] text-[#45474d] dark:bg-[var(--erp-login-input-bg)] dark:text-[var(--erp-login-muted)]">
-            <th class="px-4 py-3 text-xs font-bold uppercase tracking-widest sm:px-6">Trabajador</th>
-            <th class="px-4 py-3 text-xs font-bold uppercase tracking-widest sm:px-6">Puesto</th>
-            <th class="hidden px-6 py-3 text-xs font-bold uppercase tracking-widest md:table-cell">Antigüedad</th>
-            <th class="px-4 py-3 text-xs font-bold uppercase tracking-widest sm:px-6">Rol / PIN</th>
-            <th class="hidden px-6 py-3 text-xs font-bold uppercase tracking-widest lg:table-cell">Color</th>
-            <th class="px-4 py-3 text-right text-xs font-bold uppercase tracking-widest sm:px-6">Acciones</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-[#c5c6cd]/10 dark:divide-[var(--erp-login-input-border)]">
-          @for (w of workers; track w.id) {
-            <tr
-              class="group transition-colors hover:bg-[#f3f4f5]/60 dark:hover:bg-[var(--erp-login-surface)]"
-              [class.opacity-75]="w.inactive"
-              [class.bg-[#edeeef]/50]="w.inactive"
-            >
-              <td class="px-4 py-3 sm:px-6 sm:py-4">
-                <div class="flex items-center gap-3">
-                  <div
-                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#e7e8e9] text-xs font-bold text-[#051125] dark:bg-[var(--erp-login-input-border)] dark:text-[var(--erp-login-text-primary)]"
-                  >
-                    {{ w.initials }}
-                  </div>
-                  <div>
-                    <p
-                      class="text-sm font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]"
-                      [class.text-[#45474d]]="w.inactive"
-                      [class.line-through]="w.inactive"
-                    >
-                      {{ w.name }}
-                    </p>
-                    <p
-                      class="mt-1 inline-block rounded bg-[#edeeef] px-1.5 py-0.5 font-mono text-[10px] text-[#45474d] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-muted)]"
-                    >
-                      {{ w.workerCode }}
-                    </p>
-                  </div>
-                </div>
-              </td>
-              <td class="px-4 py-3 sm:px-6 sm:py-4">
-                <span
-                  class="text-sm font-medium text-[#051125] dark:text-[var(--erp-login-text-primary)]"
-                  [class.text-[#45474d]]="w.inactive"
-                  >{{ w.roleTitle }}</span
-                >
-                <p class="text-xs text-[#45474d] dark:text-[var(--erp-login-muted)]">
-                  {{ w.statusSub ?? w.department }}
-                </p>
-              </td>
-              <td class="hidden px-6 py-4 md:table-cell">
-                <span class="text-sm text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ w.seniority }}</span>
-              </td>
-              <td class="px-4 py-3 sm:px-6 sm:py-4">
-                <div class="flex flex-wrap items-center gap-2">
-                  <span [class]="roleBadgeClass(w)">{{ w.roleType === 'admin' ? 'Admin' : 'Worker' }}</span>
-                  <span
-                    class="material-symbols-outlined text-sm"
-                    [class]="pinIconClass(w.pinState)"
-                    [attr.title]="pinTitle(w.pinState)"
-                    aria-hidden="true"
-                    >{{ pinIcon(w.pinState) }}</span
-                  >
-                </div>
-              </td>
-              <td class="hidden px-6 py-4 lg:table-cell">
-                <div class="h-4 w-4 rounded-full shadow-sm" [class]="w.colorDotClass"></div>
-              </td>
-              <td class="px-4 py-3 text-right sm:px-6 sm:py-4">
-                <div
-                  class="flex justify-end gap-1 sm:gap-2"
-                  [class.opacity-100]="w.inactive"
-                  [class.sm:opacity-0]="!w.inactive"
-                  [class.sm:group-hover:opacity-100]="!w.inactive"
-                >
-                  <button
-                    type="button"
-                    class="rounded-lg p-2 text-[#47607e] transition-colors hover:bg-[#c2dcff]"
-                    (click)="onRowHistory(w)"
-                    title="Historial"
-                  >
-                    <span class="material-symbols-outlined" aria-hidden="true">history</span>
-                  </button>
-                  @if (!w.inactive) {
-                    <button
-                      type="button"
-                      class="rounded-lg p-2 text-[#051125] transition-colors hover:bg-[#e7e8e9] dark:text-[var(--erp-login-text-primary)] dark:hover:bg-[var(--erp-login-surface)]"
-                      (click)="onRowEdit(w)"
-                      title="Editar"
-                    >
-                      <span class="material-symbols-outlined" aria-hidden="true">edit</span>
-                    </button>
-                    <button
-                      type="button"
-                      class="rounded-lg p-2 text-[#ba1a1a] transition-colors hover:bg-[#ffdad6]"
-                      (click)="onRowDeactivate(w)"
-                      title="Baja"
-                    >
-                      <span class="material-symbols-outlined" aria-hidden="true">person_off</span>
-                    </button>
-                  } @else {
-                    <button
-                      type="button"
-                      class="rounded-lg bg-[#1b263b] px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white"
-                      (click)="onReactivate(w)"
-                    >
-                      Reactivar
-                    </button>
-                  }
-                </div>
-              </td>
+    @if (loading()) {
+      <div class="px-6 py-10 text-center text-sm text-[#45474d] dark:text-[var(--erp-login-muted)]">Cargando personal…</div>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse text-left">
+          <thead>
+            <tr class="bg-[#f3f4f5] text-[#45474d] dark:bg-[var(--erp-login-input-bg)] dark:text-[var(--erp-login-muted)]">
+              <th class="px-4 py-3 text-xs font-bold uppercase tracking-widest sm:px-6">Trabajador</th>
+              <th class="px-4 py-3 text-xs font-bold uppercase tracking-widest sm:px-6">Puesto</th>
+              <th class="hidden px-6 py-3 text-xs font-bold uppercase tracking-widest md:table-cell">Alta</th>
+              <th class="px-4 py-3 text-xs font-bold uppercase tracking-widest sm:px-6">Rol / acceso</th>
+              <th class="px-4 py-3 text-right text-xs font-bold uppercase tracking-widest sm:px-6">Acciones</th>
             </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody class="divide-y divide-[#c5c6cd]/10 dark:divide-[var(--erp-login-input-border)]">
+            @if (pagedWorkers().length === 0) {
+              <tr>
+                <td
+                  colspan="5"
+                  class="px-6 py-10 text-center text-sm text-[#45474d] dark:text-[var(--erp-login-muted)]"
+                >
+                  {{ emptyTableMessage() }}
+                </td>
+              </tr>
+            } @else {
+              @for (w of pagedWorkers(); track w.id) {
+              <tr
+                class="group transition-colors hover:bg-[#f3f4f5]/60 dark:hover:bg-[var(--erp-login-surface)]"
+                [class.opacity-75]="!w.activo"
+                [class.bg-[#edeeef]/50]="!w.activo"
+              >
+                <td class="px-4 py-3 sm:px-6 sm:py-4">
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#e7e8e9] text-xs font-bold text-[#051125] dark:bg-[var(--erp-login-input-border)] dark:text-[var(--erp-login-text-primary)]"
+                    >
+                      {{ initials(w.fullName) }}
+                    </div>
+                    <div>
+                      <p
+                        class="text-sm font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]"
+                        [class.text-[#45474d]]="!w.activo"
+                        [class.line-through]="!w.activo"
+                      >
+                        {{ w.fullName }}
+                      </p>
+                      <p
+                        class="mt-1 inline-block rounded bg-[#edeeef] px-1.5 py-0.5 font-mono text-[10px] text-[#45474d] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-muted)]"
+                      >
+                        {{ w.username }}
+                      </p>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-4 py-3 sm:px-6 sm:py-4">
+                  <span
+                    class="text-sm font-medium text-[#051125] dark:text-[var(--erp-login-text-primary)]"
+                    [class.text-[#45474d]]="!w.activo"
+                    >{{ w.puesto ?? '—' }}</span
+                  >
+                  <p class="text-xs text-[#45474d] dark:text-[var(--erp-login-muted)]">
+                    {{ w.email ?? 'Sin correo' }}
+                  </p>
+                </td>
+                <td class="hidden px-6 py-4 md:table-cell">
+                  <span class="text-sm text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ w.createdAt | date: 'shortDate' }}</span>
+                </td>
+                <td class="px-4 py-3 sm:px-6 sm:py-4">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span [class]="roleBadgeClass(w)">{{ w.role === 'admin' ? 'Admin' : 'Worker' }}</span>
+                    <span
+                      class="material-symbols-outlined text-sm text-[#47607e]"
+                      title="Acceso con PIN de 4 dígitos"
+                      aria-hidden="true"
+                      >lock_open</span
+                    >
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-right sm:px-6 sm:py-4">
+                  <div
+                    class="flex justify-end gap-1 sm:gap-2"
+                    [class.opacity-100]="!w.activo"
+                    [class.sm:opacity-0]="w.activo"
+                    [class.sm:group-hover:opacity-100]="w.activo"
+                  >
+                    @if (w.activo) {
+                      <button
+                        type="button"
+                        class="rounded-lg p-2 text-[#051125] transition-colors hover:bg-[#e7e8e9] dark:text-[var(--erp-login-text-primary)] dark:hover:bg-[var(--erp-login-surface)]"
+                        (click)="onRowEdit(w)"
+                        title="Editar"
+                      >
+                        <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+                      </button>
+                      <button
+                        type="button"
+                        class="rounded-lg p-2 text-[#ba1a1a] transition-colors hover:bg-[#ffdad6]"
+                        (click)="onRowDeactivate(w)"
+                        title="Baja"
+                      >
+                        <span class="material-symbols-outlined" aria-hidden="true">person_off</span>
+                      </button>
+                    } @else {
+                      <button
+                        type="button"
+                        class="rounded-lg bg-[#1b263b] px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white"
+                        (click)="onReactivate(w)"
+                      >
+                        Reactivar
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    }
 
     <div
       class="flex flex-col items-stretch justify-between gap-3 bg-[#f3f4f5] px-4 py-3 sm:flex-row sm:items-center sm:px-6 dark:bg-[var(--erp-login-input-bg)]"
     >
-      <span class="text-xs font-medium text-[#45474d] dark:text-[var(--erp-login-muted)]">Mostrando 1–10 de 248 trabajadores</span>
-      <div class="flex flex-wrap items-center gap-1">
+      <span class="text-xs font-medium text-[#45474d] dark:text-[var(--erp-login-muted)]">
+        @if (filteredWorkers().length === 0) {
+          0 resultados · página {{ currentPage() + 1 }} de {{ totalPages() }}
+        } @else {
+          Mostrando {{ paginationFrom() }}–{{ paginationTo() }} de {{ filteredWorkers().length }} trabajador{{
+            filteredWorkers().length === 1 ? '' : 'es'
+          }}
+          · página {{ currentPage() + 1 }} de {{ totalPages() }}
+        }
+      </span>
+      <div class="flex flex-wrap items-center justify-end gap-1">
         <button
           type="button"
-          class="flex h-8 w-8 items-center justify-center rounded bg-[#e7e8e9] text-[#051125] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
-          (click)="onPage(0)"
+          class="flex h-8 w-8 items-center justify-center rounded bg-[#e7e8e9] text-[#051125] disabled:cursor-not-allowed disabled:opacity-40 dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
+          [disabled]="!hasPrevPage()"
+          (click)="goPrevPage()"
+          aria-label="Página anterior"
         >
           <span class="material-symbols-outlined text-sm" aria-hidden="true">chevron_left</span>
         </button>
         <button
           type="button"
-          class="flex h-8 w-8 items-center justify-center rounded bg-[#051125] text-xs font-bold text-white"
-          (click)="onPage(1)"
-        >
-          1
-        </button>
-        <button
-          type="button"
-          class="flex h-8 w-8 items-center justify-center rounded border border-[#c5c6cd]/40 bg-white text-xs text-[#051125] dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)] dark:text-[var(--erp-login-text-primary)]"
-          (click)="onPage(2)"
-        >
-          2
-        </button>
-        <button
-          type="button"
-          class="flex h-8 w-8 items-center justify-center rounded border border-[#c5c6cd]/40 bg-white text-xs text-[#051125] dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)] dark:text-[var(--erp-login-text-primary)]"
-          (click)="onPage(3)"
-        >
-          3
-        </button>
-        <span class="px-2 text-[#45474d] dark:text-[var(--erp-login-muted)]">…</span>
-        <button
-          type="button"
-          class="flex h-8 w-8 items-center justify-center rounded border border-[#c5c6cd]/40 bg-white text-xs text-[#051125] dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)] dark:text-[var(--erp-login-text-primary)]"
-          (click)="onPage(25)"
-        >
-          25
-        </button>
-        <button
-          type="button"
-          class="flex h-8 w-8 items-center justify-center rounded bg-[#e7e8e9] text-[#051125] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
-          (click)="onPage(99)"
+          class="flex h-8 w-8 items-center justify-center rounded bg-[#e7e8e9] text-[#051125] disabled:cursor-not-allowed disabled:opacity-40 dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
+          [disabled]="!hasNextPage()"
+          (click)="goNextPage()"
+          aria-label="Página siguiente"
         >
           <span class="material-symbols-outlined text-sm" aria-hidden="true">chevron_right</span>
         </button>
@@ -271,16 +260,241 @@
       <div class="flex items-center gap-1.5">
         <div class="h-2 w-2 rounded-full bg-[#47607e]" aria-hidden="true"></div>
         <span class="text-[10px] font-bold uppercase tracking-widest text-[#45474d] dark:text-[var(--erp-login-muted)]"
-          >Identificadores únicos</span
+          >PIN único entre activos</span
         >
       </div>
       <div class="flex items-center gap-1.5">
         <div class="h-2 w-2 rounded-full bg-[#ba1a1a]" aria-hidden="true"></div>
         <span class="text-[10px] font-bold uppercase tracking-widest text-[#45474d] dark:text-[var(--erp-login-muted)]"
-          >Alertas de PIN</span
+          >Conflictos al crear</span
         >
       </div>
     </div>
-    <p class="font-mono text-[10px] text-[#45474d]/60 dark:text-[var(--erp-login-muted)]">PERSONNEL_CORE v4.2 · demo</p>
+    <p class="font-mono text-[10px] text-[#45474d]/60 dark:text-[var(--erp-login-muted)]">PERSONNEL_CORE · MVP</p>
   </footer>
 </div>
+
+@if (modalOpen()) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="worker-modal-title"
+    (click)="closeModal()"
+  >
+    <div
+      class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-[#c5c6cd]/30 bg-white p-6 shadow-xl dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h2 id="worker-modal-title" class="text-lg font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">
+            {{ workerModalTitle() }}
+          </h2>
+          <p class="mt-1 text-sm text-[#45474d] dark:text-[var(--erp-login-muted)]">
+            {{ workerModalSubtitle() }}
+          </p>
+        </div>
+        <button
+          type="button"
+          class="rounded-lg p-2 text-[#45474d] hover:bg-[#edeeef] dark:text-[var(--erp-login-muted)] dark:hover:bg-[var(--erp-login-surface)]"
+          (click)="closeModal()"
+          aria-label="Cerrar"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
+      </div>
+
+      @if (formError()) {
+        <div
+          class="mb-4 rounded-lg border border-[#ba1a1a]/40 bg-[#ffdad6] px-3 py-2 text-sm text-[#410002] dark:border-[#ba1a1a] dark:bg-[#93000a]/20 dark:text-[#ffb4ab]"
+          role="alert"
+        >
+          {{ formError() }}
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="submitWorker()" class="space-y-4">
+        <div>
+          <label for="worker-username" class="mb-1 block text-xs font-bold uppercase tracking-wide text-[#45474d] dark:text-[var(--erp-login-muted)]"
+            >Usuario</label
+          >
+          <input
+            id="worker-username"
+            formControlName="username"
+            type="text"
+            autocomplete="username"
+            class="w-full rounded-lg border border-[#c5c6cd]/40 bg-[#f3f4f5] px-3 py-2.5 text-sm dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-input-bg)] dark:text-[var(--erp-login-text-primary)]"
+          />
+          @if (form.controls.username.touched && form.controls.username.errors?.['required']) {
+            <p class="mt-1 text-xs text-[#ba1a1a]">El usuario es obligatorio.</p>
+          }
+          @if (form.controls.username.touched && form.controls.username.errors?.['minlength']) {
+            <p class="mt-1 text-xs text-[#ba1a1a]">Mínimo 2 caracteres.</p>
+          }
+        </div>
+
+        <div>
+          <label for="worker-fullname" class="mb-1 block text-xs font-bold uppercase tracking-wide text-[#45474d] dark:text-[var(--erp-login-muted)]"
+            >Nombre completo</label
+          >
+          <input
+            id="worker-fullname"
+            formControlName="fullName"
+            type="text"
+            autocomplete="name"
+            class="w-full rounded-lg border border-[#c5c6cd]/40 bg-[#f3f4f5] px-3 py-2.5 text-sm dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-input-bg)] dark:text-[var(--erp-login-text-primary)]"
+          />
+          @if (form.controls.fullName.touched && form.controls.fullName.errors?.['required']) {
+            <p class="mt-1 text-xs text-[#ba1a1a]">El nombre es obligatorio.</p>
+          }
+        </div>
+
+        <div>
+          <label for="worker-email" class="mb-1 block text-xs font-bold uppercase tracking-wide text-[#45474d] dark:text-[var(--erp-login-muted)]"
+            >Correo (opcional)</label
+          >
+          <input
+            id="worker-email"
+            formControlName="email"
+            type="email"
+            autocomplete="email"
+            class="w-full rounded-lg border border-[#c5c6cd]/40 bg-[#f3f4f5] px-3 py-2.5 text-sm dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-input-bg)] dark:text-[var(--erp-login-text-primary)]"
+          />
+          @if (form.controls.email.touched && form.controls.email.errors?.['email']) {
+            <p class="mt-1 text-xs text-[#ba1a1a]">Introduce un correo válido.</p>
+          }
+        </div>
+
+        <div>
+          <label for="worker-puesto" class="mb-1 block text-xs font-bold uppercase tracking-wide text-[#45474d] dark:text-[var(--erp-login-muted)]"
+            >Puesto (opcional)</label
+          >
+          <input
+            id="worker-puesto"
+            formControlName="puesto"
+            type="text"
+            class="w-full rounded-lg border border-[#c5c6cd]/40 bg-[#f3f4f5] px-3 py-2.5 text-sm dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-input-bg)] dark:text-[var(--erp-login-text-primary)]"
+          />
+        </div>
+
+        <div>
+          <label for="worker-role" class="mb-1 block text-xs font-bold uppercase tracking-wide text-[#45474d] dark:text-[var(--erp-login-muted)]"
+            >Rol</label
+          >
+          <select
+            id="worker-role"
+            formControlName="role"
+            class="w-full rounded-lg border border-[#c5c6cd]/40 bg-[#f3f4f5] px-3 py-2.5 text-sm dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-input-bg)] dark:text-[var(--erp-login-text-primary)]"
+          >
+            <option value="worker">Trabajador</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="worker-pin" class="mb-1 block text-xs font-bold uppercase tracking-wide text-[#45474d] dark:text-[var(--erp-login-muted)]"
+            >PIN (4 dígitos){{ isEditMode() ? ', opcional' : '' }}</label
+          >
+          @if (isEditMode()) {
+            <p class="mb-2 text-xs text-[#45474d] dark:text-[var(--erp-login-muted)]">
+              Déjalo vacío para conservar el PIN actual.
+            </p>
+          }
+          <input
+            id="worker-pin"
+            formControlName="pin"
+            type="password"
+            inputmode="numeric"
+            maxlength="4"
+            autocomplete="new-password"
+            class="w-full rounded-lg border border-[#c5c6cd]/40 bg-[#f3f4f5] px-3 py-2.5 font-mono text-lg tracking-widest dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-input-bg)] dark:text-[var(--erp-login-text-primary)]"
+            [class.ring-2]="pinServerError()"
+            [class.ring-[#ba1a1a]]="pinServerError()"
+          />
+          @if (!isEditMode() && form.controls.pin.touched && form.controls.pin.errors?.['required']) {
+            <p class="mt-1 text-xs text-[#ba1a1a]">El PIN es obligatorio.</p>
+          }
+          @if (form.controls.pin.touched && form.controls.pin.errors?.['pattern']) {
+            <p class="mt-1 text-xs text-[#ba1a1a]">El PIN debe ser exactamente 4 dígitos numéricos.</p>
+          }
+          @if (pinServerError()) {
+            <p class="mt-1 text-xs font-medium text-[#ba1a1a]">{{ pinServerError() }}</p>
+          }
+        </div>
+
+        <div class="flex flex-wrap justify-end gap-3 pt-2">
+          <button
+            type="button"
+            class="rounded-lg border border-[#c5c6cd]/50 px-5 py-2.5 text-sm font-semibold text-[#051125] dark:border-[var(--erp-login-input-border)] dark:text-[var(--erp-login-text-primary)]"
+            (click)="closeModal()"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="rounded-lg bg-[#1b263b] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#051125] disabled:opacity-50"
+            [disabled]="submitting()"
+          >
+            {{ submitting() ? 'Guardando…' : workerSubmitLabel() }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (confirmDeactivateOpen()) {
+  <div
+    class="fixed inset-0 z-[55] flex items-center justify-center bg-black/50 p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="deactivate-dialog-title"
+    (click)="closeDeactivateConfirm()"
+  >
+    <div
+      class="w-full max-w-md rounded-xl border border-[#c5c6cd]/30 bg-white p-6 shadow-xl dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]"
+      (click)="$event.stopPropagation()"
+    >
+      <h2
+        id="deactivate-dialog-title"
+        class="text-lg font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]"
+      >
+        Confirmar baja
+      </h2>
+      <p class="mt-3 text-sm text-[#45474d] dark:text-[var(--erp-login-muted)]">
+        ¿Seguro que deseas dar de baja a
+        <span class="font-semibold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{
+          deactivateTarget()?.fullName
+        }}</span
+        >? No podrá iniciar sesión hasta que lo reactives.
+      </p>
+      @if (deactivateError()) {
+        <div
+          class="mt-4 rounded-lg border border-[#ba1a1a]/40 bg-[#ffdad6] px-3 py-2 text-sm text-[#410002] dark:border-[#ba1a1a] dark:bg-[#93000a]/20 dark:text-[#ffb4ab]"
+          role="alert"
+        >
+          {{ deactivateError() }}
+        </div>
+      }
+      <div class="mt-6 flex flex-wrap justify-end gap-3">
+        <button
+          type="button"
+          class="rounded-lg border border-[#c5c6cd]/50 px-5 py-2.5 text-sm font-semibold text-[#051125] disabled:opacity-50 dark:border-[var(--erp-login-input-border)] dark:text-[var(--erp-login-text-primary)]"
+          [disabled]="deactivating()"
+          (click)="closeDeactivateConfirm()"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="rounded-lg bg-[#ba1a1a] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#93000a] disabled:opacity-50"
+          [disabled]="deactivating()"
+          (click)="confirmDeactivate()"
+        >
+          {{ deactivating() ? 'Procesando…' : 'Sí, dar de baja' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

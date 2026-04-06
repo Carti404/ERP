@@ -1,9 +1,19 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { AuthMockService } from '../../core/auth/auth-mock.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { ErpThemeService } from '../../core/theme/erp-theme.service';
-import { TRABAJADOR_PERFIL_BADGE, TRABAJADOR_PERFIL_COLORS, TRABAJADOR_PERFIL_JOB } from './trabajador-perfil.mock';
+
+const PERFIL_COLOR_OPTIONS = [
+  '#47607e',
+  '#051125',
+  '#e63946',
+  '#2a9d8f',
+  '#e9c46a',
+  '#f4a261',
+  '#9b59b6',
+  '#34495e',
+] as const;
 
 @Component({
   selector: 'app-trabajador-perfil',
@@ -11,18 +21,27 @@ import { TRABAJADOR_PERFIL_BADGE, TRABAJADOR_PERFIL_COLORS, TRABAJADOR_PERFIL_JO
   templateUrl: './trabajador-perfil.component.html',
 })
 export class TrabajadorPerfilComponent {
-  private readonly auth = inject(AuthMockService);
+  private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   protected readonly theme = inject(ErpThemeService);
 
-  protected readonly job = TRABAJADOR_PERFIL_JOB;
-  protected readonly badge = TRABAJADOR_PERFIL_BADGE;
-  protected readonly palette = TRABAJADOR_PERFIL_COLORS;
+  protected readonly palette = PERFIL_COLOR_OPTIONS;
 
   protected readonly session = this.auth.session;
+
   protected readonly displayName = computed(() => this.session()?.displayName ?? 'Trabajador');
 
-  protected readonly selectedColor = signal<string>(TRABAJADOR_PERFIL_COLORS[0]);
+  protected readonly jobLine = computed(() => {
+    const s = this.session();
+    return s ? `@${s.username}` : '';
+  });
+
+  protected readonly roleBadge = computed(() => {
+    const r = this.session()?.role;
+    return r === 'admin' ? 'Administrador' : 'Trabajador';
+  });
+
+  protected readonly selectedColor = signal<string>(PERFIL_COLOR_OPTIONS[0]);
   protected readonly pinDigits = signal<string[]>(['', '', '', '']);
   protected readonly notificationsOn = signal(true);
 

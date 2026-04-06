@@ -1,11 +1,18 @@
 import { Component, computed, signal } from '@angular/core';
 
-import {
-  WORKER_PERMISOS_BALANCE,
-  WORKER_PERMISOS_HISTORY,
-  type WorkerPermisoHistoryItem,
-  type WorkerPermisoHistoryStatus,
-} from './trabajador-permisos.mock';
+export type WorkerPermisoHistoryStatus = 'propuesta_admin' | 'aprobado' | 'revision';
+
+export interface WorkerPermisoHistoryItem {
+  readonly id: string;
+  readonly title: string;
+  readonly dateRange: string;
+  readonly daysLabel: string;
+  readonly status: WorkerPermisoHistoryStatus;
+  readonly negotiation?: {
+    readonly from: string;
+    readonly message: string;
+  };
+}
 
 @Component({
   selector: 'app-trabajador-permisos',
@@ -13,13 +20,17 @@ import {
   templateUrl: './trabajador-permisos.component.html',
 })
 export class TrabajadorPermisosComponent {
-  protected readonly balance = WORKER_PERMISOS_BALANCE;
+  protected readonly balance = {
+    availableDays: '—' as const,
+    periodLabel: 'Sin datos de periodo',
+    requested: 0,
+    approved: 0,
+  };
 
-  protected readonly history = WORKER_PERMISOS_HISTORY;
+  protected readonly history: readonly WorkerPermisoHistoryItem[] = [];
 
-  protected readonly viewDate = signal(new Date(2023, 9, 1));
+  protected readonly viewDate = signal(new Date());
 
-  /** Jornada completa vs media jornada en la solicitud (demo; no afecta la selección en calendario). */
   protected readonly fullDay = signal(true);
 
   protected readonly selectionStartMs = signal<number | null>(null);

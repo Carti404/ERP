@@ -7,9 +7,10 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { take } from 'rxjs';
 import { Router } from '@angular/router';
 
-import { AuthMockService } from '../../core/auth/auth-mock.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { ErpThemeService } from '../../core/theme/erp-theme.service';
 
 @Component({
@@ -21,7 +22,7 @@ import { ErpThemeService } from '../../core/theme/erp-theme.service';
 export class LoginPage {
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
-  private readonly auth = inject(AuthMockService);
+  private readonly auth = inject(AuthService);
   protected readonly theme = inject(ErpThemeService);
 
   protected readonly pin = signal('');
@@ -158,22 +159,24 @@ export class LoginPage {
     if (!this.pinComplete()) {
       return;
     }
-    const role = this.auth.signInWithPin(this.pin());
-    if (role === 'admin') {
-      void this.router.navigateByUrl('/admin/inicio');
-      return;
-    }
-    if (role === 'worker') {
-      void this.router.navigateByUrl('/trabajador/inicio');
-      return;
-    }
-    this.pinError.set(true);
-    this.playPinShake();
-    this.clearPinErrorTimer();
-    this.pinErrorClearHandle = globalThis.setTimeout(() => {
-      this.pin.set('');
-      this.pinError.set(false);
-      this.pinErrorClearHandle = undefined;
-    }, 1100);
+    const pin = this.pin();
+    this.auth
+      .signIn(pin)
+      .pipe(take(1))
+      .subscribe({
+        next: (res) => {
+          void this.router.navigateByUrl(this.auth.homeUrlForRole(res.user.role));
+        },
+        error: () => {
+          this.pinError.set(true);
+          this.playPinShake();
+          this.clearPinErrorTimer();
+          this.pinErrorClearHandle = globalThis.setTimeout(() => {
+            this.pin.set('');
+            this.pinError.set(false);
+            this.pinErrorClearHandle = undefined;
+          }, 1100);
+        },
+      });
   }
 }

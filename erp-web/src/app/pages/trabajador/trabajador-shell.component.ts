@@ -1,10 +1,9 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
-import { AuthMockService } from '../../core/auth/auth-mock.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { ErpThemeService } from '../../core/theme/erp-theme.service';
 
-/** Estado operativo de planta (mock hasta API). */
 export type WorkerPlantOperationalStatus = 'online' | 'absent' | 'no_attendance';
 
 const WORKER_PLANT_STATUS_LABEL: Record<WorkerPlantOperationalStatus, string> = {
@@ -23,7 +22,7 @@ export class TrabajadorShellComponent {
   private static readonly SCROLL_DELTA_MIN = 10;
   private static readonly TOP_THRESHOLD = 12;
 
-  private readonly auth = inject(AuthMockService);
+  private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   protected readonly theme = inject(ErpThemeService);
 
@@ -38,7 +37,6 @@ export class TrabajadorShellComponent {
 
   protected readonly session = this.auth.session;
 
-  /** Cambiar a `'absent' | 'no_attendance'` para probar otros estados en mock. */
   protected readonly plantStatus = signal<WorkerPlantOperationalStatus>('online');
 
   protected readonly plantStatusLabel = computed(() => WORKER_PLANT_STATUS_LABEL[this.plantStatus()]);

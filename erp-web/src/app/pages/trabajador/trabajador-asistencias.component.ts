@@ -1,17 +1,33 @@
 import { NgClass } from '@angular/common';
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 
-import {
-  TRABAJADOR_ASISTENCIAS_DAYS,
-  TRABAJADOR_ASISTENCIAS_HISTORIAL,
-  TRABAJADOR_ASISTENCIAS_JUST_TYPES,
-  TRABAJADOR_ASISTENCIAS_MES_LABEL,
-  TRABAJADOR_ASISTENCIAS_SHIFTS,
-  TRABAJADOR_ASISTENCIAS_STATS,
-  TRABAJADOR_ASISTENCIAS_WEEK_DAYS,
-  type TrabajadorAsistenciaCalDay,
-  type TrabajadorJustificacionHistorialMock,
-} from './trabajador-asistencias.mock';
+export type TrabajadorAsistenciaDiaEstado = 'punctual' | 'delay' | 'absence' | 'empty';
+
+export interface TrabajadorAsistenciaCalDay {
+  readonly d: number | null;
+  readonly estado: TrabajadorAsistenciaDiaEstado;
+}
+
+export interface TrabajadorJustificacionHistorialRow {
+  readonly id: string;
+  readonly status: 'pending' | 'approved' | 'rejected';
+  readonly type: string;
+  readonly date: string;
+  readonly description: string;
+}
+
+const JUST_TYPES = [
+  { id: 'med', label: 'Baja médica' },
+  { id: 'delay', label: 'Justificación de retraso' },
+  { id: 'abs', label: 'Ausencia' },
+  { id: 'pers', label: 'Asunto personal' },
+] as const;
+
+const SHIFTS = [
+  { id: 'morning', label: 'Mañana' },
+  { id: 'afternoon', label: 'Tarde' },
+  { id: 'night', label: 'Noche' },
+] as const;
 
 @Component({
   selector: 'app-trabajador-asistencias',
@@ -20,19 +36,62 @@ import {
   templateUrl: './trabajador-asistencias.component.html',
 })
 export class TrabajadorAsistenciasComponent {
-  protected readonly mesLabel = TRABAJADOR_ASISTENCIAS_MES_LABEL;
-  protected readonly weekDays = TRABAJADOR_ASISTENCIAS_WEEK_DAYS;
-  protected readonly calendarDays = TRABAJADOR_ASISTENCIAS_DAYS;
-  protected readonly stats = TRABAJADOR_ASISTENCIAS_STATS;
-  protected readonly justTypes = TRABAJADOR_ASISTENCIAS_JUST_TYPES;
-  protected readonly shifts = TRABAJADOR_ASISTENCIAS_SHIFTS;
-  protected readonly historial = TRABAJADOR_ASISTENCIAS_HISTORIAL;
+  protected readonly viewMonth = signal(new Date());
 
-  protected readonly selectedDay = signal<number | null>(31);
+  protected readonly mesLabel = computed(() => {
+    const d = this.viewMonth();
+    const raw = d.toLocaleDateString('es', { month: 'long', year: 'numeric' });
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
+  });
 
-  protected readonly justTypeId = signal<string>(this.justTypes[0].id);
-  protected readonly shiftId = signal<string>(this.shifts[0].id);
+  protected readonly weekDays = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'] as const;
+
+  protected readonly calendarDays = computed((): TrabajadorAsistenciaCalDay[] => {
+    const d = this.viewMonth();
+    const y = d.getFullYear();
+    const m = d.getMonth();
+    const first = new Date(y, m, 1);
+    const startPad = first.getDay();
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    const cells: TrabajadorAsistenciaCalDay[] = [];
+    for (let i = 0; i < startPad; i++) {
+      cells.push({ d: null, estado: 'empty' });
+    }
+    for (let day = 1; day <= daysInMonth; day++) {
+      cells.push({ d: day, estado: 'empty' });
+    }
+    return cells;
+  });
+
+  protected readonly stats = { punctual: 0, delays: 0, absences: 0 } as const;
+
+  protected readonly justTypes = JUST_TYPES;
+
+  protected readonly shifts = SHIFTS;
+
+  protected readonly historial: readonly TrabajadorJustificacionHistorialRow[] = [];
+
+  protected readonly selectedDay = signal<number | null>(null);
+
+  protected readonly justTypeId = signal<string>(JUST_TYPES[0].id);
+
+  protected readonly shiftId = signal<string>(SHIFTS[0].id);
+
   protected readonly reasonText = signal<string>('');
+
+  protected prevMonth(): void {
+    const d = new Date(this.viewMonth());
+    d.setMonth(d.getMonth() - 1);
+    this.viewMonth.set(d);
+    this.selectedDay.set(null);
+  }
+
+  protected nextMonth(): void {
+    const d = new Date(this.viewMonth());
+    d.setMonth(d.getMonth() + 1);
+    this.viewMonth.set(d);
+    this.selectedDay.set(null);
+  }
 
   protected pickDay(cell: TrabajadorAsistenciaCalDay): void {
     if (cell.d === null) {
@@ -69,7 +128,7 @@ export class TrabajadorAsistenciasComponent {
     return;
   }
 
-  protected statusBadgeClass(row: TrabajadorJustificacionHistorialMock): string {
+  protected statusBadgeClass(row: TrabajadorJustificacionHistorialRow): string {
     switch (row.status) {
       case 'pending':
         return 'bg-amber-500/15 text-amber-800 dark:text-amber-300';
@@ -80,7 +139,7 @@ export class TrabajadorAsistenciasComponent {
     }
   }
 
-  protected statusLabel(row: TrabajadorJustificacionHistorialMock): string {
+  protected statusLabel(row: TrabajadorJustificacionHistorialRow): string {
     switch (row.status) {
       case 'pending':
         return 'Pendiente';

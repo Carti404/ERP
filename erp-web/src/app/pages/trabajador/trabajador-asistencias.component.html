@@ -15,7 +15,7 @@
       Mi asistencia
     </h1>
     <p class="mt-0.5 text-xs text-[var(--erp-login-muted)]">
-      Calendario, estadísticas y justificaciones (demo).
+      Calendario y justificaciones; los registros reales se conectarán a la API de asistencias.
     </p>
   </div>
 
@@ -23,13 +23,35 @@
     <!-- Calendario + stats -->
     <div class="space-y-4">
       <section class="rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] p-4 shadow-sm">
-        <h2 class="text-[10px] font-black uppercase tracking-widest text-[var(--erp-login-label)]">Seguimiento de asistencia</h2>
-        <p class="mt-1 text-sm font-bold text-[var(--erp-login-text-primary)]">{{ mesLabel }}</p>
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h2 class="text-[10px] font-black uppercase tracking-widest text-[var(--erp-login-label)]">
+            Seguimiento de asistencia
+          </h2>
+          <div class="flex gap-1">
+            <button
+              type="button"
+              class="rounded-lg p-1 text-[var(--erp-login-muted)] hover:bg-[color-mix(in_srgb,var(--erp-login-muted)_10%,transparent)]"
+              (click)="prevMonth()"
+              aria-label="Mes anterior"
+            >
+              <span class="material-symbols-outlined text-lg" aria-hidden="true">chevron_left</span>
+            </button>
+            <button
+              type="button"
+              class="rounded-lg p-1 text-[var(--erp-login-muted)] hover:bg-[color-mix(in_srgb,var(--erp-login-muted)_10%,transparent)]"
+              (click)="nextMonth()"
+              aria-label="Mes siguiente"
+            >
+              <span class="material-symbols-outlined text-lg" aria-hidden="true">chevron_right</span>
+            </button>
+          </div>
+        </div>
+        <p class="mt-1 text-sm font-bold text-[var(--erp-login-text-primary)]">{{ mesLabel() }}</p>
         <div class="mt-4 grid grid-cols-7 gap-1">
           @for (w of weekDays; track w) {
             <span class="py-1 text-center text-[9px] font-black uppercase text-[var(--erp-login-muted)]">{{ w }}</span>
           }
-          @for (cell of calendarDays; track $index) {
+          @for (cell of calendarDays(); track $index) {
             @if (cell.d === null) {
               <span class="aspect-square"></span>
             } @else {
@@ -186,19 +208,27 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-[var(--erp-login-input-border)]">
-          @for (row of historial; track row.id) {
+          @if (historial.length === 0) {
             <tr>
-              <td class="py-3 pr-2 align-top">
-                <span
-                  class="inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase"
-                  [ngClass]="statusBadgeClass(row)"
-                  >{{ statusLabel(row) }}</span
-                >
+              <td colspan="4" class="py-8 text-center text-sm text-[var(--erp-login-muted)]">
+                Sin justificaciones en el historial.
               </td>
-              <td class="py-3 pr-2 align-top font-medium text-[var(--erp-login-text-primary)]">{{ row.type }}</td>
-              <td class="py-3 pr-2 align-top text-xs text-[var(--erp-login-muted)]">{{ row.date }}</td>
-              <td class="py-3 align-top text-xs text-[var(--erp-login-text-primary)]">{{ row.description }}</td>
             </tr>
+          } @else {
+            @for (row of historial; track row.id) {
+              <tr>
+                <td class="py-3 pr-2 align-top">
+                  <span
+                    class="inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase"
+                    [ngClass]="statusBadgeClass(row)"
+                    >{{ statusLabel(row) }}</span
+                  >
+                </td>
+                <td class="py-3 pr-2 align-top font-medium text-[var(--erp-login-text-primary)]">{{ row.type }}</td>
+                <td class="py-3 pr-2 align-top text-xs text-[var(--erp-login-muted)]">{{ row.date }}</td>
+                <td class="py-3 align-top text-xs text-[var(--erp-login-text-primary)]">{{ row.description }}</td>
+              </tr>
+            }
           }
         </tbody>
       </table>

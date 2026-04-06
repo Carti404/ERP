@@ -2,13 +2,13 @@
 
 **Documento maestro de alcance, roles, flujos por módulo y decisiones técnicas** — Objetivo: tener **visión cerrada** antes de programar; el desarrollo consiste en implementar lo aquí descrito (ajustando solo detalles de UX o datos).
 
-**Producto aparte** de Mundo Terapeuta (MT): **PostgreSQL y usuarios propios**, consumo **solo lectura** de MT cuando aplique. **Lógica simple** e **interfaz intuitiva** para planta y administración.
+**Producto aparte** de Mundo Terapeuta (MT): **PostgreSQL y usuarios propios**. El ERP **recibe** de MT las **órdenes / metas de producción** (abastecimiento de mercancía) vía APIs o jobs; **no** accede a la base de datos de MT. Tras el **cierre validado** en planta, el ERP **devuelve a MT** (vía integración contratada) los datos para **actualizar inventarios** de **insumos** y **producto terminado** — ver §2, §7.5.1.1 y **M8.2b**. Detalle técnico: [HORIZONTE_BACKEND_INFRAESTRUCTURA.md](./HORIZONTE_BACKEND_INFRAESTRUCTURA.md). **Lógica simple** e **interfaz intuitiva** para planta y administración.
 
 ---
 
 ## 1. Visión en una frase
 
-**PWA interna** (Angular) con backend NestJS que concentra **producción** (sync MT por **jobs**), **mermas**, **asistencias**, **permisos y vacaciones**, **bandeja de entrada**, **notificaciones del sistema**, **Personal/Trabajadores** y **parámetros** — sin modificar el núcleo de MT.
+**PWA interna** (Angular) con backend NestJS que concentra **producción** (recepción desde MT y **cierre reportado** hacia MT para inventarios), **mermas**, **asistencias**, **permisos y vacaciones**, **bandeja de entrada**, **notificaciones del sistema**, **Personal/Trabajadores** y **parámetros** — **sin acceso directo** del ERP a la base de datos de MT; solo **integraciones** acordadas.
 
 ---
 
@@ -19,9 +19,9 @@
 | **Despliegue** | Servicio **independiente** (repositorio/proyecto y despliegue propios). |
 | **Base de datos** | **PostgreSQL** dedicada al ERP. |
 | **Autenticación** | **Login interno**: usuario o correo + **PIN numérico de 4 dígitos** (ver §6). |
-| **Intervención en MT** | **Ninguna**. Integración **unidireccional** (ERP consume APIs/exportaciones/**jobs** de MT según contrato acordado). En el MVP la sincronización de producción se implementa preferentemente como **job periódico**; una fase posterior puede acercarse a **casi tiempo real**. |
+| **Intervención en MT** | **Ninguna** sobre la base de datos o el núcleo interno de MT. La integración es por **contrato técnico** (REST, webhooks, jobs): **MT → ERP** (requerimientos de producción para abastecimiento) y **ERP → MT** (resultado de cierre para **movimientos de inventario** — insumos consumidos y producto terminado elaborado, según payload acordado). En el MVP la **entrada** de producción se implementa preferentemente como **job periódico**; una fase posterior puede acercarse a **casi tiempo real** en el canal MT → ERP. |
 
-**Nota de negocio:** los **objetivos de producción** que el trabajador debe cumplir **provienen de lo definido en MT** (órdenes, metas o catálogos sincronizados); la **ejecución, evidencias, mermas y validación** ocurren en el ERP.
+**Nota de negocio:** los **objetivos de producción** que el trabajador debe cumplir **provienen de lo definido en MT** (órdenes, metas o catálogos sincronizados); la **delegación en planta, plazos, ejecución, evidencias, mermas y validación administrativa** ocurren en el ERP. Cuando el requerimiento quede **cerrado en ERP** según reglas de negocio, el sistema debe **notificar a MT** para que actualice **inventarios** (insumos y producto final) de forma coherente con lo ejecutado — sin SQL cruzado, solo vía API u otro mecanismo que MT exponga.
 
 **Trabajador ERP ≠ CIBE** (POS en MT). Correlación de identidades entre sistemas, si existiera, es **opcional** y explícita.
 
@@ -57,7 +57,7 @@ Lista acordada de **módulos de producto** (entradas de menú) y referencias al 
 |---|----------------|------------------|----------------------|
 | 1 | **Bandeja de entrada** | Mensajería tipo **correo** (múltiples destinatarios, adjuntos, estados, tipos de mensaje, historial por rol); **sonido** ante mensaje nuevo. | §7.4, M8.8 |
 | 2 | **Notificaciones del sistema** | Centro de **alertas automáticas** (p. ej. nueva asignación de producción, apelaciones de permisos/vacaciones, rechazos, permisos aceptados, aviso de **nuevo mensaje en bandeja**). Separado conceptual y en UI de la bandeja. | M8.9 |
-| 3 | **Producción** | Sync **desde MT** por **job** (periódico; tiempo casi real en fase posterior); delegación, avance, mermas, cierre con admin; **bloqueo** si no hay **entrada** de checador (§7.5.3). | §7.5, M8.2–M8.4 |
+| 3 | **Producción** | Sync **desde MT** por **job** (periódico; tiempo casi real en fase posterior); delegación, avance, mermas, cierre con admin; **reporte a MT** de cierre / inventarios (**M8.2b**); **bloqueo** si no hay **entrada** de checador (§7.5.3). | §7.5, M8.2–M8.4, M8.2b |
 | 4 | **Asistencias** | Checador; calendarios admin/trabajador; justificaciones e historial. | §7.3, §7.6, M8.5–M8.6 |
 | 5 | **Permisos y vacaciones** | Días completos y **por horas**; apelaciones ilimitadas; **Rechazar** siempre visible **hasta** que la solicitud quede **aceptada** (luego no aplica rechazo). | §7.7, M8.7 |
 | 6 | **Parámetros del sistema** | Solo **administrador**: jornada, festivos, puntual/retraso; **break** (duración nominal) y **comida** (ventana global). | §7.3, §7.3.6, M8.0 |
@@ -70,7 +70,7 @@ Lista acordada de **módulos de producto** (entradas de menú) y referencias al 
 | **Autenticación** | Usuario/correo + **PIN** 4 dígitos (§6, M8.1). |
 | **Roles** | **Trabajador** y **Administrador** (§5). |
 | **Panel principal (home)** | Resumen por rol (§7.1–§7.2). |
-| **Integración MT** | Lectura vía **jobs** programados en el MVP; evolución a sync más frecuente o tiempo casi real **posterior** (§2, M8.2). |
+| **Integración MT** | **Entrada:** requerimientos de producción vía **jobs** en el MVP; evolución a sync más frecuente o **casi tiempo real** (§2, M8.2). **Salida:** **M8.2b** — cierre / inventarios hacia MT tras aprobación en ERP. |
 
 *Nota:* Las **mermas** pertenecen a **Producción**. Las **faltas/justificaciones** pertenecen a **Asistencias**. El **color identificador** se configura en **perfil del trabajador** (editable por el propio trabajador; el admin puede supervisar o restringir paleta según política).
 
@@ -300,7 +300,7 @@ Esta alerta es **específica de la bandeja**; las **notificaciones del sistema**
 
 ### 7.5 Panel de producción
 
-La **orden o meta de producción** (qué fabricar y cuánto) la define **Mundo Terapeuta**. El ERP **consume** esa información (solo lectura respecto al núcleo de MT) y permite **desglosar**, **asignar** a trabajadores, **seguir avance**, **mermas** y **cierre** con validación del administrador. Detalle de implementación: **M8.2**, **M8.3**, **M8.4**.
+La **orden o meta de producción** (qué fabricar y cuánto, en el marco del **abastecimiento de mercancía** que MT gestiona) la define **Mundo Terapeuta**. El ERP **recibe** esa información por integración contratada y permite **desglosar**, **asignar** a trabajadores, **seguir avance**, **mermas** y **cierre** con validación del administrador. Al **cerrar** el ciclo en ERP, se **reporta a MT** el resultado para **inventarios** (§7.5.1.1, **M8.2b**). Detalle de implementación: **M8.2**, **M8.2b**, **M8.3**, **M8.4**.
 
 #### 7.5.1 Datos que provienen de MT (obligatorio reflejar en ERP)
 
@@ -314,6 +314,18 @@ Para cada requerimiento de producción sincronizado, el ERP debe mostrar al meno
 | **Insumos** | Listado de **insumos necesarios** para cumplir con **toda** la producción requerida (cantidades teóricas según receta × volumen), de forma que quede claro el material de apoyo a la meta global. |
 
 *Nota:* el contrato técnico con MT (campos exactos, periodicidad de sync) se detalla al implementar; aquí se fija el **alcance funcional** visible en pantalla.
+
+#### 7.5.1.1 Resultado hacia MT (inventarios tras cierre en ERP)
+
+Cuando la producción requerida por MT haya quedado **cumplida y validada en el ERP** (regla típica: cierre aprobado por administrador según §7.5.3 / M8.3), el ERP **envía a MT** la información necesaria para que MT **actualice**:
+
+| Dato / efecto | Descripción |
+|---------------|-------------|
+| **Producto terminado** | Cantidad **elaborada** (y unidad) reconocida en cierre ERP, alineada al `external_id` / orden MT. |
+| **Insumos** | **MT calcula** el consumo a partir de la **receta** (insumos y cantidades **por pieza** de producto final) × **cantidad elaborada** notificada por el ERP. El ERP puede enviar **mermas** u otros campos solo si el contrato MT los exige para ajustes; por defecto **no** se envían líneas de insumo desde el ERP. |
+| **Trazabilidad** | Identificadores de cierre, timestamps e **idempotencia** (reenvíos sin duplicar movimientos en MT). |
+
+El **formato exacto** (REST, webhook hacia MT, cola) y los campos obligatorios viven en el **contrato MT ↔ ERP**; mecanismos de reintentos y DLQ: [HORIZONTE_BACKEND_INFRAESTRUCTURA.md](./HORIZONTE_BACKEND_INFRAESTRUCTURA.md) §4.3.
 
 #### 7.5.2 Vista administrador — delegación y supervisión
 
@@ -489,7 +501,21 @@ Referencia funcional: **§7.5.1**.
 | 3 | ERP persiste **copia operativa** para consulta en planta (solo lectura del núcleo MT). |
 | 4 | El **administrador** ve el requerimiento completo antes de **delegar**; el **trabajador** no ve el requerimiento global hasta que exista **asignación** hacia él (§7.5). |
 
-*El ERP no escribe en MT en el MVP salvo acuerdo explícito futuro.*
+La **recepción** de requerimientos **no modifica** la base de datos de MT; solo actualiza la copia operativa en el ERP.
+
+### M8.2b Cierre de producción e inventarios (ERP → MT)
+
+Referencia funcional: **§7.5.1.1**.
+
+| Paso | Acción |
+|------|--------|
+| 1 | Se cumple en ERP la regla de **requerimiento completado** (p. ej. todas las asignaciones cerradas y aprobadas según M8.3). |
+| 2 | El backend **compone el payload** acordado con MT: referencia a orden/requerimiento (`external_id`), **producto terminado elaborado** (cantidad/unidad). **Insumos:** los calcula **MT** con la **receta** (por pieza) × elaborado; el ERP añade al payload solo **mermas** u otros campos si el contrato MT los exige. |
+| 3 | Se **encola** el envío a MT (no bloquear la transacción de cierre en ERP); **reintentos**, **idempotencia** y registro de errores según [HORIZONTE_BACKEND_INFRAESTRUCTURA.md](./HORIZONTE_BACKEND_INFRAESTRUCTURA.md) §4.3. |
+| 4 | MT responde **2xx** (o acuse explícito); el ERP marca el envío como **confirmado** o deja trazabilidad para soporte / reenvío manual si falla la cola. |
+| 5 | Si MT **rechaza** el payload (validación de negocio), el flujo de **escalación** (corrección de datos, reenvío) se define en el contrato y en parámetros del ERP (alerta a admin, estado “pendiente de sincronizar con MT”, etc.). |
+
+*Nota de planificación:* el **momento** en el calendario de releases en que M8.2b queda operativo (misma release que M8.3 o inmediatamente posterior) lo fijan el contrato con MT y el equipo; el **alcance funcional** del MVP **sí** contempla este cierre de circuito de **abastecimiento / inventarios**.
 
 ### M8.3 Producción: delegación, avance y cierre (Admin + Trabajador)
 
@@ -507,8 +533,8 @@ Referencia funcional: **§7.5.2**, **§7.5.3**, **§7.5.4**.
 | 8 | Trabajador marca **finalizado** (cumplió su cuota o declaración de término) → estado **pendiente de aprobación administrador**. |
 | 9 | **Admin** revisa, puede **registrar o ajustar** observaciones de progreso para métricas de desempeño y tiempo. |
 | 10 | Admin **aprueba** (cierra asignación) o **devuelve** con motivo para corrección. |
-| 11 | Cuando todas las asignaciones de un requerimiento están cerradas según regla de negocio, el requerimiento puede marcarse **completado en ERP** (sin implicar escritura en MT salvo contrato futuro). |
-| 12 | Historial auditable (delegación, avances, mermas, cierres, tiempos) para KPIs. |
+| 11 | Cuando todas las asignaciones de un requerimiento están cerradas según regla de negocio, el requerimiento se marca **completado en ERP** y se **dispara** el flujo **M8.2b** (notificación a MT para inventarios). |
+| 12 | Historial auditable (delegación, avances, mermas, cierres, tiempos, **estado de sincronización con MT** si aplica) para KPIs. |
 
 ### M8.4 Mermas
 
@@ -664,7 +690,7 @@ Menú **Personal** o **Trabajadores**; no visible para rol trabajador.
 
 ## 12. API: REST + DTOs vs GraphQL
 
-**Recomendación MVP:** **REST + DTOs** para la mayoría de módulos, incluida la **bandeja de mensajes** (M8.8). **WebSocket** solo si en el futuro se exige bandeja “casi en tiempo real” sin polling; no es requisito del diseño actual. Reevaluar GraphQL solo si surgen necesidades fuertes de agregación. Integración MT: **REST o jobs** acordados; no depender del GraphQL de MT salvo decisión explícita del equipo MT.
+**Recomendación MVP:** **REST + DTOs** para la mayoría de módulos, incluida la **bandeja de mensajes** (M8.8). **WebSocket** solo si en el futuro se exige bandeja “casi en tiempo real” sin polling; no es requisito del diseño actual. Reevaluar GraphQL solo si surgen necesidades fuertes de agregación. Integración MT: **REST o jobs** acordados para **entrada**; **cliente saliente** o webhook hacia MT para **cierre de producción** (M8.2b); no depender del GraphQL de MT salvo decisión explícita del equipo MT.
 
 ---
 
@@ -679,7 +705,7 @@ Menú **Personal** o **Trabajadores**; no visible para rol trabajador.
 ## 14. Fuera de alcance explícito (MVP)
 
 - Sustituir módulos comerciales de MT.
-- Escritura en base de datos de MT (salvo contrato futuro explícito).
+- **Acceso directo** del ERP a la **base de datos** de MT (lectura o escritura SQL); toda comunicación con MT es por **integración contratada**. La **actualización de inventarios en MT** por resultado de producción **sí** está en alcance como **llamada/servicio hacia MT** (M8.2b), no como acceso al motor de datos de MT.
 - Offline complejo sin especificación de reconciliación.
 - **Sincronización casi en tiempo real** con MT para producción: en el MVP basta **job periódico**; acercar a tiempo real queda como **evolución** posterior.
 
@@ -691,7 +717,7 @@ Antes de desarrollar pantallas de negocio, se debe **preparar y estabilizar** el
 
 | Fase | Contenido |
 |------|-----------|
-| **15.1 Repositorio y backend** | Crear proyecto **NestJS** (estructura modular, configuración por entorno, **PostgreSQL** + **TypeORM** o Prisma según criterio del equipo, **Redis** si aplica desde el inicio), CORS, validación global, prefijo `/api`, health check. |
+| **15.1 Repositorio y backend** | Crear proyecto **NestJS** (estructura modular, configuración por entorno, **PostgreSQL** + **TypeORM**, **Redis** si aplica desde el inicio), CORS, validación global, prefijo `/api`, health check. |
 | **15.2 Frontend** | Crear proyecto **Angular** (standalone, routing, **PWA** con service worker y `manifest`, proxy o env para API, estilos base / design tokens alineados a MT si se desea). |
 | **15.3 Calidad compartida** | ESLint/Prettier, scripts `dev`, convenciones de commits opcional, Docker Compose opcional (app + postgres + redis) para paridad local. |
 | **15.4 Inicio de features** | Una vez **15.1–15.3** listos y desplegables en local, comenzar por el **frontend** (shell, auth PIN, layout por rol) consumiendo endpoints mínimos del backend; luego módulos según prioridad del §4.1. |
@@ -703,17 +729,18 @@ Antes de desarrollar pantallas de negocio, se debe **preparar y estabilizar** el
 ## 16. Próximos pasos de producto / datos (antes o en paralelo al código)
 
 1. **Diagrama ER** (usuarios, asignaciones, producción, mermas, **marcas de turno/break/comida**, solicitudes, mensajes, notificaciones).
-2. **Contrato MT** (campos mínimos de orden/objetivo y frecuencia de sync).
+2. **Contrato MT ↔ ERP** bidireccional: **entrada** (orden/objetivo, receta, insumos teóricos, `external_id`, frecuencia de sync / webhooks) y **salida** (cierre: **producto elaborado**; consumo de insumos **calculado en MT** por receta × elaborado; mermas u otros campos solo si MT lo pide; idempotencia — **M8.2b**, [HORIZONTE_BACKEND_INFRAESTRUCTURA.md](./HORIZONTE_BACKEND_INFRAESTRUCTURA.md) §4.3 y §12–§13).
 3. **Reglas de horario** — **§7.3 / M8.0** (jornada, tolerancia, **§7.3.6 break/comida**); pendiente **zona horaria** y **vigencia** de cambios retroactivos.
 4. **Wireframes** del checador y del home admin/trabajador (validar con usuarios reales).
 5. **Bandeja:** matriz de permisos de **quién puede cambiar qué estado** en un hilo; límites de tamaño de adjuntos; lista fija vs. configurable de **tipos de mensaje**.
-6. **Producción:** entidades `requerimiento_mt`, `asignación` (trabajador, piezas, plazo, unidad de tiempo), eventos de avance, regla exacta **suma piezas ≤ total MT**; contrato API MT para receta e insumos.
+6. **Producción:** entidades `requerimiento_mt`, `asignación` (trabajador, piezas, plazo, unidad de tiempo), eventos de avance, regla exacta **suma piezas ≤ total MT**; registro de **envíos / acuses** hacia MT (M8.2b); contrato API para receta, insumos y **retroalimentación de inventarios**.
 7. **Asistencias:** entidad `solicitud_justificacion_asistencia` (solicitante, tipo, fecha incidencia, motivo, evidencia, **estado**: pendiente \| aceptada \| rechazada, **comentario_rechazo**, **resuelto_por**, **resuelto_en**); endpoints de **historial** por rol; validar comentario en rechazo según política de producto.
 8. **Permisos y vacaciones:** solicitud con tipo, **días completos y franjas por horas**, propuestas por actor, **estado** (pendiente, en_negociación, aprobada, rechazada), **rondas de apelación** + acción **rechazar** hasta aceptación final; APIs y vista mensual admin con **color identificador** por trabajador.
 9. **Usuarios:** campo `color_identificador` (paleta, unicidad opcional); regla **solo inicio de turno** antes de operaciones de producción; **sin** exigir fin de turno para finalizar producción (validación en API).  
 10. **Marcas de jornada:** entidad o filas para `inicio_turno`, `fin_turno`, `salida_break`, `regreso_break`, `salida_comida`, `regreso_comida` (timestamps, `user_id`, fecha laboral); parámetros globales `duracion_break_nominal_min`, `comida_hora_desde` (y campos adicionales según §7.3.6).
 11. **Notificaciones vs. bandeja:** modelo de datos de `notificacion_sistema` separado de mensajes M8.8.
+12. **Integración producción:** tabla o log de **eventos de sincronización ERP→MT** (payload, intentos, error, `event_id` / idempotencia) para auditoría y reproceso.
 
 ---
 
-*Documento vivo. Actualizar ER, contrato MT (job → casi tiempo real en fase 2) y catálogos (tipos de mensaje, paleta de colores).*
+*Documento vivo. Actualizar ER, contrato MT (entrada: job → casi tiempo real en fase 2; salida: cierre e inventarios M8.2b), catálogos (tipos de mensaje, paleta de colores) y [HORIZONTE_BACKEND_INFRAESTRUCTURA.md](./HORIZONTE_BACKEND_INFRAESTRUCTURA.md) cuando cambien mecanismos (webhooks, colas).*

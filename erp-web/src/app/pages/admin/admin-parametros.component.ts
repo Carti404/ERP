@@ -1,20 +1,49 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 
+import { messageFromApiError } from '../../core/http/api-error.util';
+import { SystemParametersApiService } from '../../core/system-parameters/system-parameters-api.service';
+import type {
+  PutSystemParametersPayload,
+  SystemParametersSnapshot,
+} from '../../core/system-parameters/system-parameters-api.types';
 import {
-  ADMIN_PARAMETROS_CAL_CELLS,
-  ADMIN_PARAMETROS_CAL_MONTH,
   ADMIN_PARAMETROS_INITIAL,
-  type AdminParametrosHolidayMock,
+  type AdminParametrosHolidayRow,
 } from './admin-parametros.mock';
 
 type ParamState = {
-  monFri: { entry: string; exit: string; tolerance: number; active: boolean };
-  saturday: { entry: string; exit: string; tolerance: number; active: boolean };
+  monFri: {
+    entry: string;
+    exit: string;
+    tolerance: number;
+    active: boolean;
+  };
+  saturday: {
+    entry: string;
+    exit: string;
+    tolerance: number;
+    active: boolean;
+  };
   snackMin: number;
   lunchFrom: string;
   lunchDurationMin: number;
-  holidays: AdminParametrosHolidayMock[];
+  holidays: AdminParametrosHolidayRow[];
 };
+
+const MONTHS_ES = [
+  'Enero',
+  'Febrero',
+  'Marzo',
+  'Abril',
+  'Mayo',
+  'Junio',
+  'Julio',
+  'Agosto',
+  'Septiembre',
+  'Octubre',
+  'Noviembre',
+  'Diciembre',
+] as const;
 
 function cloneInitial(): ParamState {
   const i = ADMIN_PARAMETROS_INITIAL;
@@ -28,16 +57,163 @@ function cloneInitial(): ParamState {
   };
 }
 
+function deepCloneState(s: ParamState): ParamState {
+  return {
+    monFri: { ...s.monFri },
+    saturday: { ...s.saturday },
+    snackMin: s.snackMin,
+    lunchFrom: s.lunchFrom,
+    lunchDurationMin: s.lunchDurationMin,
+    holidays: s.holidays.map((h) => ({ ...h })),
+  };
+}
+
+function normalizeHm(raw: string): string {
+  const t = raw.trim();
+  return t.length >= 5 ? t.slice(0, 5) : t;
+}
+
+/** Normaliza a YYYY-MM-DD (evita desfaces por ISO con zona). */
+function normalizeHolidayDate(raw: string): string {
+  const m = raw.trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) {
+    return `${m[1]}-${m[2]}-${m[3]}`;
+  }
+  return raw.trim().slice(0, 10);
+}
+
+function snapshotToState(s: SystemParametersSnapshot): ParamState {
+  return {
+    monFri: { ...s.monFri },
+    saturday: { ...s.saturday },
+    snackMin: s.snackMin,
+    lunchFrom: normalizeHm(s.lunchFrom),
+    lunchDurationMin: s.lunchDurationMin,
+    holidays: s.holidays.map((h) => ({
+      id: h.id,
+      title: h.title,
+      sub: h.sub,
+      date: normalizeHolidayDate(h.date),
+    })),
+  };
+}
+
+function stateToPayload(s: ParamState): PutSystemParametersPayload {
+  return {
+    monFri: { ...s.monFri },
+    saturday: { ...s.saturday },
+    snackMin: s.snackMin,
+    lunchFrom: normalizeHm(s.lunchFrom),
+    lunchDurationMin: s.lunchDurationMin,
+    holidays: s.holidays.map((h) => ({
+      date: normalizeHolidayDate(h.date),
+      title: h.title.trim(),
+      sub: (h.sub ?? '').trim(),
+    })),
+  };
+}
+
 @Component({
   selector: 'app-admin-parametros',
   standalone: true,
   templateUrl: './admin-parametros.component.html',
 })
-export class AdminParametrosComponent {
-  protected readonly calMonth = ADMIN_PARAMETROS_CAL_MONTH;
-  protected readonly calCells = ADMIN_PARAMETROS_CAL_CELLS;
+export class AdminParametrosComponent implements OnInit {
+  private readonly api = inject(SystemParametersApiService);
 
   protected readonly state = signal<ParamState>(cloneInitial());
+  private readonly serverSnapshot = signal<ParamState | null>(null);
+
+  protected readonly loading = signal(true);
+  protected readonly saving = signal(false);
+  protected readonly loadError = signal<string | null>(null);
+  protected readonly saveError = signal<string | null>(null);
+
+  protected readonly calCursor = signal<Date>(new Date());
+
+  protected readonly addingHoliday = signal(false);
+  protected readonly draftHolidayDate = signal('');
+  protected readonly draftHolidayTitle = signal('');
+  protected readonly draftHolidaySub = signal('');
+
+  protected readonly calMonthLabel = computed(() => {
+    const d = this.calCursor();
+    return `${MONTHS_ES[d.getMonth()]} ${d.getFullYear()}`;
+  });
+
+  protected readonly sortedHolidays = computed(() =>
+    [...this.state().holidays].sort((a, b) => a.date.localeCompare(b.date)),
+  );
+
+  /**
+   * Mini calendario: resalta festivo si coincide la fecha exacta en el mes visible
+   * o el mismo día/mes en cualquier año (p. ej. 2024-05-01 se marca cada 1 de mayo).
+   */
+  protected readonly calCells = computed(() => {
+    const d = this.calCursor();
+    const y = d.getFullYear();
+    const m = d.getMonth();
+    const first = new Date(y, m, 1);
+    const lastDay = new Date(y, m + 1, 0).getDate();
+    const startPad = (first.getDay() + 6) % 7;
+
+    const holidays = this.state().holidays;
+    const holidayExact = new Set(
+      holidays.map((h) => normalizeHolidayDate(h.date)),
+    );
+    const holidayMonthDay = new Set(
+      holidays.map((h) => normalizeHolidayDate(h.date).slice(5, 10)),
+    );
+
+    const cells: { label: string; tone: 'muted' | 'day' | 'holiday' }[] = [];
+    const prevLast = new Date(y, m, 0).getDate();
+    for (let i = 0; i < startPad; i++) {
+      cells.push({
+        label: String(prevLast - startPad + i + 1),
+        tone: 'muted',
+      });
+    }
+    for (let day = 1; day <= lastDay; day++) {
+      const mm = String(m + 1).padStart(2, '0');
+      const dd = String(day).padStart(2, '0');
+      const iso = `${y}-${mm}-${dd}`;
+      const mdKey = `${mm}-${dd}`;
+      const isHoliday =
+        holidayExact.has(iso) || holidayMonthDay.has(mdKey);
+      cells.push({
+        label: String(day),
+        tone: isHoliday ? 'holiday' : 'day',
+      });
+    }
+    let nextMuted = 1;
+    while (cells.length % 7 !== 0) {
+      cells.push({ label: String(nextMuted++), tone: 'muted' });
+    }
+    return cells;
+  });
+
+  ngOnInit(): void {
+    this.reloadFromServer();
+  }
+
+  protected reloadFromServer(): void {
+    this.loading.set(true);
+    this.loadError.set(null);
+    this.api.get().subscribe({
+      next: (snap) => {
+        const st = snapshotToState(snap);
+        this.state.set(st);
+        this.serverSnapshot.set(deepCloneState(st));
+        this.loading.set(false);
+      },
+      error: (err: unknown) => {
+        this.loadError.set(
+          messageFromApiError(err) ?? 'No se pudieron cargar los parámetros.',
+        );
+        this.loading.set(false);
+      },
+    });
+  }
 
   protected setMonFriActive(v: boolean): void {
     this.state.update((s) => ({
@@ -53,25 +229,31 @@ export class AdminParametrosComponent {
     }));
   }
 
-  protected patchMonFri(field: 'entry' | 'exit' | 'tolerance', raw: string): void {
+  protected patchMonFri(
+    field: 'entry' | 'exit' | 'tolerance',
+    raw: string,
+  ): void {
     this.state.update((s) => {
       const monFri = { ...s.monFri };
       if (field === 'tolerance') {
         monFri.tolerance = Math.max(0, Math.floor(Number(raw) || 0));
       } else {
-        monFri[field] = raw;
+        monFri[field] = normalizeHm(raw);
       }
       return { ...s, monFri };
     });
   }
 
-  protected patchSaturday(field: 'entry' | 'exit' | 'tolerance', raw: string): void {
+  protected patchSaturday(
+    field: 'entry' | 'exit' | 'tolerance',
+    raw: string,
+  ): void {
     this.state.update((s) => {
       const saturday = { ...s.saturday };
       if (field === 'tolerance') {
         saturday.tolerance = Math.max(0, Math.floor(Number(raw) || 0));
       } else {
-        saturday[field] = raw;
+        saturday[field] = normalizeHm(raw);
       }
       return { ...s, saturday };
     });
@@ -85,7 +267,7 @@ export class AdminParametrosComponent {
   }
 
   protected patchLunchFrom(raw: string): void {
-    this.state.update((s) => ({ ...s, lunchFrom: raw }));
+    this.state.update((s) => ({ ...s, lunchFrom: normalizeHm(raw) }));
   }
 
   protected patchLunchDur(raw: string): void {
@@ -103,26 +285,77 @@ export class AdminParametrosComponent {
   }
 
   protected onAddHoliday(): void {
-    return;
+    this.draftHolidayDate.set('');
+    this.draftHolidayTitle.set('');
+    this.draftHolidaySub.set('');
+    this.addingHoliday.set(true);
+  }
+
+  protected cancelAddHoliday(): void {
+    this.addingHoliday.set(false);
+  }
+
+  protected confirmAddHoliday(): void {
+    const date = this.draftHolidayDate().trim().slice(0, 10);
+    const title = this.draftHolidayTitle().trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !title) {
+      return;
+    }
+    this.state.update((s) => ({
+      ...s,
+      holidays: [
+        ...s.holidays,
+        {
+          id: globalThis.crypto?.randomUUID?.() ?? `h-${Date.now()}`,
+          date: normalizeHolidayDate(date),
+          title,
+          sub: this.draftHolidaySub().trim(),
+        },
+      ],
+    }));
+    const [yy, mo] = date.split('-').map(Number);
+    this.calCursor.set(new Date(yy, mo - 1, 1));
+    this.addingHoliday.set(false);
   }
 
   protected onPrevMonth(): void {
-    return;
+    this.calCursor.update((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1));
   }
 
   protected onNextMonth(): void {
-    return;
+    this.calCursor.update((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1));
   }
 
   protected onDiscard(): void {
-    this.state.set(cloneInitial());
+    const snap = this.serverSnapshot();
+    if (!snap) {
+      this.reloadFromServer();
+      return;
+    }
+    this.saveError.set(null);
+    this.state.set(deepCloneState(snap));
   }
 
   protected onSave(): void {
-    return;
+    this.saveError.set(null);
+    this.saving.set(true);
+    this.api.put(stateToPayload(this.state())).subscribe({
+      next: (snap) => {
+        const st = snapshotToState(snap);
+        this.state.set(st);
+        this.serverSnapshot.set(deepCloneState(st));
+        this.saving.set(false);
+      },
+      error: (err: unknown) => {
+        this.saving.set(false);
+        this.saveError.set(
+          messageFromApiError(err) ?? 'No se pudo guardar la configuración.',
+        );
+      },
+    });
   }
 
-  protected calCellClass(tone: (typeof ADMIN_PARAMETROS_CAL_CELLS)[number]['tone']): string {
+  protected calCellClass(tone: 'muted' | 'day' | 'holiday'): string {
     const base = 'flex h-6 items-center justify-center rounded-sm text-[10px]';
     if (tone === 'muted') {
       return `${base} text-[#75777d] dark:text-[var(--erp-login-muted)]`;

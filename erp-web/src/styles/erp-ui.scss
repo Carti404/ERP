@@ -1455,6 +1455,52 @@ html.dark .erp-worker-events-panel .erp-worker-events-table-wrap {
   background: color-mix(in srgb, var(--erp-login-card) 88%, #1e293b);
 }
 
+/** Indicador de mensaje no leído en la lista del buzón */
+.erp-mailbox-unread-dot {
+  margin-top: 0.4rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: #47607e;
+  box-shadow: 0 0 0 2px color-mix(in srgb, #47607e 30%, transparent);
+  animation: erp-mailbox-unread-pulse 2.2s ease-in-out infinite;
+}
+
+.dark .erp-mailbox-unread-dot {
+  background: var(--erp-login-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--erp-login-accent) 35%, transparent);
+}
+
+@keyframes erp-mailbox-unread-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.72;
+    transform: scale(0.88);
+  }
+}
+
+.erp-mailbox-msg-unread-pill {
+  border-radius: 9999px;
+  background: #47607e;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.5625rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.dark .erp-mailbox-msg-unread-pill {
+  background: color-mix(in srgb, var(--erp-login-accent) 88%, #0f172a);
+  color: var(--erp-login-text-primary);
+}
+
 .erp-admin-inbox-msg--selected {
   border-left-color: #47607e;
   background: color-mix(in srgb, #d1e4ff 42%, var(--erp-login-card));
