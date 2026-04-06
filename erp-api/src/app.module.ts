@@ -12,6 +12,9 @@ import { InternalMessage } from './messages/entities/internal-message.entity';
 import { MessagesModule } from './messages/messages.module';
 import { User } from './users/entities/user.entity';
 import { UsersModule } from './users/users.module';
+import { AttendanceLog } from './attendance/entities/attendance-log.entity';
+import { AttendanceRecord } from './attendance/entities/attendance-record.entity';
+import { AttendanceModule } from './attendance/attendance.module';
 
 @Module({
   imports: [
@@ -31,6 +34,8 @@ import { UsersModule } from './users/users.module';
           PlantRestSettings,
           Holiday,
           InternalMessage,
+          AttendanceRecord,
+          AttendanceLog,
         ],
         synchronize: config.get<string>('DB_SYNC', 'false') === 'true',
         logging: config.get<string>('DB_LOGGING', 'false') === 'true',
@@ -41,6 +46,7 @@ import { UsersModule } from './users/users.module';
     SystemParametersModule,
     AuthModule,
     MessagesModule,
+    AttendanceModule,
     HealthModule,
   ],
 })

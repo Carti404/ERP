@@ -5,6 +5,8 @@ import { PlantRestSettings } from '../system-parameters/entities/plant-rest-sett
 import { WorkScheduleBlock } from '../system-parameters/entities/work-schedule-block.entity';
 import { InternalMessage } from '../messages/entities/internal-message.entity';
 import { User } from '../users/entities/user.entity';
+import { AttendanceLog } from '../attendance/entities/attendance-log.entity';
+import { AttendanceRecord } from '../attendance/entities/attendance-record.entity';
 import { dbConnectionEnv, loadErpEnvFile } from './load-erp-env';
 
 loadErpEnvFile();
@@ -18,6 +20,8 @@ const common = {
     PlantRestSettings,
     Holiday,
     InternalMessage,
+    AttendanceLog,
+    AttendanceRecord,
   ],
   migrations: ['dist/database/migrations/*.js'],
   synchronize: false,

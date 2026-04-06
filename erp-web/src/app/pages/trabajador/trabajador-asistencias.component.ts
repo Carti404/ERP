@@ -1,5 +1,6 @@
 import { NgClass } from '@angular/common';
-import { Component, computed, signal } from '@angular/core';
+import { afterNextRender, Component, computed, inject, signal } from '@angular/core';
+import { AttendanceRecord, AttendanceService } from '../../core/http/attendance.service';
 
 export type TrabajadorAsistenciaDiaEstado = 'punctual' | 'delay' | 'absence' | 'empty';
 
@@ -36,7 +37,25 @@ const SHIFTS = [
   templateUrl: './trabajador-asistencias.component.html',
 })
 export class TrabajadorAsistenciasComponent {
+  private readonly attendanceService = inject(AttendanceService);
+  protected readonly attendanceHistory = signal<AttendanceRecord[]>([]);
+
   protected readonly viewMonth = signal(new Date());
+
+  constructor() {
+    afterNextRender(() => {
+      this.loadHistory();
+    });
+  }
+
+  private loadHistory(): void {
+    this.attendanceService.getMyHistory().subscribe({
+      next: (records) => {
+        this.attendanceHistory.set(records);
+      },
+      error: (err) => console.error('Error al cargar historial', err),
+    });
+  }
 
   protected readonly mesLabel = computed(() => {
     const d = this.viewMonth();
@@ -54,16 +73,40 @@ export class TrabajadorAsistenciasComponent {
     const startPad = first.getDay();
     const daysInMonth = new Date(y, m + 1, 0).getDate();
     const cells: TrabajadorAsistenciaCalDay[] = [];
+    const history = this.attendanceHistory();
+
+    const recordMap = new Map<string, string>();
+    for (const r of history) {
+      if (r.workDate) {
+        recordMap.set(r.workDate, r.status);
+      }
+    }
+
     for (let i = 0; i < startPad; i++) {
       cells.push({ d: null, estado: 'empty' });
     }
     for (let day = 1; day <= daysInMonth; day++) {
-      cells.push({ d: day, estado: 'empty' });
+      const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const status = recordMap.get(dateStr);
+      let estado: TrabajadorAsistenciaDiaEstado = 'empty';
+      
+      if (status === 'Puntual') estado = 'punctual';
+      else if (status === 'Retardo') estado = 'delay';
+      else if (status === 'Falta') estado = 'absence';
+      
+      cells.push({ d: day, estado });
     }
     return cells;
   });
 
-  protected readonly stats = { punctual: 0, delays: 0, absences: 0 } as const;
+  protected readonly stats = computed(() => {
+    const history = this.attendanceHistory();
+    return {
+      punctual: history.filter(r => r.status === 'Puntual').length,
+      delays: history.filter(r => r.status === 'Retardo').length,
+      absences: history.filter(r => r.status === 'Falta').length,
+    };
+  });
 
   protected readonly justTypes = JUST_TYPES;
 

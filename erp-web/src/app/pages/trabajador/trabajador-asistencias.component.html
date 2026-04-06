@@ -102,15 +102,15 @@
         <h2 class="text-[10px] font-black uppercase tracking-widest text-[var(--erp-login-label)]">Estadísticas del mes</h2>
         <div class="mt-4 grid grid-cols-3 gap-2 text-center">
           <div class="rounded-lg bg-[#f3f4f5] p-3 dark:bg-[var(--erp-login-surface)]">
-            <p class="text-2xl font-black text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ stats.punctual }}</p>
+            <p class="text-2xl font-black text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ stats().punctual }}</p>
             <p class="text-[9px] font-bold uppercase text-[var(--erp-login-muted)]">Puntuales</p>
           </div>
           <div class="rounded-lg bg-[#f3f4f5] p-3 dark:bg-[var(--erp-login-surface)]">
-            <p class="text-2xl font-black text-[#47607e]">{{ stats.delays }}</p>
+            <p class="text-2xl font-black text-[#47607e]">{{ stats().delays }}</p>
             <p class="text-[9px] font-bold uppercase text-[var(--erp-login-muted)]">Retrasos</p>
           </div>
           <div class="rounded-lg bg-[#f3f4f5] p-3 dark:bg-[var(--erp-login-surface)]">
-            <p class="text-2xl font-black text-red-600 dark:text-red-400">{{ stats.absences }}</p>
+            <p class="text-2xl font-black text-red-600 dark:text-red-400">{{ stats().absences }}</p>
             <p class="text-[9px] font-bold uppercase text-[var(--erp-login-muted)]">Ausencias</p>
           </div>
         </div>

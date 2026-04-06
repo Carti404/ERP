@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { afterNextRender, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { AttendanceService } from '../../core/http/attendance.service';
 
 /** Color de los dígitos del reloj según acción de checador. */
 export type WorkerClockFaceState = 'default' | 'working' | 'break' | 'ended';
@@ -21,6 +22,7 @@ interface WorkerToastPayload {
 })
 export class TrabajadorHomeComponent {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly attendanceService = inject(AttendanceService);
 
   protected readonly inbox: readonly { id: string; initials: string; from: string; time: string; preview: string; dimmed?: boolean }[] =
     [];
@@ -68,30 +70,70 @@ export class TrabajadorHomeComponent {
           globalThis.clearTimeout(this.pendingToastClear);
         }
       });
+      this.loadTodayStatus();
+    });
+  }
+
+  private loadTodayStatus(): void {
+    this.attendanceService.getTodayStatus().subscribe({
+      next: (record) => {
+        if (!record || !record.logs || record.logs.length === 0) {
+          this.clockFaceState.set('default');
+          return;
+        }
+
+        const logs = record.logs.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+        const lastLog = logs[logs.length - 1];
+
+        if (lastLog.eventType === 'CLOCK_IN' || lastLog.eventType === 'BREAK_END' || lastLog.eventType === 'MEAL_END') {
+          this.clockFaceState.set('working');
+        } else if (lastLog.eventType === 'BREAK_START' || lastLog.eventType === 'MEAL_START') {
+          this.clockFaceState.set('break');
+        } else if (lastLog.eventType === 'CLOCK_OUT') {
+          this.clockFaceState.set('ended');
+        }
+      },
+      error: () => this.showToast('No se pudo cargar el estatus de asistencia', 'error'),
     });
   }
 
   protected onQuickAction(action: 'check_in' | 'break_start' | 'break_end' | 'check_out'): void {
+    const apiAction = this.mapActionToApi(action);
+    this.attendanceService.registerEvent(apiAction).subscribe({
+      next: () => {
+        switch (action) {
+          case 'check_in':
+            this.clockFaceState.set('working');
+            this.showToast('Entrada de turno registrada.', 'success');
+            break;
+          case 'break_start':
+            this.clockFaceBeforeBreak = this.clockFaceState();
+            this.clockFaceState.set('break');
+            this.showToast('Inicio de descanso registrado.', 'warning');
+            break;
+          case 'break_end':
+            this.clockFaceState.set(this.clockFaceBeforeBreak === 'break' ? 'working' : this.clockFaceBeforeBreak);
+            this.showToast('Regreso de descanso registrado.', 'success');
+            break;
+          case 'check_out':
+            this.clockFaceState.set('ended');
+            this.showToast('Salida de turno registrada.', 'error');
+            break;
+        }
+      },
+      error: (err) => {
+        this.showToast(err.error?.message || 'Error al registrar evento', 'error');
+      }
+    });
+  }
+
+  private mapActionToApi(action: string): string {
     switch (action) {
-      case 'check_in':
-        this.clockFaceState.set('working');
-        this.showToast('Entrada de turno registrada.', 'success');
-        break;
-      case 'break_start':
-        this.clockFaceBeforeBreak = this.clockFaceState();
-        this.clockFaceState.set('break');
-        this.showToast('Inicio de descanso registrado.', 'warning');
-        break;
-      case 'break_end':
-        this.clockFaceState.set(this.clockFaceBeforeBreak === 'break' ? 'default' : this.clockFaceBeforeBreak);
-        this.showToast('Regreso de descanso registrado.', 'success');
-        break;
-      case 'check_out':
-        this.clockFaceState.set('ended');
-        this.showToast('Salida de turno registrada.', 'error');
-        break;
-      default:
-        break;
+      case 'check_in': return 'CLOCK_IN';
+      case 'check_out': return 'CLOCK_OUT';
+      case 'break_start': return 'BREAK_START';
+      case 'break_end': return 'BREAK_END';
+      default: return 'CLOCK_IN';
     }
   }
 

@@ -1,0 +1,8 @@
+export enum AttendanceEventType {
+  CLOCK_IN = 'CLOCK_IN',
+  CLOCK_OUT = 'CLOCK_OUT',
+  BREAK_START = 'BREAK_START',
+  BREAK_END = 'BREAK_END',
+  MEAL_START = 'MEAL_START',
+  MEAL_END = 'MEAL_END',
+}
