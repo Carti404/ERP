@@ -30,6 +30,7 @@ interface ErpInboxMessageVm {
   readonly preview: string;
   readonly read: boolean;
   readonly bodyParagraphs: readonly string[];
+  readonly importance: 'LOW' | 'MEDIUM' | 'HIGH';
 }
 
 interface MailboxComposeRecipient {
@@ -135,6 +136,8 @@ export class ErpInboxComponent {
   protected readonly composeSubject = signal('');
 
   protected readonly composeBody = signal('');
+
+  protected readonly composeImportance = signal<'LOW' | 'MEDIUM' | 'HIGH'>('LOW');
 
   protected readonly composeSending = signal(false);
 
@@ -298,6 +301,7 @@ export class ErpInboxComponent {
       preview: previewFromBody(row.body),
       read: folder === 'inbox' ? row.read : true,
       bodyParagraphs: bodyToParagraphs(row.body),
+      importance: row.importance ?? 'LOW',
     };
   }
 
@@ -354,6 +358,7 @@ export class ErpInboxComponent {
     this.composeDraftInput.set('');
     this.composeSubject.set('');
     this.composeBody.set('');
+    this.composeImportance.set('LOW');
     this.composeError.set(null);
     this.composeOpen.set(true);
     this.loadDirectoryIfNeeded();
@@ -378,6 +383,7 @@ export class ErpInboxComponent {
     this.composeDraftInput.set('');
     this.composeSubject.set(replySubjectLine(row.subject));
     this.composeBody.set(`\n\n${this.referenceBlock(row, f)}`);
+    this.composeImportance.set('LOW');
     this.composeError.set(null);
     this.composeOpen.set(true);
     this.loadDirectoryIfNeeded();
@@ -390,6 +396,7 @@ export class ErpInboxComponent {
     this.composeDraftInput.set('');
     this.composeSubject.set(forwardSubjectLine(row.subject));
     this.composeBody.set(`\n\n${this.referenceBlock(row, f)}`);
+    this.composeImportance.set('LOW');
     this.composeError.set(null);
     this.composeOpen.set(true);
     this.loadDirectoryIfNeeded();
@@ -499,7 +506,7 @@ export class ErpInboxComponent {
     this.composeSending.set(true);
     this.composeError.set(null);
     this.messagesApi
-      .create({ recipientId: rs[0].id, subject: subj, body: bod })
+      .create({ recipientId: rs[0].id, subject: subj, body: bod, importance: this.composeImportance() })
       .subscribe({
         next: (row) => {
           this.composeSending.set(false);
@@ -583,8 +590,8 @@ export class ErpInboxComponent {
     return;
   }
 
-  protected messageAccent(_m: ErpInboxMessageVm): string {
-    return 'general';
+  protected messageAccent(m: ErpInboxMessageVm): string {
+    return m.importance.toLowerCase();
   }
 
   protected composeSendDisabled(): boolean {

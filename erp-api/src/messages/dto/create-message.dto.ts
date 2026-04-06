@@ -1,4 +1,5 @@
-import { IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
+import { IsString, IsUUID, MaxLength, MinLength, IsEnum, IsOptional } from 'class-validator';
+import { MessageImportance } from '../entities/internal-message.entity';
 
 export class CreateMessageDto {
   @IsUUID()
@@ -13,4 +14,8 @@ export class CreateMessageDto {
   @MinLength(1)
   @MaxLength(20000)
   body: string;
+
+  @IsEnum(MessageImportance)
+  @IsOptional()
+  importance?: MessageImportance;
 }

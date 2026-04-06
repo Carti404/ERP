@@ -9,7 +9,7 @@ import { IsNull, Repository } from 'typeorm';
 
 import { UsersService } from '../users/users.service';
 import { CreateMessageDto } from './dto/create-message.dto';
-import { InternalMessage } from './entities/internal-message.entity';
+import { InternalMessage, MessageImportance } from './entities/internal-message.entity';
 
 export enum MessageFolder {
   inbox = 'inbox',
@@ -33,6 +33,7 @@ export type MessageRowDto = {
   createdAt: string;
   sender: MessageParticipantDto;
   recipient: MessageParticipantDto;
+  importance: MessageImportance;
 };
 
 @Injectable()
@@ -95,6 +96,7 @@ export class MessagesService {
       recipientId: dto.recipientId,
       subject: dto.subject.trim(),
       body: dto.body.trim(),
+      importance: dto.importance ?? MessageImportance.LOW,
       readAt: null,
     });
     const saved = await this.msgRepo.save(msg);
@@ -175,6 +177,7 @@ export class MessagesService {
       createdAt: m.createdAt.toISOString(),
       sender: this.participant(m.sender),
       recipient: this.participant(m.recipient),
+      importance: m.importance,
     };
   }
 }

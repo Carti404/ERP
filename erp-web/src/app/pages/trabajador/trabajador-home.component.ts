@@ -2,6 +2,7 @@ import { DatePipe } from '@angular/common';
 import { afterNextRender, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AttendanceService } from '../../core/http/attendance.service';
+import { MessagesApiService } from '../../core/messages/messages-api.service';
 
 /** Color de los dígitos del reloj según acción de checador. */
 export type WorkerClockFaceState = 'default' | 'working' | 'break' | 'ended';
@@ -23,9 +24,17 @@ interface WorkerToastPayload {
 export class TrabajadorHomeComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly attendanceService = inject(AttendanceService);
+  private readonly messagesApi = inject(MessagesApiService);
 
-  protected readonly inbox: readonly { id: string; initials: string; from: string; time: string; preview: string; dimmed?: boolean }[] =
-    [];
+  protected inbox: {
+    id: string;
+    initials: string;
+    from: string;
+    time: string;
+    preview: string;
+    dimmed?: boolean;
+    importance: string;
+  }[] = [];
 
   protected readonly hasUrgentAlert = false;
 
@@ -71,6 +80,7 @@ export class TrabajadorHomeComponent {
         }
       });
       this.loadTodayStatus();
+      this.loadInbox();
     });
   }
 
@@ -82,10 +92,16 @@ export class TrabajadorHomeComponent {
           return;
         }
 
-        const logs = record.logs.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+        const logs = record.logs.sort(
+          (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+        );
         const lastLog = logs[logs.length - 1];
 
-        if (lastLog.eventType === 'CLOCK_IN' || lastLog.eventType === 'BREAK_END' || lastLog.eventType === 'MEAL_END') {
+        if (
+          lastLog.eventType === 'CLOCK_IN' ||
+          lastLog.eventType === 'BREAK_END' ||
+          lastLog.eventType === 'MEAL_END'
+        ) {
           this.clockFaceState.set('working');
         } else if (lastLog.eventType === 'BREAK_START' || lastLog.eventType === 'MEAL_START') {
           this.clockFaceState.set('break');
@@ -94,6 +110,34 @@ export class TrabajadorHomeComponent {
         }
       },
       error: () => this.showToast('No se pudo cargar el estatus de asistencia', 'error'),
+    });
+  }
+
+  private loadInbox(): void {
+    this.messagesApi.list('inbox').subscribe({
+      next: (rows) => {
+        const unread = rows.filter((r) => !r.read);
+        const pScores: Record<string, number> = { HIGH: 3, MEDIUM: 2, LOW: 1 };
+        unread.sort((a, b) => {
+          const sA = pScores[a.importance] || 0;
+          const sB = pScores[b.importance] || 0;
+          if (sA !== sB) return sB - sA;
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+
+        this.inbox = unread.slice(0, 3).map((r) => ({
+          id: r.id,
+          initials: r.sender.fullName.substring(0, 2).toUpperCase(),
+          from: r.sender.fullName,
+          time: new Date(r.createdAt).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+          preview: r.subject,
+          dimmed: false,
+          importance: (r.importance || 'LOW').toLowerCase(),
+        }));
+      },
     });
   }
 
@@ -112,7 +156,9 @@ export class TrabajadorHomeComponent {
             this.showToast('Inicio de descanso registrado.', 'warning');
             break;
           case 'break_end':
-            this.clockFaceState.set(this.clockFaceBeforeBreak === 'break' ? 'working' : this.clockFaceBeforeBreak);
+            this.clockFaceState.set(
+              this.clockFaceBeforeBreak === 'break' ? 'working' : this.clockFaceBeforeBreak,
+            );
             this.showToast('Regreso de descanso registrado.', 'success');
             break;
           case 'check_out':
@@ -123,17 +169,22 @@ export class TrabajadorHomeComponent {
       },
       error: (err) => {
         this.showToast(err.error?.message || 'Error al registrar evento', 'error');
-      }
+      },
     });
   }
 
   private mapActionToApi(action: string): string {
     switch (action) {
-      case 'check_in': return 'CLOCK_IN';
-      case 'check_out': return 'CLOCK_OUT';
-      case 'break_start': return 'BREAK_START';
-      case 'break_end': return 'BREAK_END';
-      default: return 'CLOCK_IN';
+      case 'check_in':
+        return 'CLOCK_IN';
+      case 'check_out':
+        return 'CLOCK_OUT';
+      case 'break_start':
+        return 'BREAK_START';
+      case 'break_end':
+        return 'BREAK_END';
+      default:
+        return 'CLOCK_IN';
     }
   }
 

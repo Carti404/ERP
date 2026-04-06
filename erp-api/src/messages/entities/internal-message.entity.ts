@@ -9,6 +9,12 @@ import {
 
 import { User } from '../../users/entities/user.entity';
 
+export enum MessageImportance {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
+}
+
 @Entity('internal_messages')
 export class InternalMessage {
   @PrimaryGeneratedColumn('uuid')
@@ -45,4 +51,7 @@ export class InternalMessage {
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
+
+  @Column({ type: 'varchar', length: 20, default: MessageImportance.LOW })
+  importance: MessageImportance;
 }

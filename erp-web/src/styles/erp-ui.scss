@@ -1895,6 +1895,25 @@ html.dark .erp-worker-events-panel .erp-worker-events-table-wrap {
   background: color-mix(in srgb, var(--erp-login-accent) 12%, var(--erp-login-card));
 }
 
+// Alta
+.erp-mailbox-cat-dot[data-accent='high'] { background: #ef4444; }
+.erp-mailbox .erp-admin-inbox-msg[data-accent='high'] { border-left-color: #ef4444; }
+.erp-mailbox .erp-admin-inbox-msg--selected[data-accent='high'] { background: color-mix(in srgb, #ef4444 8%, transparent); border-left-color: #ef4444; }
+.dark .erp-mailbox .erp-admin-inbox-msg--selected[data-accent='high'] { background: color-mix(in srgb, #ef4444 14%, transparent); }
+
+// Media
+.erp-mailbox-cat-dot[data-accent='medium'] { background: #f59e0b; }
+.erp-mailbox .erp-admin-inbox-msg[data-accent='medium'] { border-left-color: #f59e0b; }
+.erp-mailbox .erp-admin-inbox-msg--selected[data-accent='medium'] { background: color-mix(in srgb, #f59e0b 8%, transparent); border-left-color: #f59e0b; }
+.dark .erp-mailbox .erp-admin-inbox-msg--selected[data-accent='medium'] { background: color-mix(in srgb, #f59e0b 14%, transparent); }
+
+// Baja
+.erp-mailbox-cat-dot[data-accent='low'] { background: #10b981; }
+.erp-mailbox .erp-admin-inbox-msg[data-accent='low'] { border-left-color: #10b981; }
+.erp-mailbox .erp-admin-inbox-msg--selected[data-accent='low'] { background: color-mix(in srgb, #10b981 8%, transparent); border-left-color: #10b981; }
+.dark .erp-mailbox .erp-admin-inbox-msg--selected[data-accent='low'] { background: color-mix(in srgb, #10b981 14%, transparent); }
+
+
 .erp-mailbox .erp-admin-inbox-toolbar-primary {
   background: linear-gradient(135deg, #059669 0%, #047857 100%);
   box-shadow: 0 4px 14px rgb(5 150 105 / 0.28);

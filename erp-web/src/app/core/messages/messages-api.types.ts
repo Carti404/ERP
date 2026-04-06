@@ -17,10 +17,12 @@ export interface ErpMessageRow {
   createdAt: string;
   sender: ErpMessageParticipant;
   recipient: ErpMessageParticipant;
+  importance: 'LOW' | 'MEDIUM' | 'HIGH';
 }
 
 export interface CreateMessagePayload {
   recipientId: string;
   subject: string;
   body: string;
+  importance?: 'LOW' | 'MEDIUM' | 'HIGH';
 }
