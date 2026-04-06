@@ -134,7 +134,7 @@ export class SystemParametersService {
       rest.lunchDurationMinutes = dto.lunchDurationMin;
       await manager.save(PlantRestSettings, rest);
 
-      await manager.delete(Holiday, {});
+      await manager.clear(Holiday);
       const seenDates = new Set<string>();
       for (const h of dto.holidays) {
         const d = h.date.slice(0, 10);
