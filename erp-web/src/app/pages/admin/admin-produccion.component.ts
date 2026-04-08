@@ -1,5 +1,7 @@
 import { DecimalPipe } from '@angular/common';
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, signal, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ProductionService } from '../../core/services/production.service';
 
 import {
   ADMIN_PRODUCCION_ALERT,
@@ -12,6 +14,7 @@ import {
   ADMIN_PRODUCCION_RECIPE,
   ADMIN_PRODUCCION_REQUIREMENTS,
   ADMIN_PRODUCCION_SUPERVISION,
+  type AdminProduccionRequirementMock,
   type AdminProduccionSegmentKind,
 } from './admin-produccion.mock';
 
@@ -24,9 +27,29 @@ export type AdminProduccionTab = 'req' | 'asig' | 'sup';
   templateUrl: './admin-produccion.component.html',
 })
 export class AdminProduccionComponent {
+  private productionService = inject(ProductionService);
+  private rawProductionTasks = toSignal(this.productionService.getPendingProduction(), { initialValue: [] });
+
   protected readonly load = ADMIN_PRODUCCION_LOAD;
   protected readonly alert = ADMIN_PRODUCCION_ALERT;
-  protected readonly requirements = ADMIN_PRODUCCION_REQUIREMENTS;
+
+  protected readonly requirements = computed<AdminProduccionRequirementMock[]>(() => {
+    const tasks = this.rawProductionTasks();
+    if (tasks.length === 0) {
+      return ADMIN_PRODUCCION_REQUIREMENTS; // Fallback al mock si no hay datos
+    }
+    return tasks.map(t => ({
+      id: t.id,
+      name: t.productName || 'Producto',
+      sku: t.orderNumber || 'SKU-000',
+      qtyLabel: `${t.quantityToProduce} pzs`,
+      deadline: 'Pendiente', // Esto se podría parsear desde 't' si existe
+      deadlineTone: 'ok' as const,
+      delegationPct: 0,
+      delegationLabel: '0% asignado'
+    }));
+  });
+
   protected readonly insumos = ADMIN_PRODUCCION_INSUMOS;
   protected readonly maquinaria = ADMIN_PRODUCCION_MAQUINARIA;
   protected readonly recipe = ADMIN_PRODUCCION_RECIPE;

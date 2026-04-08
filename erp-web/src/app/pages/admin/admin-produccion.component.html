@@ -97,7 +97,7 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-[#e1e3e4] dark:divide-[var(--erp-login-input-border)]">
-                @for (row of requirements; track row.id) {
+                @for (row of requirements(); track row.id) {
                   <tr class="bg-white transition-colors hover:bg-[#f8f9fa] dark:bg-[var(--erp-login-card)] dark:hover:bg-[var(--erp-login-surface)]">
                     <td class="px-5 py-3">
                       <div class="flex flex-col">

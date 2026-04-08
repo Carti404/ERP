@@ -7,6 +7,7 @@ import { InternalMessage } from '../messages/entities/internal-message.entity';
 import { User } from '../users/entities/user.entity';
 import { AttendanceLog } from '../attendance/entities/attendance-log.entity';
 import { AttendanceRecord } from '../attendance/entities/attendance-record.entity';
+import { ProductionTask } from '../production/entities/production-task.entity';
 import { dbConnectionEnv, loadErpEnvFile } from './load-erp-env';
 
 loadErpEnvFile();
@@ -22,6 +23,7 @@ const common = {
     InternalMessage,
     AttendanceLog,
     AttendanceRecord,
+    ProductionTask,
   ],
   migrations: ['dist/database/migrations/*.js'],
   synchronize: false,

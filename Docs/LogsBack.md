@@ -1,27 +1,77 @@
-PS H:\dev\ERP\erp-api> npm run db:setup
+PS H:\dev\ERP\erp-api> npm start    
 
-> erp-api@0.0.1 db:setup
-> npm run build && npm run typeorm -- migration:run -d dist/database/data-source.js && npm run seed:admin
+> erp-api@0.0.1 start
+> nest start
 
-
-> erp-api@0.0.1 build
-> nest build
-
-
-> erp-api@0.0.1 typeorm
-> typeorm-ts-node-commonjs migration:run -d dist/database/data-source.js
-
-◇ injected env (10) from .env // tip: ⌘ suppress logs { quiet: true }
-query: SELECT version()
-query: SELECT * FROM current_schema()
-query: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
-query: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
-query: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
-No migrations are pending
-
-> erp-api@0.0.1 seed:admin
-> ts-node -r tsconfig-paths/register src/scripts/seed-admin.ts
-
-◇ injected env (10) from .env // tip: ⌘ override existing { override: true }
-Ya existen usuarios; no se crea seed.
-PS H:\dev\ERP\erp-api> 
+◇ injected env (10) from .env // tip: ◈ encrypted .env [www.dotenvx.com]
+[Nest] 13276  - 07/04/2026, 1:43:26 p.m.     LOG [NestFactory] Starting Nest application...
+[Nest] 13276  - 07/04/2026, 1:43:26 p.m.     LOG [InstanceLoader] AppModule dependencies initialized +11ms
+[Nest] 13276  - 07/04/2026, 1:43:26 p.m.     LOG [InstanceLoader] TypeOrmModule dependencies initialized +0ms
+[Nest] 13276  - 07/04/2026, 1:43:26 p.m.     LOG [InstanceLoader] PassportModule dependencies initialized +0ms
+[Nest] 13276  - 07/04/2026, 1:43:26 p.m.     LOG [InstanceLoader] ConfigHostModule dependencies initialized +1ms
+[Nest] 13276  - 07/04/2026, 1:43:26 p.m.     LOG [InstanceLoader] HealthModule dependencies initialized +0ms
+[Nest] 13276  - 07/04/2026, 1:43:26 p.m.     LOG [InstanceLoader] ConfigModule dependencies initialized +1ms
+[Nest] 13276  - 07/04/2026, 1:43:26 p.m.     LOG [InstanceLoader] ConfigModule dependencies initialized +0ms
+[Nest] 13276  - 07/04/2026, 1:43:26 p.m.     LOG [InstanceLoader] JwtModule dependencies initialized +131ms
+[Nest] 13276  - 07/04/2026, 1:43:26 p.m.   ERROR [TypeOrmModule] Unable to connect to the database. Retrying (1)...
+AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[Nest] 13276  - 07/04/2026, 1:43:29 p.m.   ERROR [TypeOrmModule] Unable to connect to the database. Retrying (2)...
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[Nest] 13276  - 07/04/2026, 1:43:32 p.m.   ERROR [TypeOrmModule] Unable to connect to the database. Retrying (3)...
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[Nest] 13276  - 07/04/2026, 1:43:35 p.m.   ERROR [TypeOrmModule] Unable to connect to the database. Retrying (4)...
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[Nest] 13276  - 07/04/2026, 1:43:38 p.m.   ERROR [TypeOrmModule] Unable to connect to the database. Retrying (5)...
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[Nest] 13276  - 07/04/2026, 1:43:41 p.m.   ERROR [TypeOrmModule] Unable to connect to the database. Retrying (6)...
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[Nest] 13276  - 07/04/2026, 1:43:44 p.m.   ERROR [TypeOrmModule] Unable to connect to the database. Retrying (7)...
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[Nest] 13276  - 07/04/2026, 1:43:47 p.m.   ERROR [TypeOrmModule] Unable to connect to the database. Retrying (8)...
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[Nest] 13276  - 07/04/2026, 1:43:50 p.m.   ERROR [TypeOrmModule] Unable to connect to the database. Retrying (9)...
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[Nest] 13276  - 07/04/2026, 1:43:50 p.m.   ERROR [ExceptionHandler] AggregateError [ECONNREFUSED]:
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:15433
+        at createConnectionError (node:net:1678:14)
+        at afterConnectMultiple (node:net:1708:16) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 15433
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:15433
+        at createConnectionError (node:net:1678:14)
+        at afterConnectMultiple (node:net:1708:16) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 15433
+    }
+  ]
+}
+PS H:\dev\ERP\erp-api>

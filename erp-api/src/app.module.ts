@@ -15,6 +15,7 @@ import { UsersModule } from './users/users.module';
 import { AttendanceLog } from './attendance/entities/attendance-log.entity';
 import { AttendanceRecord } from './attendance/entities/attendance-record.entity';
 import { AttendanceModule } from './attendance/attendance.module';
+import { ProductionModule } from './production/production.module';
 
 @Module({
   imports: [
