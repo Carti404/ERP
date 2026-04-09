@@ -1,18 +1,13 @@
 <div class="erp-worker-home erp-dashboard-page mx-auto max-w-6xl pb-2">
   <section class="erp-worker-hero-check erp-stitch-panel mb-6 lg:mb-8" aria-labelledby="worker-check-heading">
-    <p
-      id="worker-check-heading"
-      class="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--erp-login-label)]"
-    >
+    <p id="worker-check-heading"
+      class="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--erp-login-label)]">
       Reloj checador
     </p>
-    <div
-      class="erp-worker-hero-time tabular-nums"
+    <div class="erp-worker-hero-time tabular-nums"
       [class.erp-worker-hero-time--working]="clockFaceState() === 'working'"
       [class.erp-worker-hero-time--break]="clockFaceState() === 'break'"
-      [class.erp-worker-hero-time--ended]="clockFaceState() === 'ended'"
-      aria-live="off"
-    >
+      [class.erp-worker-hero-time--ended]="clockFaceState() === 'ended'" aria-live="off">
       {{ clock() | date: 'h:mm:ss a' }}
     </div>
     <div class="mt-2 flex flex-wrap items-center gap-3">
@@ -23,7 +18,8 @@
       </div>
     </div>
     <div class="erp-worker-check-actions mt-5">
-      <button type="button" class="erp-worker-quick-btn erp-worker-quick-btn--entry" (click)="onQuickAction('check_in')">
+      <button type="button" class="erp-worker-quick-btn erp-worker-quick-btn--entry"
+        (click)="onQuickAction('check_in')">
         <span class="material-symbols-outlined" aria-hidden="true">login</span>
         Entrada<br />turno
       </button>
@@ -35,7 +31,8 @@
         <span class="material-symbols-outlined" aria-hidden="true">undo</span>
         Regreso<br />descanso
       </button>
-      <button type="button" class="erp-worker-quick-btn erp-worker-quick-btn--accent" (click)="onQuickAction('check_out')">
+      <button type="button" class="erp-worker-quick-btn erp-worker-quick-btn--accent"
+        (click)="onQuickAction('check_out')">
         <span class="material-symbols-outlined" aria-hidden="true">logout</span>
         Salida<br />turno
       </button>
@@ -44,64 +41,45 @@
 
   <div class="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
     <div
-      class="col-span-full rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] px-4 py-6 text-center text-sm text-[var(--erp-login-muted)] sm:col-span-2 xl:col-span-4"
-    >
+      class="col-span-full rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] px-4 py-6 text-center text-sm text-[var(--erp-login-muted)] sm:col-span-2 xl:col-span-4">
       No hay indicadores de planta disponibles. Conectaremos datos en vivo cuando la API esté lista.
     </div>
   </div>
 
   <div class="mb-5">
     @if (hasActiveBatch) {
-      <div class="erp-worker-batch-card">
-        <div class="erp-worker-batch-card__watermark" aria-hidden="true">
-          <span class="material-symbols-outlined text-[var(--erp-login-text-primary)]">precision_manufacturing</span>
-        </div>
-        <div class="relative z-10">
-          <div class="flex flex-col items-center gap-5 sm:flex-row sm:flex-wrap sm:justify-between">
-            <div class="erp-worker-progress-wrap">
-              <svg viewBox="0 0 160 160" aria-hidden="true">
-                <circle
-                  cx="80"
-                  cy="80"
-                  r="52"
-                  fill="none"
-                  stroke="var(--erp-login-input-border)"
-                  stroke-width="10"
-                  opacity="0.45"
-                />
-                <circle
-                  cx="80"
-                  cy="80"
-                  r="52"
-                  fill="none"
-                  stroke="var(--erp-login-primary-cta-bg)"
-                  stroke-width="10"
-                  [attr.stroke-dasharray]="progressCircumference"
-                  [attr.stroke-dashoffset]="progressDashOffset()"
-                  stroke-linecap="round"
-                  class="dark:stroke-[var(--erp-login-accent)]"
-                />
-              </svg>
-              <div class="erp-worker-progress-center">
-                <span class="text-2xl font-black text-[var(--erp-login-text-primary)] sm:text-3xl">0%</span>
-                <span class="text-[10px] font-black uppercase tracking-widest text-[var(--erp-login-label)]">Avance</span>
-              </div>
+    <div class="erp-worker-batch-card">
+      <div class="erp-worker-batch-card__watermark" aria-hidden="true">
+        <span class="material-symbols-outlined text-[var(--erp-login-text-primary)]">precision_manufacturing</span>
+      </div>
+      <div class="relative z-10">
+        <div class="flex flex-col items-center gap-5 sm:flex-row sm:flex-wrap sm:justify-between">
+          <div class="erp-worker-progress-wrap">
+            <svg viewBox="0 0 160 160" aria-hidden="true">
+              <circle cx="80" cy="80" r="52" fill="none" stroke="var(--erp-login-input-border)" stroke-width="10"
+                opacity="0.45" />
+              <circle cx="80" cy="80" r="52" fill="none" stroke="var(--erp-login-primary-cta-bg)" stroke-width="10"
+                [attr.stroke-dasharray]="progressCircumference" [attr.stroke-dashoffset]="progressDashOffset()"
+                stroke-linecap="round" class="dark:stroke-[var(--erp-login-accent)]" />
+            </svg>
+            <div class="erp-worker-progress-center">
+              <span class="text-2xl font-black text-[var(--erp-login-text-primary)] sm:text-3xl">0%</span>
+              <span class="text-[10px] font-black uppercase tracking-widest text-[var(--erp-login-label)]">Avance</span>
             </div>
           </div>
         </div>
       </div>
+    </div>
     } @else {
-      <div
-        class="rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] px-4 py-8 text-center"
-      >
-        <span class="material-symbols-outlined text-4xl text-[var(--erp-login-muted)]" aria-hidden="true"
-          >inventory_2</span
-        >
-        <p class="mt-3 text-sm font-semibold text-[var(--erp-login-text-primary)]">Sin lote en curso</p>
-        <p class="mt-1 text-xs text-[var(--erp-login-muted)]">
-          Cuando tengas una orden asignada, el avance aparecerá aquí.
-        </p>
-      </div>
+    <div
+      class="rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] px-4 py-8 text-center">
+      <span class="material-symbols-outlined text-4xl text-[var(--erp-login-muted)]"
+        aria-hidden="true">inventory_2</span>
+      <p class="mt-3 text-sm font-semibold text-[var(--erp-login-text-primary)]">Sin lote en curso</p>
+      <p class="mt-1 text-xs text-[var(--erp-login-muted)]">
+        Cuando tengas una orden asignada, el avance aparecerá aquí.
+      </p>
+    </div>
     }
   </div>
 
@@ -113,86 +91,100 @@
           <h3 class="text-lg font-bold text-[var(--erp-login-text-primary)]">Bandeja</h3>
         </div>
         @if (unreadCount > 0) {
-          <span
-            class="rounded-full bg-[#47607e] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white"
-            >{{ unreadCount }} nuevo(s)</span
-          >
+        <span class="rounded-full bg-[#47607e] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">{{
+          unreadCount }} nuevo(s)</span>
         }
       </div>
       <div class="flex flex-col gap-3">
         @if (inbox.length === 0) {
-          <p class="text-sm text-[var(--erp-login-muted)]">
-            No hay vista previa. Abre
-            <a routerLink="/trabajador/mensajes" class="font-bold text-[#47607e] underline-offset-2 hover:underline"
-              >Mensajes</a
-            >
-            para ver tu bandeja.
-          </p>
+        <p class="text-sm text-[var(--erp-login-muted)]">
+          No hay vista previa. Abre
+          <a routerLink="/trabajador/mensajes"
+            class="font-bold text-[#47607e] underline-offset-2 hover:underline">Mensajes</a>
+          para ver tu bandeja.
+        </p>
         } @else {
-          @for (m of inbox; track m.id) {
-            <div
-              class="erp-worker-inbox-item"
-              [class.opacity-60]="m.dimmed"
-              [attr.data-accent]="m.importance"
-              [style.border-left]="m.importance === 'high' ? '3px solid #ef4444' :
+        @for (m of inbox; track m.id) {
+        <div class="erp-worker-inbox-item" [class.opacity-60]="m.dimmed" [attr.data-accent]="m.importance"
+          [style.border-left]="m.importance === 'high' ? '3px solid #ef4444' :
                                m.importance === 'medium' ? '3px solid #f59e0b' :
-                               m.importance === 'low' ? '3px solid #10b981' : '3px solid transparent'"
-            >
-              <div class="erp-worker-inbox-avatar"
-                [style.background-color]="m.importance === 'high' ? 'color-mix(in srgb, #ef4444 15%, transparent)' :
+                               m.importance === 'low' ? '3px solid #10b981' : '3px solid transparent'">
+          <div class="erp-worker-inbox-avatar" [style.background-color]="m.importance === 'high' ? 'color-mix(in srgb, #ef4444 15%, transparent)' :
                                       m.importance === 'medium' ? 'color-mix(in srgb, #f59e0b 15%, transparent)' :
                                       m.importance === 'low' ? 'color-mix(in srgb, #10b981 15%, transparent)' : ''"
-                [style.color]="m.importance === 'high' ? '#ef4444' :
+            [style.color]="m.importance === 'high' ? '#ef4444' :
                            m.importance === 'medium' ? '#f59e0b' :
-                           m.importance === 'low' ? '#10b981' : ''"
-              >{{ m.initials }}</div>
-              <div class="min-w-0 flex-1">
-                <div class="flex justify-between gap-2">
-                  <p class="text-xs font-bold text-[var(--erp-login-text-primary)]">{{ m.from }}</p>
-                  <p class="shrink-0 text-[10px] text-[var(--erp-login-muted)]">{{ m.time }}</p>
-                </div>
-                <p class="line-clamp-2 text-xs text-[var(--erp-login-muted)]">{{ m.preview }}</p>
-              </div>
+                           m.importance === 'low' ? '#10b981' : ''">{{ m.initials }}</div>
+          <div class="min-w-0 flex-1">
+            <div class="flex justify-between gap-2">
+              <p class="text-xs font-bold text-[var(--erp-login-text-primary)]">{{ m.from }}</p>
+              <p class="shrink-0 text-[10px] text-[var(--erp-login-muted)]">{{ m.time }}</p>
             </div>
-          }
+            <p class="line-clamp-2 text-xs text-[var(--erp-login-muted)]">{{ m.preview }}</p>
+          </div>
+        </div>
+        }
         }
       </div>
 
       <div class="mt-4 border-t border-[var(--erp-login-input-border)] pt-3 text-center">
-        <a
-          routerLink="/trabajador/mensajes"
-          class="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-bold uppercase tracking-widest text-[#47607e] hover:bg-[color-mix(in_srgb,var(--erp-login-muted)_8%,transparent)] dark:text-[#6b8ba4]"
-        >
+        <a routerLink="/trabajador/mensajes"
+          class="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-bold uppercase tracking-widest text-[#47607e] hover:bg-[color-mix(in_srgb,var(--erp-login-muted)_8%,transparent)] dark:text-[#6b8ba4]">
           Ver buzón
           <span class="material-symbols-outlined text-sm" aria-hidden="true">arrow_forward</span>
         </a>
       </div>
     </div>
 
-    @if (hasUrgentAlert) {
-      <div class="erp-worker-bento-card erp-worker-bento-card--urgent">
-        <div class="mb-4 flex items-center justify-between">
-          <div class="flex items-center gap-2 text-[#e63946]">
-            <span class="material-symbols-outlined" aria-hidden="true">report</span>
-            <h3 class="text-lg font-bold text-[var(--erp-login-text-primary)]">Alertas urgentes</h3>
-          </div>
+    @if (hasUrgentAlert()) {
+    <div class="erp-worker-bento-card erp-worker-bento-card--urgent">
+      <div class="mb-4 flex items-center justify-between">
+        <div class="flex items-center gap-2 text-[#e63946]">
+          <span class="material-symbols-outlined" aria-hidden="true">report</span>
+          <h3 class="text-lg font-bold text-[var(--erp-login-text-primary)]">Alertas de Ordenes</h3>
         </div>
-        <div class="erp-worker-alert-critical">
-          <span class="material-symbols-outlined shrink-0 text-2xl text-[#e63946]" aria-hidden="true">priority_high</span>
-          <div>
-            <p class="text-xs font-bold text-[#b91c1c] dark:text-[#fca5a5]">Aviso</p>
-            <p class="mt-1 text-sm font-semibold text-[var(--erp-login-text-primary)]">—</p>
-          </div>
+        <div class="flex items-center gap-2">
+          <span class="rounded-full bg-[#e63946]/10 px-2 py-0.5 text-[10px] font-bold text-[#e63946]">{{ orderAlerts().length }}</span>
+          <button type="button"
+            class="rounded-lg bg-[#e63946]/10 px-2 py-1 text-[10px] font-bold text-[#e63946] transition-colors hover:bg-[#e63946]/20"
+            (click)="onClearAlerts()">
+            Limpiar
+          </button>
         </div>
       </div>
+      <div class="flex flex-col gap-2">
+        @for (alert of orderAlerts(); track alert.id) {
+        <div class="flex items-start gap-3 rounded-lg p-2 transition-colors"
+          [class]="alert.isRead ? 'opacity-60' : 'bg-[#fff5f5] dark:bg-[#2a1515]'"
+          (click)="onMarkAlertRead(alert)">
+          <span class="material-symbols-outlined shrink-0 text-lg text-[#e63946] mt-0.5" aria-hidden="true">
+            {{ alert.isRead ? 'check_circle' : 'priority_high' }}
+          </span>
+          <div class="min-w-0 flex-1">
+            <p class="text-xs font-bold text-[var(--erp-login-text-primary)]">{{ alert.title }}</p>
+            <p class="mt-0.5 text-[11px] text-[var(--erp-login-muted)] line-clamp-2">{{ alert.message }}</p>
+            <p class="mt-1 text-[10px] text-[var(--erp-login-muted)]">{{ formatAlertTime(alert.createdAt) }}</p>
+          </div>
+        </div>
+        }
+      </div>
+
+      <div class="mt-4 border-t border-[var(--erp-login-input-border)] pt-3 text-center">
+        <a routerLink="/trabajador/produccion"
+          class="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-bold uppercase tracking-widest text-[#e63946] hover:bg-[color-mix(in_srgb,var(--erp-login-muted)_8%,transparent)]">
+          Ver producción
+          <span class="material-symbols-outlined text-sm" aria-hidden="true">arrow_forward</span>
+        </a>
+      </div>
+    </div>
     } @else {
-      <div class="erp-worker-bento-card border border-[var(--erp-login-input-border)]">
-        <div class="mb-2 flex items-center gap-2 text-[var(--erp-login-muted)]">
-          <span class="material-symbols-outlined" aria-hidden="true">shield</span>
-          <h3 class="text-lg font-bold text-[var(--erp-login-text-primary)]">Alertas críticas</h3>
-        </div>
-        <p class="text-sm text-[var(--erp-login-muted)]">No hay alertas críticas activas.</p>
+    <div class="erp-worker-bento-card border border-[var(--erp-login-input-border)]">
+      <div class="mb-2 flex items-center gap-2 text-[var(--erp-login-muted)]">
+        <span class="material-symbols-outlined" aria-hidden="true">shield</span>
+        <h3 class="text-lg font-bold text-[var(--erp-login-text-primary)]">Alertas de Ordenes</h3>
       </div>
+      <p class="text-sm text-[var(--erp-login-muted)]">No hay alertas de órdenes activas.</p>
+    </div>
     }
   </div>
 
@@ -212,61 +204,46 @@
         </thead>
         <tbody>
           @if (events.length === 0) {
-            <tr>
-              <td colspan="4" class="py-8 text-center text-sm text-[var(--erp-login-muted)]">
-                Sin eventos recientes. El historial se mostrará cuando exista registro en el sistema.
-              </td>
-            </tr>
+          <tr>
+            <td colspan="4" class="py-8 text-center text-sm text-[var(--erp-login-muted)]">
+              Sin eventos recientes. El historial se mostrará cuando exista registro en el sistema.
+            </td>
+          </tr>
           } @else {
-            @for (e of events; track e.id) {
-              <tr>
-                <td>
-                  <div class="erp-worker-events-type">
-                    <span class="erp-worker-events-type__icon material-symbols-outlined" aria-hidden="true">{{
-                      e.typeIcon
-                    }}</span>
-                    <span class="erp-worker-events-type__label">{{ e.type }}</span>
-                  </div>
-                </td>
-                <td class="erp-worker-events-table__desc">{{ e.description }}</td>
-                <td class="erp-worker-events-table__time">{{ e.time }}</td>
-                <td class="text-right">
-                  <span
-                    class="erp-worker-pill-tag"
-                    [class.erp-worker-pill-tag--dark]="e.statusVariant === 'dark'"
-                    [class.erp-worker-pill-tag--secondary]="e.statusVariant === 'secondary'"
-                    [class.erp-worker-pill-tag--success]="e.statusVariant === 'success'"
-                    >{{ e.status }}</span
-                  >
-                </td>
-              </tr>
-            }
+          @for (e of events; track e.id) {
+          <tr>
+            <td>
+              <div class="erp-worker-events-type">
+                <span class="erp-worker-events-type__icon material-symbols-outlined" aria-hidden="true">{{
+                  e.typeIcon
+                  }}</span>
+                <span class="erp-worker-events-type__label">{{ e.type }}</span>
+              </div>
+            </td>
+            <td class="erp-worker-events-table__desc">{{ e.description }}</td>
+            <td class="erp-worker-events-table__time">{{ e.time }}</td>
+            <td class="text-right">
+              <span class="erp-worker-pill-tag" [class.erp-worker-pill-tag--dark]="e.statusVariant === 'dark'"
+                [class.erp-worker-pill-tag--secondary]="e.statusVariant === 'secondary'"
+                [class.erp-worker-pill-tag--success]="e.statusVariant === 'success'">{{ e.status }}</span>
+            </td>
+          </tr>
+          }
           }
         </tbody>
       </table>
     </div>
   </section>
 
-  <button
-    type="button"
-    class="erp-worker-fab"
-    (click)="onReportIssue()"
-    aria-label="Reportar incidencia"
-    title="Reportar incidencia"
-  >
+  <button type="button" class="erp-worker-fab" (click)="onReportIssue()" aria-label="Reportar incidencia"
+    title="Reportar incidencia">
     <span class="material-symbols-outlined" aria-hidden="true">add_alert</span>
   </button>
 
   @if (toast(); as t) {
-    <div
-      class="erp-worker-toast"
-      [attr.data-variant]="t.variant"
-      role="status"
-      aria-live="polite"
-      aria-atomic="true"
-    >
-      <span class="material-symbols-outlined erp-worker-toast__icon" aria-hidden="true">{{ toastIcon(t.variant) }}</span>
-      <span class="erp-worker-toast__text">{{ t.message }}</span>
-    </div>
+  <div class="erp-worker-toast" [attr.data-variant]="t.variant" role="status" aria-live="polite" aria-atomic="true">
+    <span class="material-symbols-outlined erp-worker-toast__icon" aria-hidden="true">{{ toastIcon(t.variant) }}</span>
+    <span class="erp-worker-toast__text">{{ t.message }}</span>
+  </div>
   }
 </div>

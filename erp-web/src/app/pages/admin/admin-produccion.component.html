@@ -1,372 +1,676 @@
 <div class="erp-produccion-admin mx-auto max-w-[120rem] space-y-5 pb-2">
-  <!-- Barra contextual (Stitch: top nav de módulo producción) -->
+  <!-- Barra contextual -->
   <div
-    class="flex flex-col gap-3 rounded-xl bg-[#051125] px-4 py-3 shadow-lg shadow-[#051125]/20 sm:flex-row sm:items-center sm:justify-between lg:px-6"
-  >
+    class="flex flex-col gap-3 rounded-xl bg-[#051125] px-4 py-3 shadow-lg shadow-[#051125]/20 sm:flex-row sm:items-center sm:justify-between lg:px-6">
     <div class="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:gap-6">
-      <span class="truncate text-lg font-bold uppercase tracking-wider text-white">Ironclad Forge</span>
       <nav class="flex flex-wrap gap-4 text-sm font-semibold lg:gap-6" aria-label="Secciones de producción">
-        <button type="button" class="whitespace-nowrap bg-transparent" [class]="tabClass('req')" (click)="selectTab('req')">
-          Requerimientos
+        <button type="button" class="whitespace-nowrap bg-transparent" [class]="tabClass('req')"
+          (click)="selectTab('req')">
+          Ordenes de Producción
         </button>
-        <button type="button" class="whitespace-nowrap bg-transparent" [class]="tabClass('asig')" (click)="selectTab('asig')">
-          Asignaciones
+        <button type="button" class="whitespace-nowrap bg-transparent" [class]="tabClass('asig')"
+          (click)="selectTab('asig')">
+          Procesos
         </button>
-        <button type="button" class="whitespace-nowrap bg-transparent" [class]="tabClass('sup')" (click)="selectTab('sup')">
-          Supervisión
+        <button type="button" class="whitespace-nowrap bg-transparent" [class]="tabClass('sup')"
+          (click)="selectTab('sup')">
+          Merma Reportada
         </button>
       </nav>
-    </div>
-    <div class="flex items-center gap-2 sm:gap-3">
-      <div class="flex min-w-0 flex-1 items-center gap-2 rounded-lg bg-[#1b263b] px-3 py-1.5 sm:max-w-xs sm:flex-none">
-        <span class="material-symbols-outlined shrink-0 text-sm text-[#47607e]" aria-hidden="true">search</span>
-        <input
-          type="search"
-          class="min-w-0 flex-1 border-0 bg-transparent text-sm text-white placeholder:text-[#47607e] focus:outline-none focus:ring-0"
-          placeholder="Buscar…"
-          aria-label="Buscar en producción"
-        />
-      </div>
-      <button
-        type="button"
-        class="rounded-lg p-2 text-white transition-colors hover:bg-[#1b263b]"
-        aria-label="Notificaciones"
-      >
-        <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
-      </button>
     </div>
   </div>
 
   @if (activeTab() === 'req') {
-    <div class="erp-produccion-scrollbar space-y-6">
-      <div class="grid grid-cols-1 gap-4 md:grid-cols-4 md:gap-6">
-        <div
-          class="flex flex-col justify-between gap-4 rounded-xl border-l-4 border-[#47607e] bg-white p-5 dark:bg-[var(--erp-login-card)] md:col-span-3 md:flex-row md:items-center"
-        >
-          <div>
-            <h2 class="mb-1 text-[10px] font-bold uppercase tracking-widest text-[#45474d] dark:text-[var(--erp-login-muted)]">
-              {{ load.label }}
-            </h2>
-            <div class="flex flex-wrap items-baseline gap-2">
-              <span class="text-4xl font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ load.pct }}</span>
-              <span class="text-sm font-semibold text-[#47607e]">{{ load.trend }}</span>
+  <div class="erp-produccion-scrollbar space-y-6">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div class="lg:col-span-2">
+        <section
+          class="rounded-xl border border-[#c5c6cd]/20 bg-white shadow-sm dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
+          <div
+            class="flex items-center justify-between border-b border-[#e1e3e4] px-5 py-4 dark:border-[var(--erp-login-input-border)]">
+            <div>
+              <h3 class="font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Órdenes pendientes de MT
+              </h3>
+              <p class="text-xs text-[#45474d] dark:text-[var(--erp-login-muted)]">Solicitudes de fabricación enviadas
+                por Mundo Terapeuta</p>
+            </div>
+            <div class="flex gap-1 rounded-lg bg-[#1b263b] p-1">
+              <button (click)="setFilter('all')"
+                [class]="filterMode() === 'all' ? 'bg-[#47607e] text-white' : 'text-[#47607e] hover:text-white'"
+                class="rounded-md px-3 py-1 text-[10px] font-bold uppercase transition-all">
+                Todo
+              </button>
+              <button (click)="setFilter('assigned')"
+                [class]="filterMode() === 'assigned' ? 'bg-[#47607e] text-white' : 'text-[#47607e] hover:text-white'"
+                class="rounded-md px-3 py-1 text-[10px] font-bold uppercase transition-all">
+                Asignada
+              </button>
+              <button (click)="setFilter('history')"
+                [class]="filterMode() === 'history' ? 'bg-[#47607e] text-white' : 'text-[#47607e] hover:text-white'"
+                class="rounded-md px-3 py-1 text-[10px] font-bold uppercase transition-all">
+                Historial
+              </button>
             </div>
           </div>
-          <div class="flex gap-4">
-            <div class="h-16 w-1 rounded bg-[#e1e3e4] dark:bg-[var(--erp-login-input-border)]" aria-hidden="true"></div>
-            <div class="space-y-1">
-              <p class="text-xs text-[#45474d] dark:text-[var(--erp-login-muted)]">Total piezas</p>
-              <p class="font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ load.totalPieces }}</p>
-            </div>
-          </div>
-        </div>
-        <div
-          class="flex flex-col justify-between rounded-xl bg-[#55000c] p-5 text-[#fe4b55] dark:bg-[#55000c]/90"
-        >
-          <div class="flex items-start justify-between">
-            <span class="material-symbols-outlined" aria-hidden="true">warning</span>
-            <span class="rounded-full bg-[#2e0004] px-2 py-0.5 text-[10px] font-bold uppercase text-white">
-              {{ alert.badge }}
-            </span>
-          </div>
-          <div>
-            <h3 class="text-xl font-bold">{{ alert.title }}</h3>
-            <p class="text-xs opacity-90">{{ alert.sub }}</p>
-          </div>
-        </div>
-      </div>
 
-      <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        <div class="overflow-hidden rounded-xl bg-[#edeeef] dark:bg-[var(--erp-login-input-bg)] lg:col-span-8">
-          <div class="flex flex-wrap items-center justify-between gap-2 bg-[#051125] px-5 py-4">
-            <div class="flex items-center gap-2">
-              <h3 class="text-base font-semibold text-white">Requerimientos MT</h3>
-              <span class="material-symbols-outlined text-sm text-[#47607e]" title="Solo lectura">lock</span>
-            </div>
-            <span class="text-[10px] font-bold uppercase tracking-widest text-[#47607e]">Sincronizado: hace 2m</span>
-          </div>
           <div class="overflow-x-auto">
             <table class="w-full border-collapse text-left">
               <thead>
-                <tr class="bg-[#edeeef] text-[10px] font-bold uppercase tracking-wider text-[#45474d] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-muted)]">
-                  <th class="px-5 py-3">Producto</th>
-                  <th class="px-5 py-3">Cant. total</th>
-                  <th class="px-5 py-3">Plazo</th>
+                <tr
+                  class="bg-[#edeeef] text-[10px] font-bold uppercase tracking-wider text-[#45474d] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-muted)]">
+                  <th class="px-5 py-3">Producto / Orden</th>
+                  <th class="px-5 py-3">Cantidad a fabricar</th>
+                  <th class="px-5 py-3 text-center">Estado</th>
+                  <th class="px-5 py-3 text-center">Procesos</th>
                   <th class="px-5 py-3">Delegación</th>
-                  <th class="px-5 py-3">Acción</th>
+                  <th class="px-5 py-3 text-right">Detalle</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-[#e1e3e4] dark:divide-[var(--erp-login-input-border)]">
-                @for (row of requirements(); track row.id) {
-                  <tr class="bg-white transition-colors hover:bg-[#f8f9fa] dark:bg-[var(--erp-login-card)] dark:hover:bg-[var(--erp-login-surface)]">
-                    <td class="px-5 py-3">
-                      <div class="flex flex-col">
-                        <span class="text-sm font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ row.name }}</span>
-                        <span class="text-[10px] text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ row.sku }}</span>
+                @for (row of paginatedRequirements(); track row.id) {
+                <tr
+                  class="bg-white transition-colors hover:bg-[#f8f9fa] dark:bg-[var(--erp-login-card)] dark:hover:bg-[var(--erp-login-surface)]">
+                  <td class="px-5 py-3">
+                    <div class="flex flex-col">
+                      <span class="text-sm font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{
+                        row.name }}</span>
+                      <span class="text-[10px] text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ row.sku }}</span>
+                    </div>
+                  </td>
+                  <td
+                    class="px-5 py-3 font-mono text-sm font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">
+                    {{ row.qtyLabel }}
+                  </td>
+                  <td class="px-5 py-3 text-center">
+                    <span
+                      [class]="row.isAssigned ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'"
+                      class="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase">
+                      {{ row.isAssigned ? 'Asignada' : 'No asignada' }}
+                    </span>
+                  </td>
+                  <td class="px-5 py-3 text-center">
+                    <span class="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase"
+                      [class]="row.processCount > 0 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'">
+                      {{ row.processCount > 0 ? row.processCount + ' pasos' : 'Sin procesos' }}
+                    </span>
+                  </td>
+                  <td class="px-5 py-3">
+                    <div
+                      class="h-1.5 w-full max-w-[100px] overflow-hidden rounded-full bg-[#e1e3e4] dark:bg-[var(--erp-login-input-border)]">
+                      <div class="h-full rounded-full transition-all duration-500"
+                        [style.background-color]="row.isAssigned ? '#47607e' : '#e1e3e4'"
+                        [style.width.%]="row.delegationPct">
                       </div>
-                    </td>
-                    <td class="px-5 py-3 font-mono text-sm font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">
-                      {{ row.qtyLabel }}
-                    </td>
-                    <td class="px-5 py-3">
-                      <div class="flex items-center gap-2">
-                        <span
-                          class="h-2 w-2 shrink-0 rounded-full"
-                          [style.background-color]="row.deadlineTone === 'urgent' ? '#ba1a1a' : '#47607e'"
-                          aria-hidden="true"
-                        ></span>
-                        <span class="text-xs font-semibold text-[#191c1d] dark:text-[var(--erp-login-text-primary)]">{{
-                          row.deadline
-                        }}</span>
-                      </div>
-                    </td>
-                    <td class="px-5 py-3">
-                      <div class="h-1.5 w-full max-w-[140px] overflow-hidden rounded-full bg-[#e1e3e4] dark:bg-[var(--erp-login-input-border)]">
-                        <div
-                          class="h-full rounded-full"
-                          [style.background-color]="row.deadlineTone === 'urgent' ? '#ba1a1a' : '#47607e'"
-                          [style.width.%]="row.delegationPct"
-                        ></div>
-                      </div>
-                      <p class="mt-1 text-[10px] text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ row.delegationLabel }}</p>
-                    </td>
-                    <td class="px-5 py-3">
-                      <button
-                        type="button"
+                    </div>
+                    <p class="mt-1 text-[10px] text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ row.delegationLabel
+                      }}</p>
+                  </td>
+                  <td class="px-5 py-3 text-right">
+                    <div class="flex items-center justify-end gap-2">
+                      <button type="button"
                         class="text-[#47607e] transition-colors hover:text-[#051125] dark:hover:text-white"
-                        aria-label="Ver detalle"
-                      >
-                        <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
+                        [class.text-blue-500]="selectedTask()?.id === row.id" (click)="onSelectTask(row.id)">
+                        <span class="material-symbols-outlined text-xl" aria-hidden="true">visibility</span>
                       </button>
-                    </td>
-                  </tr>
+
+                      @if (row.isCompleted && !row.isReportedToMT) {
+                      <button type="button"
+                        class="flex items-center gap-1 rounded-lg bg-emerald-600 px-2 py-1 text-[10px] font-bold uppercase text-white transition-colors hover:bg-emerald-700 disabled:opacity-50"
+                        [disabled]="reportingToMT() === row.id"
+                        (click)="onReportToMT(row.id)">
+                        <span class="material-symbols-outlined text-sm">send</span>
+                        {{ reportingToMT() === row.id ? 'Enviando...' : 'Reportar a MT' }}
+                      </button>
+                      }
+
+                      @if (row.isReportedToMT) {
+                      <span class="flex items-center gap-1 rounded-lg bg-emerald-100 px-2 py-1 text-[10px] font-bold uppercase text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                        <span class="material-symbols-outlined text-sm">check_circle</span>
+                        Reportada
+                      </span>
+                      }
+
+                      @if (row.isAssigned && !row.isCompleted && !row.isReportedToMT) {
+                      <button type="button" class="text-[#ba1a1a] transition-colors hover:text-[#ff3838]"
+                        title="Cancelar producción" (click)="onOpenCancelModal(row.id)">
+                        <span class="material-symbols-outlined text-xl" aria-hidden="true">cancel</span>
+                      </button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+                } @empty {
+                <tr>
+                  <td colspan="6" class="px-5 py-10 text-center text-sm text-[#47607e]">
+                    {{ filterMode() === 'history' ? 'No hay historial de órdenes reportadas.' : (filterMode() === 'assigned' ? 'No hay productos de MT asignados a producción.' : 'No hay productos producibles sincronizados.') }}
+                  </td>
+                </tr>
                 }
               </tbody>
             </table>
           </div>
-        </div>
 
-        <div class="space-y-6 lg:col-span-4">
-          <section class="rounded-xl bg-white p-5 shadow-sm dark:bg-[var(--erp-login-card)]">
-            <div class="mb-4 flex items-center justify-between">
-              <h4 class="font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Ficha técnica</h4>
-              <span class="rounded bg-[#c2dcff] px-2 py-0.5 text-[10px] font-bold text-[#48617e] dark:bg-[#1b263b] dark:text-[#c2dcff]">
-                Detalle
-              </span>
+          <!-- Paginación para Historial -->
+          @if (filterMode() === 'history' && totalHistoryPages() > 0) {
+          <div class="mt-4 flex items-center justify-between border-t border-[var(--erp-login-input-border)] pt-4 px-4">
+            <p class="text-[10px] font-bold uppercase text-[var(--erp-login-muted)] tracking-wider">
+              Página {{ historyPage() }} de {{ totalHistoryPages() }}
+            </p>
+            <div class="flex gap-2 pb-2">
+              <button type="button"
+                [disabled]="historyPage() === 1"
+                (click)="changeHistoryPage(-1)"
+                class="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--erp-login-input-border)] text-[#47607e] transition-colors hover:bg-[var(--erp-login-surface)] hover:text-white disabled:opacity-30">
+                <span class="material-symbols-outlined text-lg">chevron_left</span>
+              </button>
+              <button type="button"
+                [disabled]="historyPage() === totalHistoryPages()"
+                (click)="changeHistoryPage(1)"
+                class="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--erp-login-input-border)] text-[#47607e] transition-colors hover:bg-[var(--erp-login-surface)] hover:text-white disabled:opacity-30">
+                <span class="material-symbols-outlined text-lg">chevron_right</span>
+              </button>
             </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div class="rounded-lg bg-[#f3f4f5] p-3 dark:bg-[var(--erp-login-surface)]">
-                <p class="mb-1 text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]">Insumos</p>
-                <p class="text-xs font-semibold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ insumos }}</p>
-              </div>
-              <div class="rounded-lg bg-[#f3f4f5] p-3 dark:bg-[var(--erp-login-surface)]">
-                <p class="mb-1 text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]">Maquinaria</p>
-                <p class="text-xs font-semibold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ maquinaria }}</p>
-              </div>
-            </div>
-            <div class="mt-4 rounded-lg border border-[#c5c6cd]/40 bg-[#f8f9fa] p-4 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-surface)]">
-              <div class="mb-2 flex items-center gap-2">
-                <span class="material-symbols-outlined text-sm text-[#051125] dark:text-[var(--erp-login-text-primary)]" aria-hidden="true"
-                  >receipt_long</span
-                >
-                <span class="text-xs font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Receta de proceso</span>
-              </div>
-              <ul class="space-y-1 text-[11px] text-[#45474d] dark:text-[var(--erp-login-muted)]">
-                @for (step of recipe; track step.n) {
-                  <li class="flex justify-between gap-2">
-                    <span>{{ step.n }}. {{ step.name }}</span>
-                    <span class="font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ step.seconds }}s</span>
-                  </li>
-                }
-              </ul>
-            </div>
-          </section>
-
-          <section class="rounded-xl bg-[#051125] p-5 text-white">
-            <h4 class="mb-4 font-bold">Herramienta de delegación</h4>
-            <div class="space-y-3">
-              @for (op of delegationOps; track op.id) {
-                <div class="flex items-center justify-between gap-2 text-xs">
-                  <span class="min-w-0 truncate">Operador: {{ op.name }}</span>
-                  <input
-                    class="w-16 rounded border-0 bg-[#1b263b] px-2 py-1 text-right text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#47607e]"
-                    type="number"
-                    min="0"
-                    [value]="delegationInputValue(op.id)"
-                    (input)="onDelegationInput(op.id, ($any($event.target).value))"
-                    [attr.aria-label]="'Cantidad para ' + op.name"
-                  />
-                </div>
-              }
-            </div>
-            <div class="mt-4 flex items-center justify-between border-t border-[#47607e] pt-4">
-              <div class="flex flex-col">
-                <span class="text-[10px] uppercase text-[#828da7]">Total repartido</span>
-                <span class="text-lg font-bold">{{ delegationTotal() | number }} / {{ delegationTarget | number }}</span>
-              </div>
-              @if (delegationBalanced()) {
-                <span class="material-symbols-outlined text-green-400" aria-hidden="true">check_circle</span>
-              } @else {
-                <span class="material-symbols-outlined text-amber-400" aria-hidden="true">error</span>
-              }
-            </div>
-            <button
-              type="button"
-              class="mt-4 w-full rounded-lg bg-[#47607e] py-3 text-sm font-bold uppercase tracking-wider text-white transition-colors hover:bg-[#5a7696]"
-              (click)="onConfirmDelegation()"
-            >
-              Confirmar asignación
-            </button>
-          </section>
-        </div>
+          </div>
+          }
+        </section>
       </div>
 
-      <section
-        class="rounded-xl border border-[#c5c6cd]/20 bg-white p-5 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]"
-      >
-        <div class="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-          <div>
-            <h3 class="font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Supervisión en tiempo real</h3>
-            <p class="text-sm text-[#45474d] dark:text-[var(--erp-login-muted)]">Seguimiento de avance por trabajador asignado</p>
+      <!-- Sidebar: Detalle y Delegación -->
+      <div class="space-y-6">
+        <!-- Ficha Técnica (Receta) -->
+        <section
+          class="rounded-xl border border-[#c5c6cd]/20 bg-white p-5 shadow-sm dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
+          <div class="mb-4 flex items-center justify-between">
+            <h4 class="font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Detalle de Receta</h4>
+            @if (selectedTask()) {
+            <span
+              class="rounded bg-[#c2dcff] px-2 py-0.5 text-[10px] font-bold text-[#48617e] dark:bg-[#1b263b] dark:text-[#c2dcff]">
+              {{ selectedTask()?.productName }}
+            </span>
+            }
           </div>
-          <div class="flex flex-wrap gap-2">
-            <button
-              type="button"
-              class="rounded bg-[#edeeef] px-4 py-2 text-[10px] font-bold uppercase text-[#191c1d] transition-colors hover:bg-[#e1e3e4] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
-              (click)="onDevolucion()"
-            >
-              Devolución
-            </button>
-            <button
-              type="button"
-              class="rounded bg-[#051125] px-4 py-2 text-[10px] font-bold uppercase text-white transition-colors hover:bg-[#47607e]"
-              (click)="onAprobarCierre()"
-            >
-              Aprobar cierre
-            </button>
+
+          @if (selectedTask()) {
+          <div
+            class="rounded-lg border border-[#c5c6cd]/40 bg-[#f8f9fa] p-4 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-surface)]">
+            <div class="mb-3 flex items-center gap-2">
+              <span
+                class="material-symbols-outlined text-sm text-[#051125] dark:text-[var(--erp-login-text-primary)]">list_alt</span>
+              <span class="text-xs font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Ingredientes y
+                Nivel</span>
+            </div>
+
+            <ul class="space-y-2">
+              @for (step of recipe(); track step.n) {
+              <li
+                class="flex items-center justify-between gap-3 text-[11px] border-b border-[#e1e3e4] pb-1 last:border-0 dark:border-[var(--erp-login-input-border)]">
+                <div class="flex items-center gap-2">
+                  <span class="font-mono font-bold text-[#47607e]">{{ step.n }}.</span>
+                  <span class="text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ step.name }}</span>
+                </div>
+                <div class="text-right">
+                  <span class="font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ (step.quantity |
+                    number) || '0' }} {{ step.unit }}</span>
+                  <span
+                    class="ml-2 rounded bg-gray-200 px-1 text-[9px] font-black uppercase text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                    {{ step.type }}
+                  </span>
+                </div>
+              </li>
+              } @empty {
+              <li class="py-4 text-center text-xs text-[#828da7]">No hay ingredientes registrados para esta receta.</li>
+              }
+            </ul>
           </div>
-        </div>
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-          @for (w of supervision; track w.id) {
-            <div [class]="workerCardClass(w.variant)">
-              <div class="mb-4 flex items-start justify-between gap-2">
-                <div class="flex min-w-0 items-center gap-2">
-                  <div
-                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#e1e3e4] text-[10px] font-black text-[#051125] dark:bg-[var(--erp-login-input-border)] dark:text-[var(--erp-login-text-primary)]"
-                    aria-hidden="true"
-                  >
-                    {{ w.name.charAt(0) }}
-                  </div>
-                  <div class="min-w-0">
-                    <p class="truncate text-xs font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ w.name }}</p>
-                    <p class="text-[10px] text-[#45474d] dark:text-[var(--erp-login-muted)]">
-                      {{ w.statusLine ?? w.shift }}
-                    </p>
+          } @else {
+          <div class="flex flex-col items-center justify-center py-10 text-center">
+            <span class="material-symbols-outlined mb-2 text-4xl text-[#e1e3e4]">info</span>
+            <p class="text-xs text-[#828da7]">Selecciona un producto para ver su receta.</p>
+          </div>
+          }
+        </section>
+
+        <!-- Herramienta de Delegación (Solo para órdenes no finalizadas) -->
+        @if (selectedTask()?.id !== 'temp' && selectedTask()) {
+          @if (selectedTask()?.status !== 'REPORTED_TO_MT' && selectedTask()?.status !== 'COMPLETED') {
+            <section class="rounded-xl bg-[#051125] p-5 text-white shadow-xl">
+              <div class="mb-4">
+                <h4 class="font-bold">Herramienta de delegación</h4>
+                <p class="text-[10px] text-[#828da7] uppercase tracking-wider mt-1">Selecciona trabajadores para esta orden</p>
+              </div>
+
+              <div class="space-y-4">
+                <!-- Selector de Trabajadores -->
+                <div>
+                  <label class="block text-[10px] font-bold uppercase text-[#828da7] mb-1.5">Añadir Trabajador</label>
+                  <div class="flex gap-2">
+                    <select #workerSelect class="flex-1 rounded-lg border-0 bg-[#1b263b] px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#47607e]">
+                      <option value="">Seleccionar empleado...</option>
+                      @for (w of availableWorkers(); track w.id) {
+                        <option [value]="w.id">{{ w.name }} ({{ w.puesto }})</option>
+                      }
+                    </select>
+                    <button type="button" 
+                      (click)="addWorkerToDelegation(workerSelect.value); workerSelect.value = ''"
+                      class="flex h-9 w-9 items-center justify-center rounded-lg bg-[#47607e] text-white hover:bg-[#5a7696] transition-colors">
+                      <span class="material-symbols-outlined text-xl">person_add</span>
+                    </button>
                   </div>
                 </div>
-                <span [class]="pctClass(w.variant)">{{ w.pct }}%</span>
+
+                <!-- Lista de Trabajadores Seleccionados -->
+                <div class="space-y-2.5 max-h-[300px] overflow-y-auto pr-1 erp-produccion-scrollbar">
+                  @for (sw of selectedDelegationWorkers(); track sw.id) {
+                  <div class="flex items-center gap-3 rounded-lg bg-[#1b263b] p-2.5 border border-[#47607e]/20">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2">
+                        <span class="truncate text-xs font-bold text-white">Op: {{ sw.name }}</span>
+                      </div>
+                      <p class="text-[9px] text-[#828da7] uppercase">{{ sw.puesto }}</p>
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                      <input
+                        class="w-16 rounded border-0 bg-[#051125] px-2 py-1.5 text-right text-xs text-white font-mono focus:outline-none focus:ring-1 focus:ring-[#47607e]"
+                        type="number" min="0" [value]="delegationInputValue(sw.id)"
+                        (input)="onDelegationInput(sw.id, ($any($event.target).value))" 
+                        placeholder="Cant." />
+                      
+                      <button type="button" 
+                        (click)="removeWorkerFromDelegation(sw.id)"
+                        class="text-[#ba1a1a] hover:text-[#ff3838] transition-colors p-1"
+                        title="Quitar trabajador">
+                        <span class="material-symbols-outlined text-lg">delete</span>
+                      </button>
+                    </div>
+                  </div>
+                  } @empty {
+                    <div class="py-6 text-center border border-dashed border-[#47607e]/30 rounded-lg">
+                      <p class="text-[10px] text-[#828da7]">No hay trabajadores seleccionados</p>
+                    </div>
+                  }
+                </div>
               </div>
-              <div class="mb-2 flex gap-1">
-                @for (seg of w.segments; track $index) {
-                  <div [class]="segmentClass(seg)"></div>
-                }
+
+              <!-- Resumen y Validación -->
+              <div class="mt-5 border-t border-[#47607e]/40 pt-4">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex flex-col">
+                    <span class="text-[10px] uppercase text-[#828da7]">Total repartido</span>
+                    <span class="text-lg font-bold" [class.text-emerald-400]="delegationBalanced()" [class.text-amber-400]="!delegationBalanced()">
+                      {{ delegationTotal() | number }} / {{ delegationTarget() | number }}
+                    </span>
+                  </div>
+                  <div class="text-right">
+                    @if (delegationErrorMessage()) {
+                      <span class="text-[10px] font-bold uppercase py-1 px-2 rounded bg-amber-900/40 text-amber-400">
+                        {{ delegationErrorMessage() }}
+                      </span>
+                    } @else {
+                      <span class="material-symbols-outlined text-emerald-400 text-2xl">check_circle</span>
+                    }
+                  </div>
+                </div>
+                
+                <button type="button"
+                  [disabled]="!canConfirmDelegation()"
+                  class="w-full rounded-xl bg-[#47607e] py-3 text-sm font-bold uppercase tracking-wider text-white transition-all hover:bg-[#5a7696] disabled:opacity-30 disabled:grayscale"
+                  (click)="onConfirmDelegation()">
+                  Confirmar asignación
+                </button>
               </div>
-              <div class="flex justify-between text-[10px] font-medium text-[#45474d] dark:text-[var(--erp-login-muted)]">
-                <span>Meta: {{ w.meta | number }}</span>
-                <span>Prod: {{ w.prod | number }}</span>
-              </div>
-            </div>
+            </section>
+          } @else {
+            <!-- Mensaje para órdenes ya finalizadas -->
+            <section class="rounded-xl bg-[#051125]/40 p-10 text-center border border-dashed border-[#47607e]/30 shadow-xl">
+              <span class="material-symbols-outlined text-emerald-400 text-5xl mb-3">verified</span>
+              <h4 class="font-bold text-white mb-2">Orden Finalizada</h4>
+              <p class="text-xs text-[#828da7] uppercase leading-relaxed">
+                Esta orden ya ha sido completada y reportada. No se pueden realizar nuevas asignaciones.
+              </p>
+            </section>
           }
-        </div>
-      </section>
-    </div>
-  }
-
-  @if (activeTab() === 'asig') {
-    <div class="rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] p-5">
-      <h2 class="text-base font-bold text-[var(--erp-login-text-primary)]">Asignaciones activas</h2>
-      <p class="mt-1 text-sm text-[var(--erp-login-muted)]">Vista resumida por orden y operador (demo).</p>
-      <ul class="mt-4 divide-y divide-[var(--erp-login-input-border)]">
-        @for (a of asignaciones; track a.orden + a.operador) {
-          <li class="flex flex-wrap items-center justify-between gap-2 py-3">
-            <div>
-              <p class="text-sm font-bold text-[var(--erp-login-text-primary)]">{{ a.orden }} · {{ a.producto }}</p>
-              <p class="text-xs text-[var(--erp-login-muted)]">{{ a.operador }} · {{ a.cantidad }} u.</p>
-            </div>
-            @if (a.estado === 'Retraso') {
-              <span
-                class="rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] font-bold uppercase text-red-700 dark:text-red-400"
-                >{{ a.estado }}</span
-              >
-            } @else {
-              <span
-                class="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-700 dark:text-emerald-400"
-                >{{ a.estado }}</span
-              >
-            }
-          </li>
         }
-      </ul>
+      </div>
     </div>
-  }
 
-  @if (activeTab() === 'sup') {
+    <!-- Supervisión -->
+    @if (supervision.length > 0) {
     <section
-      class="rounded-xl border border-[#c5c6cd]/20 bg-white p-5 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]"
-    >
+      class="rounded-xl border border-[#c5c6cd]/20 bg-white p-5 shadow-sm dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
       <div class="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <h3 class="font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Supervisión en tiempo real</h3>
-          <p class="text-sm text-[#45474d] dark:text-[var(--erp-login-muted)]">Misma información que en la pestaña Requerimientos.</p>
-        </div>
-        <div class="flex flex-wrap gap-2">
-          <button
-            type="button"
-            class="rounded bg-[#edeeef] px-4 py-2 text-[10px] font-bold uppercase text-[#191c1d] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
-            (click)="onDevolucion()"
-          >
-            Devolución
-          </button>
-          <button
-            type="button"
-            class="rounded bg-[#051125] px-4 py-2 text-[10px] font-bold uppercase text-white hover:bg-[#47607e]"
-            (click)="onAprobarCierre()"
-          >
-            Aprobar cierre
-          </button>
+          <p class="text-sm text-[#45474d] dark:text-[var(--erp-login-muted)]">Seguimiento de avance por trabajador</p>
         </div>
       </div>
       <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
         @for (w of supervision; track w.id) {
-          <div [class]="workerCardClass(w.variant)">
-            <div class="mb-4 flex items-start justify-between gap-2">
-              <div class="flex min-w-0 items-center gap-2">
-                <div
-                  class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#e1e3e4] text-[10px] font-black text-[#051125] dark:bg-[var(--erp-login-input-border)] dark:text-[var(--erp-login-text-primary)]"
-                >
-                  {{ w.name.charAt(0) }}
-                </div>
-                <div class="min-w-0">
-                  <p class="truncate text-xs font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ w.name }}</p>
-                  <p class="text-[10px] text-[#45474d] dark:text-[var(--erp-login-muted)]">
-                    {{ w.statusLine ?? w.shift }}
-                  </p>
-                </div>
+        <div [class]="workerCardClass(w.variant)">
+          <div class="mb-4 flex items-start justify-between gap-2">
+            <div class="flex min-w-0 items-center gap-2">
+              <div
+                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#e1e3e4] text-[10px] font-black text-[#051125] dark:bg-[var(--erp-login-input-border)]">
+                {{ w.name.charAt(0) }}
               </div>
-              <span [class]="pctClass(w.variant)">{{ w.pct }}%</span>
+              <div class="min-w-0">
+                <p class="truncate text-xs font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ w.name
+                  }}</p>
+                <p class="text-[10px] text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ w.statusLine ?? w.shift }}
+                </p>
+              </div>
             </div>
-            <div class="mb-2 flex gap-1">
-              @for (seg of w.segments; track $index) {
-                <div [class]="segmentClass(seg)"></div>
-              }
-            </div>
-            <div class="flex justify-between text-[10px] font-medium text-[#45474d] dark:text-[var(--erp-login-muted)]">
-              <span>Meta: {{ w.meta | number }}</span>
-              <span>Prod: {{ w.prod | number }}</span>
-            </div>
+            <span [class]="pctClass(w.variant)">{{ w.pct }}%</span>
           </div>
+          <div class="mb-2 flex gap-1">
+            @for (seg of w.segments; track $index) {
+            <div [class]="segmentClass(seg)"></div>
+            }
+          </div>
+        </div>
         }
       </div>
     </section>
+    }
+  </div>
+  }
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  TAB: PROCESOS                              -->
+  <!-- ═══════════════════════════════════════════ -->
+  @if (activeTab() === 'asig') {
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+
+    <!-- Lista de órdenes para seleccionar -->
+    <div class="lg:col-span-1 space-y-4">
+      <section
+        class="rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] p-5 shadow-sm">
+        <h3 class="mb-4 font-bold text-[var(--erp-login-text-primary)]">Seleccionar Orden</h3>
+        <p class="mb-3 text-[10px] text-[var(--erp-login-muted)]">Elige una orden de producción para definir o editar
+          sus procesos.</p>
+        <div class="space-y-2 max-h-[60vh] overflow-y-auto">
+          @for (row of requirements(); track row.id) {
+          <button type="button" class="w-full rounded-lg border p-3 text-left transition-all" [class]="processSelectedTask()?.id === row.id
+              ? 'border-[#47607e] bg-[#47607e]/10 dark:bg-[#47607e]/20'
+              : 'border-[var(--erp-login-input-border)] hover:border-[#47607e]/50'"
+            (click)="onSelectTaskForProcess(row.id)">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-bold text-[var(--erp-login-text-primary)]">{{ row.name }}</p>
+                <p class="text-[10px] text-[var(--erp-login-muted)]">{{ row.sku }}</p>
+              </div>
+              <span class="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase"
+                [class]="row.processCount > 0 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'">
+                {{ row.processCount > 0 ? row.processCount + ' pasos' : 'Sin procesos' }}
+              </span>
+            </div>
+          </button>
+          } @empty {
+          <p class="py-6 text-center text-xs text-[var(--erp-login-muted)]">No hay órdenes de producción disponibles.
+          </p>
+          }
+        </div>
+      </section>
+    </div>
+
+    <!-- Formulario de procesos -->
+    <div class="lg:col-span-2">
+      @if (processSelectedTask()) {
+      <section
+        class="rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] p-5 shadow-sm">
+        <div class="mb-5 flex items-center justify-between">
+          <div>
+            <h3 class="font-bold text-[var(--erp-login-text-primary)]">Procesos de Producción</h3>
+            <p class="text-xs text-[var(--erp-login-muted)]">{{ processSelectedTask()?.productName }} — {{
+              processSelectedTask()?.orderNumber }}</p>
+          </div>
+          <button type="button"
+            class="flex items-center gap-1 rounded-lg bg-[#47607e] px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-[#5a7696]"
+            (click)="addProcessRow()">
+            <span class="material-symbols-outlined text-base">add</span>
+            Agregar Proceso
+          </button>
+        </div>
+
+        <div class="space-y-4">
+          @for (row of processFormRows(); track row.orderIndex; let i = $index) {
+          <div
+            class="rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-surface)] p-4 transition-all">
+            <div class="mb-3 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span
+                  class="flex h-7 w-7 items-center justify-center rounded-full bg-[#47607e] text-xs font-bold text-white">{{
+                  row.orderIndex }}</span>
+                <span class="text-xs font-bold uppercase tracking-wider text-[var(--erp-login-muted)]">Proceso {{
+                  row.orderIndex }}</span>
+              </div>
+              <button type="button" class="text-[#ba1a1a] transition-colors hover:text-[#ff3838]"
+                (click)="removeProcessRow(i)">
+                <span class="material-symbols-outlined text-lg">delete</span>
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div>
+                <label
+                  class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-[var(--erp-login-muted)]">Nombre
+                  del Proceso</label>
+                <input type="text"
+                  class="w-full rounded-lg border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] px-3 py-2 text-sm text-[var(--erp-login-text-primary)] placeholder:text-[var(--erp-login-muted)] focus:border-[#47607e] focus:outline-none"
+                  placeholder="Ej. Mezclado" [ngModel]="row.name" (ngModelChange)="row.name = $event" />
+              </div>
+              <div>
+                <label
+                  class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-[var(--erp-login-muted)]">Descripción</label>
+                <input type="text"
+                  class="w-full rounded-lg border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] px-3 py-2 text-sm text-[var(--erp-login-text-primary)] placeholder:text-[var(--erp-login-muted)] focus:border-[#47607e] focus:outline-none"
+                  placeholder="Qué se debe hacer..." [ngModel]="row.description"
+                  (ngModelChange)="row.description = $event" />
+              </div>
+              <div>
+                <label
+                  class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-[var(--erp-login-muted)]">Tiempo
+                  Estimado</label>
+                <div class="flex gap-2">
+                  <input type="number" min="0"
+                    class="w-full flex-1 rounded-lg border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] px-3 py-2 text-sm text-[var(--erp-login-text-primary)] placeholder:text-[var(--erp-login-muted)] focus:border-[#47607e] focus:outline-none"
+                    placeholder="0" [ngModel]="row.estimatedTimeValue"
+                    (ngModelChange)="row.estimatedTimeValue = +$event" />
+                  <select
+                    class="rounded-lg border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] px-2 py-2 text-xs text-[var(--erp-login-text-primary)] focus:border-[#47607e] focus:outline-none"
+                    [ngModel]="row.estimatedTimeUnit" (ngModelChange)="row.estimatedTimeUnit = $event">
+                    <option value="minutes">min</option>
+                    <option value="hours">hrs</option>
+                    <option value="days">días</option>
+                    <option value="weeks">sem</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+          } @empty {
+          <div
+            class="flex flex-col items-center justify-center rounded-xl border border-dashed border-[var(--erp-login-input-border)] py-10 text-center">
+            <span class="material-symbols-outlined mb-2 text-4xl text-[#e1e3e4]">checklist</span>
+            <p class="text-xs text-[var(--erp-login-muted)]">No hay procesos. Agrega el primer proceso para esta orden.
+            </p>
+          </div>
+          }
+        </div>
+
+        @if (processFormRows().length > 0) {
+        <div class="mt-5 flex justify-end">
+          <button type="button"
+            class="rounded-lg bg-[#051125] px-6 py-3 text-sm font-bold uppercase tracking-wider text-white transition-colors hover:bg-[#1b263b] disabled:opacity-50"
+            [disabled]="savingProcesses()" (click)="onSaveProcesses()">
+            {{ savingProcesses() ? 'Guardando...' : 'Guardar Procesos' }}
+          </button>
+        </div>
+        }
+      </section>
+      } @else {
+      <div
+        class="flex flex-col items-center justify-center rounded-xl border border-dashed border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] py-20 text-center">
+        <span class="material-symbols-outlined mb-3 text-5xl text-[#e1e3e4]">settings</span>
+        <h3 class="mb-1 font-bold text-[var(--erp-login-text-primary)]">Configurar Procesos</h3>
+        <p class="text-xs text-[var(--erp-login-muted)]">Selecciona una orden a la izquierda para definir sus procesos
+          de producción.</p>
+      </div>
+      }
+    </div>
+  </div>
+  }
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  TAB: MERMA REPORTADA                       -->
+  <!-- ═══════════════════════════════════════════ -->
+  @if (activeTab() === 'sup') {
+  <section class="rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] shadow-sm">
+    <div class="flex items-center justify-between border-b border-[var(--erp-login-input-border)] px-5 py-4">
+      <div>
+        <h3 class="font-bold text-[var(--erp-login-text-primary)]">Merma Reportada</h3>
+        <p class="text-xs text-[var(--erp-login-muted)]">Pérdidas de material reportadas por los trabajadores al
+          finalizar producción</p>
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-left">
+        <thead>
+          <tr
+            class="bg-[#edeeef] text-[10px] font-bold uppercase tracking-wider text-[#45474d] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-muted)]">
+            <th class="px-5 py-3">Insumo</th>
+            <th class="px-5 py-3">Tipo</th>
+            <th class="px-5 py-3 text-right">Cantidad Perdida</th>
+            <th class="px-5 py-3">Producto / Orden</th>
+            <th class="px-5 py-3">Trabajador</th>
+            <th class="px-5 py-3">Observaciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#e1e3e4] dark:divide-[var(--erp-login-input-border)]">
+          @for (w of wasteReports(); track w.id) {
+          <tr
+            class="bg-white transition-colors hover:bg-[#f8f9fa] dark:bg-[var(--erp-login-card)] dark:hover:bg-[var(--erp-login-surface)]">
+            <td class="px-5 py-3">
+              <span class="text-sm font-bold text-[var(--erp-login-text-primary)]">{{ w.productName }}</span>
+            </td>
+            <td class="px-5 py-3">
+              <span
+                class="rounded bg-gray-200 px-1 text-[9px] font-black uppercase text-gray-600 dark:bg-gray-800 dark:text-gray-400">{{
+                w.itemType || 'N/A' }}</span>
+            </td>
+            <td class="px-5 py-3 text-right">
+              <span class="font-mono font-bold text-[#ba1a1a]">{{ w.quantity }} {{ w.unitOfMeasure || '' }}</span>
+            </td>
+            <td class="px-5 py-3 text-xs text-[var(--erp-login-muted)]">{{ w.assignment?.task?.productName || '—' }}
+            </td>
+            <td class="px-5 py-3 text-xs text-[var(--erp-login-muted)]">{{ w.assignment?.worker?.fullName || '—' }}</td>
+            <td class="px-5 py-3 text-xs text-[var(--erp-login-muted)]">{{ w.notes || '—' }}</td>
+          </tr>
+          } @empty {
+          <tr>
+            <td colspan="6" class="px-5 py-10 text-center text-sm text-[var(--erp-login-muted)]">
+              @if (loadingWaste()) {
+              Cargando mermas reportadas...
+              } @else {
+              No hay mermas reportadas hasta el momento.
+              }
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+  }
+
+  <!-- Modal de Confirmación para Cancelar Asignación -->
+  @if (showCancelModal()) {
+  <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-[#051125]/60 backdrop-blur-sm transition-opacity"
+      (click)="showCancelModal.set(false)"></div>
+
+    <div
+      class="relative w-full max-w-md overflow-hidden rounded-2xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] p-6 shadow-2xl shadow-black/50 transition-all">
+      <div class="flex flex-col items-center text-center">
+        <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#ba1a1a]/10 text-[#ba1a1a]">
+          <span class="material-symbols-outlined text-4xl">warning</span>
+        </div>
+
+        <h3 class="mb-2 text-xl font-bold text-[var(--erp-login-text-primary)]">¿Eliminar asignación?</h3>
+        <p class="mb-8 text-sm text-[var(--erp-login-muted)]">
+          Esta acción eliminará a todos los trabajadores asignados a esta orden y la devolverá a estado pendiente.
+        </p>
+
+        <div class="flex w-full flex-col gap-3 sm:flex-row">
+          <button type="button"
+            class="flex-1 rounded-xl bg-[#e1e3e4] py-3 text-sm font-bold text-[#45474d] transition-colors hover:bg-[#d1d3d4] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)] dark:hover:bg-[var(--erp-login-input-border)]"
+            (click)="showCancelModal.set(false)">
+            No, volver
+          </button>
+          <button type="button"
+            class="flex-1 rounded-xl bg-[#ba1a1a] py-3 text-sm font-bold text-white transition-colors hover:bg-[#d32f2f]"
+            (click)="onConfirmCancel()">
+            Sí, cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- Modal de Confirmación de Asignación Final -->
+  @if (showDelegationConfirmModal()) {
+    <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-[#051125]/60 backdrop-blur-sm transition-opacity"
+        (click)="showDelegationConfirmModal.set(false)"></div>
+   
+      <div
+        class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] shadow-2xl shadow-black/50 transition-all">
+        
+        <div class="bg-[#051125] px-6 py-4 text-white">
+          <h3 class="text-lg font-bold">Confirmar Delegación</h3>
+          <p class="text-xs text-[#828da7] uppercase">Revisa los trabajadores y cantidades antes de proceder</p>
+        </div>
+
+        <div class="p-6">
+          <div class="mb-4 rounded-xl bg-[var(--erp-login-surface)] p-4 border border-[var(--erp-login-input-border)]">
+            <p class="mb-1 text-[10px] font-bold uppercase text-[var(--erp-login-muted)]">Orden de Producción</p>
+            <p class="text-sm font-bold text-[var(--erp-login-text-primary)]">{{ selectedTask()?.productName }}</p>
+            <p class="text-xs text-[var(--erp-login-muted)]">Total a fabricar: {{ delegationTarget() | number }} unidades</p>
+          </div>
+
+          <p class="mb-3 text-xs font-bold text-[var(--erp-login-text-primary)]">Trabajadores seleccionados para esta asignación:</p>
+          
+          <div class="space-y-2 max-h-[250px] overflow-y-auto erp-produccion-scrollbar pr-2 mb-6">
+            @for (sw of selectedDelegationWorkers(); track sw.id) {
+              <div class="flex items-center justify-between rounded-lg bg-[var(--erp-login-surface)] px-4 py-3 border-l-4 border-[#47607e]">
+                <div>
+                  <p class="text-sm font-bold text-[var(--erp-login-text-primary)]">{{ sw.name }}</p>
+                  <p class="text-[10px] text-[var(--erp-login-muted)] uppercase">{{ sw.puesto }}</p>
+                </div>
+                <div class="text-right">
+                  <span class="font-mono text-lg font-bold text-[#47607e]">{{ delegationInputValue(sw.id) | number }}</span>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="flex w-full flex-col gap-3 sm:flex-row border-t border-[var(--erp-login-input-border)] pt-5">
+            <button type="button"
+              class="flex-1 rounded-xl bg-[#e1e3e4] py-3 text-sm font-bold text-[#45474d] transition-colors hover:bg-[#d1d3d4] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)] dark:hover:bg-[var(--erp-login-input-border)]"
+              (click)="showDelegationConfirmModal.set(false)"
+              [disabled]="isAssigning()">
+              Regresar y Corregir
+            </button>
+            <button type="button"
+              class="flex-1 rounded-xl bg-[#051125] py-3 text-sm font-bold text-white shadow-lg transition-all hover:bg-[#1b263b] disabled:opacity-50"
+              (click)="onCommitDelegation()"
+              [disabled]="isAssigning()">
+              {{ isAssigning() ? 'Procesando...' : 'Sí, Aceptar Asignación' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   }
 </div>

@@ -1,4 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { ProductionAssignment } from './production-assignment.entity';
+import { ProductionProcess } from './production-process.entity';
 
 @Entity('production_tasks')
 export class ProductionTask {
@@ -29,6 +31,12 @@ export class ProductionTask {
   // Status in ERP (DRAFT, ASSIGNED, IN_PROGRESS, PENDING_APPROVAL, CLOSED)
   @Column({ default: 'DRAFT' })
   status: string;
+
+  @OneToMany(() => ProductionAssignment, (assignment) => assignment.task)
+  assignments: ProductionAssignment[];
+
+  @OneToMany(() => ProductionProcess, (process) => process.task)
+  processes: ProductionProcess[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

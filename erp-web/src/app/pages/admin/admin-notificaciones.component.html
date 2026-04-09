@@ -5,147 +5,111 @@
         Centro de notificaciones
       </h1>
       <p class="text-sm font-medium text-[#45474d] dark:text-[var(--erp-login-muted)]">
-        Vista unificada de alertas de planta y RR.HH. (demo).
+        Vista unificada de alertas y eventos del sistema.
       </p>
     </div>
     <div class="flex gap-3 sm:gap-4">
       <div class="flex min-w-[100px] flex-col items-center rounded-lg bg-[#f3f4f5] px-5 py-3 dark:bg-[var(--erp-login-input-bg)]">
-        <span class="mb-1 text-xs font-bold uppercase tracking-wider text-[#45474d] dark:text-[var(--erp-login-muted)]">Críticas</span>
-        <span class="text-2xl font-bold text-[#fe4b55]">{{ stats.critical }}</span>
+        <span class="mb-1 text-xs font-bold uppercase tracking-wider text-[#45474d] dark:text-[var(--erp-login-muted)]">Sin leer</span>
+        <span class="text-2xl font-bold text-[#fe4b55]">{{ unreadCount() }}</span>
       </div>
       <div class="flex min-w-[100px] flex-col items-center rounded-lg bg-[#f3f4f5] px-5 py-3 dark:bg-[var(--erp-login-input-bg)]">
-        <span class="mb-1 text-xs font-bold uppercase tracking-wider text-[#45474d] dark:text-[var(--erp-login-muted)]">Activas</span>
-        <span class="text-2xl font-bold text-[#47607e]">{{ stats.active }}</span>
+        <span class="mb-1 text-xs font-bold uppercase tracking-wider text-[#45474d] dark:text-[var(--erp-login-muted)]">Total</span>
+        <span class="text-2xl font-bold text-[#47607e]">{{ productionNotifs().length }}</span>
       </div>
     </div>
   </div>
 
   <div class="grid grid-cols-12 gap-6">
-    <!-- Producción -->
-    <section class="col-span-12 space-y-4 lg:col-span-5">
+    <!-- Alertas de Producción -->
+    <section class="col-span-12 space-y-4 lg:col-span-7">
       <div class="flex items-center justify-between px-1">
         <h2 class="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-[#051125] dark:text-[var(--erp-login-text-primary)]">
           <span class="material-symbols-outlined text-sm" aria-hidden="true">precision_manufacturing</span>
           Alertas de producción
         </h2>
-        <span class="rounded bg-[#051125]/5 px-2 py-0.5 text-[10px] font-bold text-[#051125] dark:bg-white/10 dark:text-white"
-          >Alta prioridad</span
-        >
+        <div class="flex items-center gap-2">
+          @if (unreadCount() > 0) {
+          <button type="button"
+            class="rounded-lg bg-[#051125] px-3 py-1.5 text-[10px] font-bold uppercase text-white hover:bg-[#1b263b] transition-colors"
+            (click)="onMarkAllAsRead()">
+            Marcar todo leído
+          </button>
+          }
+          @if (productionNotifs().length > 0) {
+          <button type="button"
+            class="rounded-lg border border-[#ba1a1a]/30 bg-[#ba1a1a]/10 px-3 py-1.5 text-[10px] font-bold uppercase text-[#ba1a1a] hover:bg-[#ba1a1a]/20 transition-colors"
+            (click)="onClearAll()">
+            Limpiar todo
+          </button>
+          }
+        </div>
       </div>
-      @for (n of production; track n.id) {
-        <article [class]="prodCardClass(n)">
+
+      @if (loading()) {
+      <div class="rounded-lg border border-[#c5c6cd]/20 bg-white p-8 text-center dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
+        <p class="text-sm text-[var(--erp-login-muted)]">Cargando notificaciones...</p>
+      </div>
+      } @else if (productionNotifs().length === 0) {
+      <div class="rounded-lg border border-dashed border-[var(--erp-login-input-border)] bg-white p-10 text-center dark:bg-[var(--erp-login-card)]">
+        <span class="material-symbols-outlined mb-2 text-4xl text-[var(--erp-login-muted)]">notifications_off</span>
+        <p class="text-sm text-[var(--erp-login-muted)]">No hay alertas de producción aún.</p>
+        <p class="mt-1 text-xs text-[var(--erp-login-muted)]">Aquí aparecerán notificaciones cuando los trabajadores completen sus producciones.</p>
+      </div>
+      } @else {
+      @for (n of paginatedNotifs(); track n.id) {
+        <article [class]="prodCardClass(n)" (click)="onMarkAsRead(n)" class="cursor-pointer">
           <div class="mb-3 flex justify-between gap-2">
             <div class="flex items-center gap-2">
-              @if (n.severity === 'critical') {
-                <span class="material-symbols-outlined text-[#fe4b55]" style="font-variation-settings: 'FILL' 1" aria-hidden="true"
-                  >warning</span
-                >
-              } @else {
-                <span class="material-symbols-outlined text-[#47607e]" aria-hidden="true">inventory_2</span>
-              }
-              <span class="text-xs font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ n.badge }}</span>
+              <span class="material-symbols-outlined" [class]="prodIconColor(n)" aria-hidden="true"
+                style="font-variation-settings: 'FILL' 1">{{ prodIcon(n) }}</span>
+              <span class="text-xs font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]">
+                {{ n.category === 'PRODUCTION_COMPLETED' ? 'Producción terminada' : 'Asignación' }}
+              </span>
             </div>
-            <span class="text-[10px] font-medium text-[#75777d]">{{ n.time }}</span>
+            <div class="flex items-center gap-2">
+              @if (!n.isRead) {
+              <span class="h-2 w-2 rounded-full bg-[#fe4b55]"></span>
+              }
+              <span class="text-[10px] font-medium text-[#75777d]">{{ formatTimeAgo(n.createdAt) }}</span>
+            </div>
           </div>
           <h3 class="mb-2 text-base font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ n.title }}</h3>
-          <p class="mb-5 text-sm leading-relaxed text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ n.body }}</p>
-          <div class="flex flex-wrap gap-2">
-            @for (a of n.actions; track a.label) {
-              @if (a.variant === 'danger') {
-                <button
-                  type="button"
-                  class="rounded-lg bg-[#92001c] px-4 py-2 text-xs font-bold text-white transition-all hover:brightness-110 active:scale-[0.98]"
-                  (click)="onProdAction(n.id, a.label)"
-                >
-                  {{ a.label }}
-                </button>
-              } @else if (a.variant === 'secondary') {
-                <button
-                  type="button"
-                  class="rounded-lg bg-[#edeeef] px-4 py-2 text-xs font-bold text-[#051125] transition-colors hover:bg-[#e1e3e4] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
-                  (click)="onProdAction(n.id, a.label)"
-                >
-                  {{ a.label }}
-                </button>
-              } @else {
-                <button
-                  type="button"
-                  class="rounded-lg bg-[#051125] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#1b263b]"
-                  (click)="onProdAction(n.id, a.label)"
-                >
-                  {{ a.label }}
-                </button>
-              }
-            }
-          </div>
+          <p class="text-sm leading-relaxed text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ n.message }}</p>
         </article>
+      }
+
+      <!-- Paginación -->
+      @if (totalPages() > 1) {
+      <div class="flex items-center justify-between rounded-lg bg-[#f3f4f5] px-4 py-3 dark:bg-[var(--erp-login-input-bg)]">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--erp-login-muted)]">
+          Página {{ currentPage() }} de {{ totalPages() }}
+        </span>
+        <div class="flex gap-2">
+          <button type="button"
+            class="rounded-lg border border-[var(--erp-login-input-border)] bg-white px-3 py-1.5 text-xs font-bold text-[var(--erp-login-text-primary)] transition-colors hover:bg-[#f3f4f5] disabled:opacity-40 dark:bg-[var(--erp-login-card)]"
+            [disabled]="currentPage() <= 1"
+            (click)="goToPage(currentPage() - 1)">
+            <span class="material-symbols-outlined text-sm">chevron_left</span>
+          </button>
+          <button type="button"
+            class="rounded-lg border border-[var(--erp-login-input-border)] bg-white px-3 py-1.5 text-xs font-bold text-[var(--erp-login-text-primary)] transition-colors hover:bg-[#f3f4f5] disabled:opacity-40 dark:bg-[var(--erp-login-card)]"
+            [disabled]="currentPage() >= totalPages()"
+            (click)="goToPage(currentPage() + 1)">
+            <span class="material-symbols-outlined text-sm">chevron_right</span>
+          </button>
+        </div>
+      </div>
+      }
       }
     </section>
 
-    <div class="col-span-12 space-y-6 lg:col-span-7">
-      <!-- RR.HH. -->
+    <!-- Panel lateral: Info del sistema -->
+    <div class="col-span-12 space-y-6 lg:col-span-5">
       <section class="space-y-4">
         <h2 class="flex items-center gap-2 px-1 text-sm font-bold uppercase tracking-widest text-[#051125] dark:text-[var(--erp-login-text-primary)]">
-          <span class="material-symbols-outlined text-sm" aria-hidden="true">groups</span>
-          Recursos humanos
-        </h2>
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-          @for (h of hr; track h.id) {
-            <div
-              class="flex h-full flex-col rounded-lg border border-[#c5c6cd]/20 bg-white p-5 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]"
-            >
-              <div class="mb-4 flex items-center gap-3">
-                <div
-                  class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#d1e4ff] text-xs font-bold text-[#051125] dark:bg-[#1b263b] dark:text-[#c2dcff]"
-                >
-                  {{ h.initials }}
-                </div>
-                <div>
-                  <p class="text-xs font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ h.name }}</p>
-                  <p class="text-[10px] text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ h.role }}</p>
-                </div>
-              </div>
-              <h4 class="mb-2 text-sm font-semibold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ h.title }}</h4>
-              <p class="mb-auto pb-4 text-xs text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ h.body }}</p>
-              <div class="flex gap-2">
-                @for (a of h.actions; track a.label) {
-                  @if (a.variant === 'approve') {
-                    <button
-                      type="button"
-                      class="flex-1 rounded-lg bg-[#051125] py-2 text-xs font-bold text-white dark:bg-[#47607e]"
-                      (click)="onHrAction(h.id, a.label)"
-                    >
-                      {{ a.label }}
-                    </button>
-                  } @else if (a.variant === 'deny') {
-                    <button
-                      type="button"
-                      class="flex-1 rounded-lg border border-[#c5c6cd] py-2 text-xs font-bold text-[#051125] dark:border-[var(--erp-login-input-border)] dark:text-[var(--erp-login-text-primary)]"
-                      (click)="onHrAction(h.id, a.label)"
-                    >
-                      {{ a.label }}
-                    </button>
-                  } @else {
-                    <button
-                      type="button"
-                      class="w-full rounded-lg bg-[#47607e] py-2 text-xs font-bold text-white"
-                      (click)="onHrAction(h.id, a.label)"
-                    >
-                      {{ a.label }}
-                    </button>
-                  }
-                }
-              </div>
-            </div>
-          }
-        </div>
-      </section>
-
-      <!-- Sistema -->
-      <section class="space-y-4 pt-2">
-        <h2 class="flex items-center gap-2 px-1 text-sm font-bold uppercase tracking-widest text-[#051125] dark:text-[var(--erp-login-text-primary)]">
           <span class="material-symbols-outlined text-sm" aria-hidden="true">settings_input_component</span>
-          Sistema y comunicación
+          Sistema
         </h2>
         <div class="space-y-3">
           <div class="flex flex-col gap-4 rounded-lg bg-[#1b263b] p-4 text-white sm:flex-row sm:items-center sm:justify-between">
@@ -154,15 +118,15 @@
                 <span class="material-symbols-outlined" aria-hidden="true">mail</span>
               </div>
               <div>
-                <p class="text-sm font-bold">{{ inbox.title }}</p>
-                <p class="text-xs text-[#828da7]">{{ inbox.sub }}</p>
+                <p class="text-sm font-bold">Mensajes internos</p>
+                <p class="text-xs text-[#828da7]">Revisa tu bandeja de entrada del ERP</p>
               </div>
             </div>
             <a
               routerLink="/admin/bandeja"
               class="inline-flex shrink-0 items-center justify-center rounded-lg bg-white px-4 py-2 text-xs font-bold text-[#051125] transition-colors hover:bg-slate-100"
             >
-              {{ inbox.cta }}
+              Abrir bandeja
             </a>
           </div>
           <div
@@ -176,13 +140,11 @@
                 <span class="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full border-2 border-white bg-green-500 dark:border-[var(--erp-login-card)]"></span>
               </div>
               <div>
-                <p class="text-sm font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ server.title }}</p>
-                <p class="text-xs text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ server.sub }}</p>
+                <p class="text-sm font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Servidor principal: operativo</p>
+                <p class="text-xs text-[#45474d] dark:text-[var(--erp-login-muted)]">Sistema sincronizado con Mundo Terapeuta</p>
               </div>
             </div>
-            <span class="text-xs font-bold tracking-tight text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{
-              server.uptime
-            }}</span>
+            <span class="text-xs font-bold tracking-tight text-[#051125] dark:text-[var(--erp-login-text-primary)]">En línea</span>
           </div>
         </div>
       </section>

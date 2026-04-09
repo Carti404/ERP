@@ -1,31 +1,359 @@
 <div class="erp-produccion-trabajador mx-auto max-w-6xl space-y-5 pb-4">
-  <div
-    class="flex flex-col gap-3 rounded-xl bg-[#051125] px-4 py-3 shadow-md sm:flex-row sm:items-center sm:justify-between"
-  >
-    <span class="text-base font-bold uppercase tracking-wider text-white">Producción</span>
-    <nav class="flex flex-wrap gap-4 text-xs font-semibold text-[#47607e]" aria-label="Vista producción">
-      <span class="border-b-2 border-[#47607e] pb-0.5 text-white">Requerimientos</span>
-      <span class="opacity-80">Asignaciones</span>
-      <span class="opacity-80">Supervisión</span>
-    </nav>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  VISTA: LISTA DE ASIGNACIONES               -->
+  <!-- ═══════════════════════════════════════════ -->
+  @if (activeView() === 'list') {
+  <div class="flex flex-col gap-3 rounded-xl bg-[#051125] px-4 py-3 shadow-md sm:flex-row sm:items-center sm:justify-between">
+    <span class="text-base font-bold uppercase tracking-wider text-white">Mi Producción</span>
+    <div class="text-xs text-[#47607e]">
+      {{ pendingAssignments().length }} Tareas pendientes
+    </div>
   </div>
 
-  <div>
-    <h1 class="text-balance text-lg font-black uppercase tracking-wide text-[var(--erp-login-text-primary)]">
-      Producción — vista trabajador
-    </h1>
-    <p class="mt-0.5 max-w-2xl text-xs text-[var(--erp-login-muted)]">
-      Órdenes, takt y reportes aparecerán aquí cuando exista integración con el módulo de producción.
-    </p>
-  </div>
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <!-- Tareas Pendientes o En Progreso -->
+    <div class="space-y-4">
+      <h2 class="text-sm font-bold uppercase tracking-wide text-[var(--erp-login-text-primary)]">Órdenes Asignadas</h2>
+      @for (a of pendingAssignments(); track a.id) {
+        <div class="rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] p-5 shadow-sm">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <h3 class="font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ a.task?.productName }}</h3>
+              <p class="text-[10px] text-[#45474d] dark:text-[var(--erp-login-muted)]">Orden: {{ a.task?.orderNumber }}</p>
+            </div>
+            <span [class]="a.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'" 
+                  class="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase">
+              {{ a.status === 'IN_PROGRESS' ? 'En Progreso' : 'Pendiente' }}
+            </span>
+          </div>
 
-  <div
-    class="rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] px-6 py-12 text-center"
-  >
-    <span class="material-symbols-outlined text-5xl text-[var(--erp-login-muted)]" aria-hidden="true">factory</span>
-    <p class="mt-4 text-base font-bold text-[var(--erp-login-text-primary)]">Sin asignación de producción</p>
-    <p class="mt-2 max-w-md mx-auto text-sm text-[var(--erp-login-muted)]">
-      No hay datos de lote, avance ni actividad hasta que el backend exponga tu orden en curso.
-    </p>
+          <div class="mb-4 bg-[#f8f9fa] dark:bg-[var(--erp-login-surface)] p-3 rounded-lg">
+            <div class="flex justify-between text-xs mb-2">
+              <span class="text-[var(--erp-login-muted)]">Cantidad a fabricar:</span>
+              <span class="font-bold text-[var(--erp-login-text-primary)]">{{ a.quantity | number }} unidades</span>
+            </div>
+            
+            <!-- Mostrar procesos definidos -->
+            @if (a.task?.processes && a.task!.processes!.length > 0) {
+            <div class="mt-2 border-t border-[#e1e3e4] dark:border-[var(--erp-login-input-border)] pt-2">
+              <p class="text-[10px] font-bold uppercase text-[#47607e] mb-1">Procesos ({{ a.task!.processes!.length }} pasos):</p>
+              @for (proc of a.task!.processes!; track proc.id) {
+              <div class="flex justify-between text-[11px] text-[var(--erp-login-text-primary)]">
+                <span>{{ proc.orderIndex }}. {{ proc.name }}</span>
+                <span class="text-[var(--erp-login-muted)]">~{{ formatEstimatedTime(proc.estimatedTimeValue, proc.estimatedTimeUnit) }}</span>
+              </div>
+              }
+            </div>
+            }
+          </div>
+
+          <div class="flex gap-2">
+            <button (click)="openProcessView(a)"
+              class="flex-1 rounded-lg py-2 text-xs font-bold uppercase transition-colors"
+              [class]="a.task?.processes?.length ? 'bg-[#47607e] text-white hover:bg-[#5a7696]' : 'bg-gray-300 text-gray-500 cursor-not-allowed'"
+              [disabled]="!a.task?.processes?.length">
+              {{ a.status === 'IN_PROGRESS' ? 'Continuar Producción' : 'Iniciar Producción' }}
+            </button>
+          </div>
+
+          @if (!a.task?.processes?.length) {
+          <p class="mt-2 text-[10px] text-amber-600 dark:text-amber-400 text-center">El administrador aún no ha definido los procesos para esta orden.</p>
+          }
+        </div>
+      } @empty {
+        <div class="rounded-xl border border-dashed border-[var(--erp-login-input-border)] p-10 text-center">
+          <p class="text-xs text-[var(--erp-login-muted)]">No tienes tareas de producción asignadas actualmente.</p>
+        </div>
+      }
+    </div>
+
+    <!-- Historial -->
+    <div class="space-y-4">
+      <h2 class="text-sm font-bold uppercase tracking-wide text-[var(--erp-login-text-primary)]">Historial de Producción</h2>
+      <div class="rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] overflow-hidden">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-[#edeeef] dark:bg-[var(--erp-login-surface)] font-bold uppercase text-[10px] text-[#45474d] dark:text-[var(--erp-login-muted)]">
+            <tr>
+              <th class="px-4 py-2">Fecha</th>
+              <th class="px-4 py-2">Producto</th>
+              <th class="px-4 py-2 text-right">Cant.</th>
+              <th class="px-4 py-2 text-right">Duración Total</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#e1e3e4] dark:divide-[var(--erp-login-input-border)]">
+            @for (h of historyAssignments(); track h.id) {
+              <tr class="hover:bg-gray-50 dark:hover:bg-[var(--erp-login-input-border)]/10">
+                <td class="px-4 py-3 text-[10px]">{{ h.completedAt | date:'dd/MM/yy HH:mm' }}</td>
+                <td class="px-4 py-3 font-bold">{{ h.task?.productName }}</td>
+                <td class="px-4 py-3 text-right font-bold">{{ h.quantity | number }}</td>
+                <td class="px-4 py-3 text-right font-mono font-bold text-[#47607e]">{{ getTotalDuration(h) }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4" class="px-4 py-6 text-center text-[10px] text-[var(--erp-login-muted)]">Aún no has completado producciones.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
+  }
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  VISTA: PROCESOS SECUENCIALES               -->
+  <!-- ═══════════════════════════════════════════ -->
+  @if (activeView() === 'processes') {
+  <div class="space-y-5">
+    <!-- Header -->
+    <div class="flex flex-col gap-3 rounded-xl bg-[#051125] px-4 py-3 shadow-md sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex items-center gap-3">
+        <button (click)="backToList()" class="text-[#47607e] hover:text-white transition-colors">
+          <span class="material-symbols-outlined text-xl">arrow_back</span>
+        </button>
+        <div>
+          <span class="text-base font-bold uppercase tracking-wider text-white">{{ activeAssignment()?.task?.productName }}</span>
+          <p class="text-[10px] text-[#47607e]">Orden: {{ activeAssignment()?.task?.orderNumber }} · {{ activeAssignment()?.quantity | number }} unidades asignadas</p>
+        </div>
+      </div>
+      @if (currentActiveProcess()) {
+      <div class="flex items-center gap-2 rounded-lg bg-[#1b263b] px-3 py-2">
+        <span class="material-symbols-outlined text-sm text-blue-400 animate-pulse">timer</span>
+        <span class="font-mono text-lg font-bold text-white">{{ formatTime(activeTimerSeconds()) }}</span>
+      </div>
+      }
+    </div>
+
+    <!-- Receta de Insumos -->
+    @if (recipeIngredients().length > 0) {
+    <div class="rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] p-4 shadow-sm">
+      <div class="mb-3 flex items-center gap-2">
+        <span class="material-symbols-outlined text-sm text-[#47607e]">list_alt</span>
+        <h4 class="text-xs font-bold uppercase tracking-wider text-[var(--erp-login-muted)]">Receta de Insumos</h4>
+        <span class="ml-auto text-[10px] text-[var(--erp-login-muted)]">Para {{ activeAssignment()?.quantity | number }} unidades</span>
+      </div>
+      <div class="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+        @for (ing of getRecipe(activeAssignment()!); track ing.name; let i = $index) {
+        <div class="flex items-center justify-between gap-2 rounded-lg bg-[var(--erp-login-surface)] px-3 py-2 text-[11px]">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-mono font-bold text-[#47607e]">{{ i + 1 }}.</span>
+            <span class="truncate text-[var(--erp-login-text-primary)]">{{ ing.name }}</span>
+          </div>
+          <span class="shrink-0 font-bold text-[var(--erp-login-text-primary)]">{{ (ing.quantity | number) || '0' }} {{ ing.unit }}</span>
+        </div>
+        }
+      </div>
+    </div>
+    }
+
+    <!-- Lista de procesos -->
+    <div class="space-y-3">
+      @for (ps of processStatuses(); track ps.process.id; let i = $index; let isLast = $last) {
+      <div class="rounded-xl border p-5 transition-all"
+        [class]="ps.status === 'active' ? 'border-blue-400 bg-blue-50/50 dark:border-blue-500 dark:bg-blue-900/10 shadow-lg shadow-blue-500/10' : ps.status === 'completed' ? 'border-emerald-300 bg-emerald-50/50 dark:border-emerald-800 dark:bg-emerald-900/10' : 'border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)]'">
+
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <!-- Icono de estado -->
+            <div class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
+              [class]="ps.status === 'completed' ? 'bg-emerald-500 text-white' : ps.status === 'active' ? 'bg-blue-500 text-white animate-pulse' : 'bg-gray-200 text-gray-500 dark:bg-gray-700'">
+              @if (ps.status === 'completed') {
+              <span class="material-symbols-outlined text-base">check</span>
+              } @else if (ps.status === 'active') {
+              <span class="material-symbols-outlined text-base">play_arrow</span>
+              } @else {
+              <span class="text-xs font-bold">{{ ps.process.orderIndex }}</span>
+              }
+            </div>
+
+            <div>
+              <h3 class="font-bold"
+                [class]="ps.status === 'completed' ? 'text-emerald-700 dark:text-emerald-400' : ps.status === 'active' ? 'text-blue-700 dark:text-blue-400' : 'text-[var(--erp-login-text-primary)]'">
+                Proceso {{ ps.process.orderIndex }}: {{ ps.process.name }}
+              </h3>
+              @if (ps.process.description) {
+              <p class="mt-1 text-xs text-[var(--erp-login-muted)]">{{ ps.process.description }}</p>
+              }
+              <div class="mt-1 flex items-center gap-3 text-[10px] text-[var(--erp-login-muted)]">
+                <span>Estimado: {{ formatEstimatedTime(ps.process.estimatedTimeValue, ps.process.estimatedTimeUnit) }}</span>
+                @if (ps.durationSeconds) {
+                <span>· Real: {{ formatTime(ps.durationSeconds) }}</span>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Botones de acción -->
+          <div class="shrink-0">
+            @if (ps.status === 'pending' && !currentActiveProcess() && nextPendingProcess()?.process?.id === ps.process.id) {
+            <button (click)="onStartProcess(ps.process.id)"
+              class="rounded-lg bg-[#47607e] px-4 py-2 text-xs font-bold uppercase text-white transition-colors hover:bg-[#5a7696]">
+              Iniciar
+            </button>
+            } @else if (ps.status === 'active') {
+            <button (click)="onCompleteProcess(ps.process.id)"
+              class="rounded-lg bg-[#051125] px-4 py-2 text-xs font-bold uppercase text-white transition-colors hover:bg-[#1b263b]">
+              Finalizar
+            </button>
+            } @else if (ps.status === 'completed') {
+            <span class="rounded-full bg-emerald-100 px-3 py-1 text-[10px] font-bold uppercase text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+              Completado
+            </span>
+            } @else {
+            <span class="rounded-full bg-gray-100 px-3 py-1 text-[10px] font-bold uppercase text-gray-400 dark:bg-gray-800">
+              Bloqueado
+            </span>
+            }
+          </div>
+        </div>
+
+        <!-- Barra de progreso activa -->
+        @if (ps.status === 'active') {
+        <div class="mt-3 flex items-center gap-3">
+          <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-blue-200 dark:bg-blue-900/30">
+            <div class="h-full animate-pulse rounded-full bg-blue-500 transition-all" style="width: 100%"></div>
+          </div>
+          <span class="font-mono text-sm font-bold text-blue-600 dark:text-blue-400">{{ formatTime(activeTimerSeconds()) }}</span>
+        </div>
+        }
+      </div>
+
+      <!-- Conector entre procesos -->
+      @if (!isLast) {
+      <div class="flex justify-center">
+        <div class="h-4 w-0.5"
+          [class]="ps.status === 'completed' ? 'bg-emerald-300 dark:bg-emerald-700' : 'bg-gray-200 dark:bg-gray-700'">
+        </div>
+      </div>
+      }
+      }
+    </div>
+  </div>
+  }
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  VISTA: REPORTE DE MERMA                    -->
+  <!-- ═══════════════════════════════════════════ -->
+  @if (activeView() === 'waste') {
+  <div class="space-y-5">
+    <div class="flex flex-col gap-3 rounded-xl bg-[#051125] px-4 py-3 shadow-md">
+      <span class="text-base font-bold uppercase tracking-wider text-white">Reporte de Merma</span>
+      <p class="text-xs text-[#47607e]">{{ activeAssignment()?.task?.productName }} — ¿Hubo pérdidas de material?</p>
+    </div>
+
+    <div class="rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] p-5 shadow-sm">
+      <!-- Buscador de insumos -->
+      <div class="mb-5">
+        <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-[var(--erp-login-muted)]">Buscar Insumo con Merma</label>
+        <div class="relative">
+          <input type="text"
+            class="w-full rounded-lg border border-[var(--erp-login-input-border)] bg-[var(--erp-login-surface)] px-4 py-3 text-sm text-[var(--erp-login-text-primary)] placeholder:text-[var(--erp-login-muted)] focus:border-[#47607e] focus:outline-none"
+            placeholder="Escribe el nombre del insumo..."
+            [ngModel]="wasteSearchText()"
+            (ngModelChange)="onWasteSearchInput($event)" />
+          <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-[var(--erp-login-muted)]">search</span>
+
+          <!-- Sugerencias -->
+          @if (filteredSuggestions().length > 0) {
+          <div class="absolute left-0 right-0 top-full z-10 mt-1 max-h-48 overflow-y-auto rounded-lg border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] shadow-xl">
+            @for (sug of filteredSuggestions(); track sug.productId) {
+            <button type="button"
+              class="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-[var(--erp-login-surface)]"
+              (click)="selectSuggestion(sug)">
+              <div>
+                <span class="text-sm font-bold text-[var(--erp-login-text-primary)]">{{ sug.productName }}</span>
+                @if (sug.itemType) {
+                <span class="ml-2 rounded bg-gray-200 px-1 text-[9px] font-black uppercase text-gray-600 dark:bg-gray-800 dark:text-gray-400">{{ sug.itemType }}</span>
+                }
+              </div>
+              <span class="text-[10px] text-[var(--erp-login-muted)]">{{ sug.unitOfMeasure }}</span>
+            </button>
+            }
+          </div>
+          }
+        </div>
+      </div>
+
+      <!-- Items de merma agregados -->
+      @if (wasteItems().length > 0) {
+      <div class="space-y-3">
+        <p class="text-xs font-bold uppercase tracking-wider text-[var(--erp-login-muted)]">Mermas a Reportar</p>
+        @for (item of wasteItems(); track item.productId; let i = $index) {
+        <div class="flex items-center gap-3 rounded-lg border border-[var(--erp-login-input-border)] bg-[var(--erp-login-surface)] p-3">
+          <div class="flex-1">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-bold text-[var(--erp-login-text-primary)]">{{ item.productName }}</span>
+              @if (item.itemType) {
+              <span class="rounded bg-gray-200 px-1 text-[9px] font-black uppercase text-gray-600 dark:bg-gray-800 dark:text-gray-400">{{ item.itemType }}</span>
+              }
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="number" min="0" step="0.01"
+              class="w-20 rounded-lg border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] px-2 py-1 text-right text-sm text-[var(--erp-login-text-primary)] focus:border-[#47607e] focus:outline-none"
+              [ngModel]="item.quantity"
+              (ngModelChange)="item.quantity = +$event" />
+            <span class="text-[10px] text-[var(--erp-login-muted)] min-w-[30px]">{{ item.unitOfMeasure || 'und' }}</span>
+          </div>
+          <button type="button" class="text-[#ba1a1a] transition-colors hover:text-[#ff3838]"
+            (click)="removeWasteItem(i)">
+            <span class="material-symbols-outlined text-lg">close</span>
+          </button>
+        </div>
+        }
+
+        <!-- Notas generales (opcional) -->
+        <div class="mt-3">
+          <label class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-[var(--erp-login-muted)]">Observaciones (opcional)</label>
+          <textarea
+            class="w-full rounded-lg border border-[var(--erp-login-input-border)] bg-[var(--erp-login-surface)] px-3 py-2 text-sm text-[var(--erp-login-text-primary)] placeholder:text-[var(--erp-login-muted)] focus:border-[#47607e] focus:outline-none"
+            rows="2" placeholder="Notas adicionales sobre la merma..."
+            [ngModel]="wasteItems()[0]?.notes || ''"
+            (ngModelChange)="wasteItems()[0] && (wasteItems()[0].notes = $event)">
+          </textarea>
+        </div>
+      </div>
+      }
+
+      <!-- Botones -->
+      <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+        <button type="button"
+          class="flex-1 rounded-xl bg-[#e1e3e4] py-3 text-sm font-bold text-[#45474d] transition-colors hover:bg-[#d1d3d4] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)] dark:hover:bg-[var(--erp-login-input-border)]"
+          [disabled]="submittingWaste()"
+          (click)="onSkipWaste()">
+          No hubo merma — Finalizar
+        </button>
+        @if (wasteItems().length > 0) {
+        <button type="button"
+          class="flex-1 rounded-xl bg-[#051125] py-3 text-sm font-bold text-white transition-colors hover:bg-[#1b263b] disabled:opacity-50"
+          [disabled]="submittingWaste()"
+          (click)="onSubmitWaste()">
+          {{ submittingWaste() ? 'Guardando...' : 'Reportar Merma y Finalizar' }}
+        </button>
+        }
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  VISTA: PRODUCCIÓN TERMINADA                -->
+  <!-- ═══════════════════════════════════════════ -->
+  @if (activeView() === 'completed') {
+  <div class="flex flex-col items-center justify-center py-20 text-center">
+    <div class="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
+      <span class="material-symbols-outlined text-5xl text-emerald-600 dark:text-emerald-400">check_circle</span>
+    </div>
+    <h2 class="mb-2 text-2xl font-bold text-[var(--erp-login-text-primary)]">¡Producción Terminada!</h2>
+    <p class="mb-8 text-sm text-[var(--erp-login-muted)]">
+      {{ activeAssignment()?.task?.productName }} — {{ activeAssignment()?.quantity | number }} unidades completadas.
+    </p>
+    <button type="button"
+      class="rounded-xl bg-[#051125] px-8 py-3 text-sm font-bold uppercase tracking-wider text-white transition-colors hover:bg-[#1b263b]"
+      (click)="backToList()">
+      Volver a Mis Tareas
+    </button>
+  </div>
+  }
 </div>

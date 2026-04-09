@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from './auth/auth.module';
@@ -16,6 +17,14 @@ import { AttendanceLog } from './attendance/entities/attendance-log.entity';
 import { AttendanceRecord } from './attendance/entities/attendance-record.entity';
 import { AttendanceModule } from './attendance/attendance.module';
 import { ProductionModule } from './production/production.module';
+import { ProductionTask } from './production/entities/production-task.entity';
+import { ProductionAssignment } from './production/entities/production-assignment.entity';
+import { ProductionProcess } from './production/entities/production-process.entity';
+import { ProductionProcessTracking } from './production/entities/production-process-tracking.entity';
+import { ProductionWaste } from './production/entities/production-waste.entity';
+import { NotificationsModule } from './notifications/notifications.module';
+import { AppNotification } from './notifications/entities/notification.entity';
+
 
 @Module({
   imports: [
@@ -37,7 +46,14 @@ import { ProductionModule } from './production/production.module';
           InternalMessage,
           AttendanceRecord,
           AttendanceLog,
+          ProductionTask,
+          ProductionAssignment,
+          ProductionProcess,
+          ProductionProcessTracking,
+          ProductionWaste,
+          AppNotification,
         ],
+
         synchronize: config.get<string>('DB_SYNC', 'false') === 'true',
         logging: config.get<string>('DB_LOGGING', 'false') === 'true',
       }),
@@ -49,6 +65,10 @@ import { ProductionModule } from './production/production.module';
     MessagesModule,
     AttendanceModule,
     HealthModule,
+    ProductionModule,
+    NotificationsModule,
+    ScheduleModule.forRoot(),
   ],
+
 })
 export class AppModule {}

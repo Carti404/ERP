@@ -3,6 +3,7 @@ import { afterNextRender, Component, computed, DestroyRef, inject, signal } from
 import { RouterLink } from '@angular/router';
 import { AttendanceService } from '../../core/http/attendance.service';
 import { MessagesApiService } from '../../core/messages/messages-api.service';
+import { NotificationService, AppNotification } from '../../core/services/notification.service';
 
 /** Color de los dígitos del reloj según acción de checador. */
 export type WorkerClockFaceState = 'default' | 'working' | 'break' | 'ended';
@@ -25,6 +26,7 @@ export class TrabajadorHomeComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly attendanceService = inject(AttendanceService);
   private readonly messagesApi = inject(MessagesApiService);
+  private readonly notificationService = inject(NotificationService);
 
   protected inbox: {
     id: string;
@@ -38,7 +40,9 @@ export class TrabajadorHomeComponent {
 
   protected unreadCount = 0;
 
-  protected readonly hasUrgentAlert = false;
+  // Order alerts from notifications API
+  protected readonly orderAlerts = signal<AppNotification[]>([]);
+  protected readonly hasUrgentAlert = computed(() => this.orderAlerts().length > 0);
 
   protected readonly events: readonly {
     id: string;
@@ -83,6 +87,7 @@ export class TrabajadorHomeComponent {
       });
       this.loadTodayStatus();
       this.loadInbox();
+      this.loadOrderAlerts();
     });
   }
 
@@ -141,6 +146,50 @@ export class TrabajadorHomeComponent {
           dimmed: false,
           importance: (r.importance || 'LOW').toLowerCase(),
         }));
+      },
+    });
+  }
+
+  private loadOrderAlerts(): void {
+    this.notificationService.getMyNotifications('PRODUCTION_ASSIGNED').subscribe({
+      next: (notifs) => {
+        // Show only unread production assignment notifications, limit to 3 (like inbox)
+        const unread = notifs.filter(n => !n.isRead);
+        this.orderAlerts.set(unread.slice(0, 3));
+      },
+      error: () => {
+        // Silently fail — alert section will just show "no alerts"
+      },
+    });
+  }
+
+  protected onClearAlerts(): void {
+    this.notificationService.clearNotifications('PRODUCTION_ASSIGNED').subscribe({
+      next: () => {
+        this.orderAlerts.set([]);
+      },
+    });
+  }
+
+  protected formatAlertTime(dateStr: string): string {
+    const now = Date.now();
+    const then = new Date(dateStr).getTime();
+    const diffMs = now - then;
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 1) return 'Ahora';
+    if (diffMin < 60) return `Hace ${diffMin} min`;
+    const diffHrs = Math.floor(diffMin / 60);
+    if (diffHrs < 24) return `Hace ${diffHrs}h`;
+    const diffDays = Math.floor(diffHrs / 24);
+    return `Hace ${diffDays}d`;
+  }
+
+  protected onMarkAlertRead(alert: AppNotification) {
+    this.notificationService.markAsRead(alert.id).subscribe({
+      next: () => {
+        this.orderAlerts.update(list =>
+          list.map(a => a.id === alert.id ? { ...a, isRead: true } : a)
+        );
       },
     });
   }
