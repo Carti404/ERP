@@ -59,6 +59,8 @@ export interface ProductionTask {
   productName: string;
   quantityToProduce: number;
   recipe: any;
+  totalEstimatedTimeValue: number;
+  totalEstimatedTimeUnit: string;
   status: string;
   createdAt: string;
   assignments?: ProductionAssignment[];
@@ -109,8 +111,17 @@ export class ProductionService {
     return this.http.get<ProductionProcess[]>(`${apiBaseUrl}/production/${taskId}/processes`);
   }
 
-  setProcesses(taskId: string, processes: Omit<ProductionProcess, 'id' | 'taskId'>[]): Observable<ProductionProcess[]> {
-    return this.http.post<ProductionProcess[]>(`${apiBaseUrl}/production/${taskId}/processes`, { processes });
+  setProcesses(
+    taskId: string,
+    processes: Omit<ProductionProcess, 'id' | 'taskId'>[],
+    totalEstimatedTimeValue?: number,
+    totalEstimatedTimeUnit?: string,
+  ): Observable<ProductionProcess[]> {
+    return this.http.post<ProductionProcess[]>(`${apiBaseUrl}/production/${taskId}/processes`, {
+      processes,
+      totalEstimatedTimeValue,
+      totalEstimatedTimeUnit,
+    });
   }
 
   // ──── Tracking de Procesos (Trabajador) ────
@@ -147,5 +158,15 @@ export class ProductionService {
 
   reportToMT(taskId: string): Observable<any> {
     return this.http.post(`${apiBaseUrl}/production/${taskId}/report-to-mt`, {});
+  }
+
+  // ──── Limpiar notificaciones ────
+
+  clearNoProcessNotifications(): Observable<any> {
+    return this.http.post(`${apiBaseUrl}/production/clear-no-process-notifications`, {});
+  }
+
+  clearAssignedNotifications(): Observable<any> {
+    return this.http.post(`${apiBaseUrl}/production/clear-assigned-notifications`, {});
   }
 }

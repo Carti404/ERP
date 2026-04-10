@@ -28,6 +28,8 @@ export class AdminProduccionComponent {
   protected readonly historyPage = signal(1);
   protected readonly historyLimit = 10;
 
+  // ──── FILTRO PARA PROCESOS ────
+  protected readonly processFilterMode = signal<'sin_procesos' | 'con_procesos'>('sin_procesos');
 
   protected readonly requirements = computed(() => {
     const tasks = this.rawProductionTasks();
@@ -46,12 +48,19 @@ export class AdminProduccionComponent {
       const isCompleted = task.status === 'COMPLETED';
       const isReported = task.status === 'REPORTED_TO_MT';
       
+      // Calcular tiempo real de producción para historial
+      let realDurationLabel = '';
+      if (isReported && task.assignments && task.assignments.length > 0) {
+        realDurationLabel = this.calculateRealDuration(task);
+      }
+
       return {
         id: task.id,
         productId: task.productId,
         name: task.productName,
         sku: `Orden: ${task.orderNumber || 'S/F'}`,
         qtyLabel: `${task.quantityToProduce} unidades`,
+        quantityToProduce: task.quantityToProduce,
         deadline: 'Por asignar',
         deadlineTone: task.status === 'DRAFT' ? 'urgent' as const : 'ok' as const,
         delegationPct: task.status === 'DRAFT' ? 0 : 100,
@@ -61,9 +70,27 @@ export class AdminProduccionComponent {
         isReportedToMT: isReported,
         recipe: task.recipe,
         processCount: task.processes?.length || 0,
-        status: task.status
+        status: task.status,
+        totalEstimatedTimeValue: task.totalEstimatedTimeValue || 0,
+        totalEstimatedTimeUnit: task.totalEstimatedTimeUnit || 'minutes',
+        realDurationLabel,
       };
     });
+  });
+
+  /** Órdenes filtradas para la pestaña de Procesos */
+  protected readonly processOrders = computed(() => {
+    const tasks = this.rawProductionTasks();
+    const mode = this.processFilterMode();
+
+    // Excluir las ya reportadas a MT del listado de procesos
+    const pending = tasks.filter(t => t.status !== 'REPORTED_TO_MT');
+
+    if (mode === 'sin_procesos') {
+      return pending.filter(t => !t.processes || t.processes.length === 0);
+    } else {
+      return pending.filter(t => t.processes && t.processes.length > 0);
+    }
   });
 
   protected readonly paginatedRequirements = computed(() => {
@@ -116,8 +143,6 @@ export class AdminProduccionComponent {
 
   protected readonly availableWorkers = computed(() => {
     const selected = this.selectedWorkerIds();
-    // No filtramos si ya está seleccionado, el usuario quiere poder seleccionar cualquiera
-    // (aunque el selectedWorkerIds previene duplicados en el set, permitiremos que el select lo muestre)
     return this.delegationOps();
   });
 
@@ -180,6 +205,16 @@ export class AdminProduccionComponent {
   protected readonly taskProcesses = signal<ProductionProcess[]>([]);
   protected readonly processFormRows = signal<{ orderIndex: number; name: string; description: string; estimatedTimeValue: number; estimatedTimeUnit: string }[]>([]);
   protected readonly savingProcesses = signal(false);
+  protected readonly showDeleteProcessModal = signal(false);
+  protected readonly showSuccessModal = signal(false);
+  protected readonly successModalConfig = signal({ title: '', message: '' });
+  protected readonly processToDeleteIndex = signal<number | null>(null);
+
+  // ──── TIEMPO TOTAL ESTIMADO ────
+  protected readonly totalEstimatedTimeValue = signal(0);
+  protected readonly totalEstimatedTimeUnit = signal('minutes');
+  protected readonly showTotalTimeModal = signal(false);
+  protected readonly showDelegationConfirmModal = signal(false);
 
   // ──── MERMAS ────
   protected readonly wasteReports = signal<WasteReport[]>([]);
@@ -189,7 +224,6 @@ export class AdminProduccionComponent {
   protected readonly reportingToMT = signal<string | null>(null);
 
   // ──── DELEGACIÓN MODALS ────
-  protected readonly showDelegationConfirmModal = signal(false);
   protected readonly isAssigning = signal(false);
 
   protected onSelectTask(id: string): void {
@@ -210,6 +244,13 @@ export class AdminProduccionComponent {
     this.activeTab.set(tab);
     if (tab === 'sup') {
       this.loadWaste();
+    }
+    // Limpiar notificaciones de "sin procesos" cuando entra a la tab de Procesos
+    if (tab === 'asig') {
+      this.productionService.clearNoProcessNotifications().subscribe({
+        next: () => {},
+        error: () => {},
+      });
     }
   }
 
@@ -341,11 +382,21 @@ export class AdminProduccionComponent {
 
   // ──── PROCESOS ────
 
+  protected setProcessFilter(mode: 'sin_procesos' | 'con_procesos'): void {
+    this.processFilterMode.set(mode);
+    this.processSelectedTask.set(null);
+    this.taskProcesses.set([]);
+    this.processFormRows.set([]);
+  }
+
   protected onSelectTaskForProcess(id: string): void {
     const task = this.rawProductionTasks().find(t => t.id === id);
     if (!task) return;
     this.processSelectedTask.set(task);
     this.loadProcesses(id);
+    // Cargar el tiempo total estimado existente
+    this.totalEstimatedTimeValue.set(task.totalEstimatedTimeValue || 0);
+    this.totalEstimatedTimeUnit.set(task.totalEstimatedTimeUnit || 'minutes');
   }
 
   private loadProcesses(taskId: string) {
@@ -377,26 +428,62 @@ export class AdminProduccionComponent {
     this.processFormRows.set([...rows, { orderIndex: nextIndex, name: '', description: '', estimatedTimeValue: 0, estimatedTimeUnit: 'minutes' }]);
   }
 
-  protected removeProcessRow(index: number): void {
-    const rows = [...this.processFormRows()];
-    rows.splice(index, 1);
-    // Reindexar
-    rows.forEach((r, i) => r.orderIndex = i + 1);
-    this.processFormRows.set(rows);
+  protected confirmRemoveProcessRow(index: number) {
+    this.processToDeleteIndex.set(index);
+    this.showDeleteProcessModal.set(true);
   }
 
+  protected onConfirmDeleteProcess() {
+    const index = this.processToDeleteIndex();
+    if (index !== null) {
+      this.processFormRows.update(prev => {
+        const copy = [...prev];
+        copy.splice(index, 1);
+        // Re-indexar para asegurar orden secuencial persistente
+        return copy.map((row, i) => ({ ...row, orderIndex: i + 1 }));
+      });
+    }
+    this.showDeleteProcessModal.set(false);
+    this.processToDeleteIndex.set(null);
+  }
+
+  /** Al dar click en "Guardar Procesos" se abre el modal para pedir el tiempo total */
   protected onSaveProcesses(): void {
     const task = this.processSelectedTask();
     if (!task) return;
     const rows = this.processFormRows().filter(r => r.name.trim() !== '');
     if (rows.length === 0) return;
 
+    // Abrir modal para pedir el tiempo total estimado
+    this.showTotalTimeModal.set(true);
+  }
+
+  /** Confirmar guardado con el tiempo total incluido */
+  protected onConfirmSaveProcesses(): void {
+    const task = this.processSelectedTask();
+    if (!task) return;
+    const rows = this.processFormRows().filter(r => r.name.trim() !== '');
+    if (rows.length === 0) return;
+
     this.savingProcesses.set(true);
-    this.productionService.setProcesses(task.id, rows).subscribe({
-      next: (saved) => {
-        this.taskProcesses.set(saved);
+    this.showTotalTimeModal.set(false);
+
+    this.productionService.setProcesses(
+      task.id,
+      rows,
+      this.totalEstimatedTimeValue(),
+      this.totalEstimatedTimeUnit(),
+    ).subscribe({
+      next: () => {
         this.savingProcesses.set(false);
-        alert('Procesos guardados exitosamente.');
+        this.showTotalTimeModal.set(false);
+        
+        // Premium Success Feedback
+        this.successModalConfig.set({
+          title: '¡Guardado Correctamente!',
+          message: 'Los procesos y el tiempo estimado se han configurado con éxito para esta orden y se ha actualizado la plantilla del producto.'
+        });
+        this.showSuccessModal.set(true);
       },
       error: (err) => {
         console.error('Error al guardar procesos', err);
@@ -404,6 +491,11 @@ export class AdminProduccionComponent {
         alert('Error al guardar los procesos.');
       },
     });
+  }
+
+  protected onCloseSuccessModal() {
+    this.showSuccessModal.set(false);
+    window.location.reload();
   }
 
   // ──── MERMAS ────
@@ -435,5 +527,69 @@ export class AdminProduccionComponent {
         alert(err.error?.message || 'Error al reportar a Mundo Terapeuta.');
       }
     });
+  }
+
+  // ──── UTILIDADES DE TIEMPO ────
+
+  /**
+   * Calcula la duración real de producción para una tarea.
+   * Cuenta desde que el PRIMER trabajador inició su primer proceso
+   * hasta que el ÚLTIMO terminó su última asignación.
+   */
+  private calculateRealDuration(task: ProductionTask): string {
+    const assignments = task.assignments || [];
+    if (assignments.length === 0) return '';
+
+    // Buscar el startedAt más antiguo (primer trabajador que inició)
+    const startDates = assignments
+      .filter(a => a.startedAt)
+      .map(a => new Date(a.startedAt!).getTime());
+    
+    // Buscar el completedAt más reciente (último trabajador que terminó)
+    const endDates = assignments
+      .filter(a => a.completedAt)
+      .map(a => new Date(a.completedAt!).getTime());
+
+    if (startDates.length === 0 || endDates.length === 0) return '';
+
+    const firstStart = Math.min(...startDates);
+    const lastEnd = Math.max(...endDates);
+    const totalSeconds = Math.floor((lastEnd - firstStart) / 1000);
+
+    return this.formatDuration(totalSeconds);
+  }
+
+  /** Formatea segundos en una cadena legible: "2 semanas 3 días", "4h 15min", etc. */
+  protected formatDuration(totalSeconds: number): string {
+    if (totalSeconds <= 0) return '0 min';
+
+    const weeks = Math.floor(totalSeconds / 604800);
+    const days = Math.floor((totalSeconds % 604800) / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+    const parts: string[] = [];
+
+    if (weeks > 0) parts.push(`${weeks} sem`);
+    if (days > 0) parts.push(`${days} día${days > 1 ? 's' : ''}`);
+    if (hours > 0) parts.push(`${hours}h`);
+    if (minutes > 0 && weeks === 0) parts.push(`${minutes} min`);
+
+    // Si solo son segundos
+    if (parts.length === 0) parts.push(`${totalSeconds}s`);
+
+    return parts.join(' ');
+  }
+
+  /** Formatea el tiempo estimado en formato legible */
+  protected formatEstimatedTime(value: number, unit: string): string {
+    if (!value || value <= 0) return 'Sin definir';
+    const unitLabels: Record<string, string> = {
+      minutes: 'min',
+      hours: 'h',
+      days: 'día(s)',
+      weeks: 'sem',
+    };
+    return `${value} ${unitLabels[unit] || unit}`;
   }
 }

@@ -49,12 +49,19 @@
           </div>
 
           <div class="flex gap-2">
-            <button (click)="openProcessView(a)"
-              class="flex-1 rounded-lg py-2 text-xs font-bold uppercase transition-colors"
-              [class]="a.task?.processes?.length ? 'bg-[#47607e] text-white hover:bg-[#5a7696]' : 'bg-gray-300 text-gray-500 cursor-not-allowed'"
-              [disabled]="!a.task?.processes?.length">
-              {{ a.status === 'IN_PROGRESS' ? 'Continuar Producción' : 'Iniciar Producción' }}
-            </button>
+            @if (a.status === 'IN_PROGRESS' && a.processTracking?.length === a.task?.processes?.length && a.processTracking?.every(t => t.completedAt)) {
+              <button (click)="openProcessView(a)"
+                class="flex-1 rounded-lg bg-emerald-600 py-2 text-xs font-bold uppercase text-white transition-colors hover:bg-emerald-700">
+                Finalizar Reporte
+              </button>
+            } @else {
+              <button (click)="openProcessView(a)"
+                class="flex-1 rounded-lg py-2 text-xs font-bold uppercase transition-colors"
+                [class]="a.task?.processes?.length ? 'bg-[#47607e] text-white hover:bg-[#5a7696]' : 'bg-gray-300 text-gray-500 cursor-not-allowed'"
+                [disabled]="!a.task?.processes?.length">
+                {{ a.status === 'IN_PROGRESS' ? 'Continuar Producción' : 'Iniciar Producción' }}
+              </button>
+            }
           </div>
 
           @if (!a.task?.processes?.length) {

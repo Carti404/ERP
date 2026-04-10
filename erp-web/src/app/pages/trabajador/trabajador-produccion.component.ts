@@ -117,6 +117,7 @@ export class TrabajadorProduccionComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadAssignments();
+    this.productionService.clearAssignedNotifications().subscribe();
   }
 
   ngOnDestroy() {
@@ -164,6 +165,9 @@ export class TrabajadorProduccionComponent implements OnInit, OnDestroy {
       const elapsed = Math.floor((Date.now() - new Date(active.startedAt!).getTime()) / 1000);
       this.activeTimerSeconds.set(elapsed);
       this.startTimer();
+    } else if (this.allProcessesCompleted()) {
+      // Si ya terminó todo pero no ha finalizado la asignación, ir directo a mermas
+      this.showWasteForm();
     }
   }
 

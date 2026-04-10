@@ -27,4 +27,13 @@ export class SetProcessesDto {
   @ValidateNested({ each: true })
   @Type(() => ProcessItemDto)
   processes: ProcessItemDto[];
+
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  totalEstimatedTimeValue?: number;
+
+  @IsString()
+  @IsOptional()
+  totalEstimatedTimeUnit?: string; // 'minutes', 'hours', 'days', 'weeks'
 }

@@ -28,6 +28,13 @@ export class ProductionTask {
   @Column({ name: 'assigned_worker_id', nullable: true, type: 'uuid' })
   assignedWorkerId: string;
 
+  /** Tiempo total estimado para completar TODA la serie de procesos */
+  @Column({ name: 'total_estimated_time_value', type: 'int', default: 0 })
+  totalEstimatedTimeValue: number;
+
+  @Column({ name: 'total_estimated_time_unit', length: 20, default: 'minutes' })
+  totalEstimatedTimeUnit: string;
+
   // Status in ERP (DRAFT, ASSIGNED, IN_PROGRESS, PENDING_APPROVAL, CLOSED)
   @Column({ default: 'DRAFT' })
   status: string;

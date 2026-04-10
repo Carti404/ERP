@@ -8,6 +8,12 @@ import { User } from '../users/entities/user.entity';
 import { AttendanceLog } from '../attendance/entities/attendance-log.entity';
 import { AttendanceRecord } from '../attendance/entities/attendance-record.entity';
 import { ProductionTask } from '../production/entities/production-task.entity';
+import { ProductionAssignment } from '../production/entities/production-assignment.entity';
+import { ProductionProcess } from '../production/entities/production-process.entity';
+import { ProductionProcessTracking } from '../production/entities/production-process-tracking.entity';
+import { ProductionWaste } from '../production/entities/production-waste.entity';
+import { ProductProcessTemplate } from '../production/entities/product-process-template.entity';
+import { AppNotification } from '../notifications/entities/notification.entity';
 import { dbConnectionEnv, loadErpEnvFile } from './load-erp-env';
 
 loadErpEnvFile();
@@ -24,6 +30,12 @@ const common = {
     AttendanceLog,
     AttendanceRecord,
     ProductionTask,
+    ProductionAssignment,
+    ProductionProcess,
+    ProductionProcessTracking,
+    ProductionWaste,
+    ProductProcessTemplate,
+    AppNotification,
   ],
   migrations: ['dist/database/migrations/*.js'],
   synchronize: false,

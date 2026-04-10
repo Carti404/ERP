@@ -63,6 +63,9 @@
                   <th class="px-5 py-3 text-center">Estado</th>
                   <th class="px-5 py-3 text-center">Procesos</th>
                   <th class="px-5 py-3">Delegación</th>
+                  @if (filterMode() === 'history') {
+                  <th class="px-5 py-3 text-center">Duración Real</th>
+                  }
                   <th class="px-5 py-3 text-right">Detalle</th>
                 </tr>
               </thead>
@@ -105,6 +108,18 @@
                     <p class="mt-1 text-[10px] text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ row.delegationLabel
                       }}</p>
                   </td>
+                  @if (filterMode() === 'history') {
+                  <td class="px-5 py-3 text-center">
+                    @if (row.realDurationLabel) {
+                    <div class="flex flex-col items-center gap-0.5">
+                      <span class="material-symbols-outlined text-sm text-[#47607e]">schedule</span>
+                      <span class="text-xs font-bold text-[var(--erp-login-text-primary)]">{{ row.realDurationLabel }}</span>
+                    </div>
+                    } @else {
+                    <span class="text-[10px] text-[var(--erp-login-muted)]">—</span>
+                    }
+                  </td>
+                  }
                   <td class="px-5 py-3 text-right">
                     <div class="flex items-center justify-end gap-2">
                       <button type="button"
@@ -141,7 +156,7 @@
                 </tr>
                 } @empty {
                 <tr>
-                  <td colspan="6" class="px-5 py-10 text-center text-sm text-[#47607e]">
+                  <td [attr.colspan]="filterMode() === 'history' ? 7 : 6" class="px-5 py-10 text-center text-sm text-[#47607e]">
                     {{ filterMode() === 'history' ? 'No hay historial de órdenes reportadas.' : (filterMode() === 'assigned' ? 'No hay productos de MT asignados a producción.' : 'No hay productos producibles sincronizados.') }}
                   </td>
                 </tr>
@@ -385,28 +400,54 @@
     <div class="lg:col-span-1 space-y-4">
       <section
         class="rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] p-5 shadow-sm">
-        <h3 class="mb-4 font-bold text-[var(--erp-login-text-primary)]">Seleccionar Orden</h3>
-        <p class="mb-3 text-[10px] text-[var(--erp-login-muted)]">Elige una orden de producción para definir o editar
-          sus procesos.</p>
+        <h3 class="mb-3 font-bold text-[var(--erp-login-text-primary)]">Seleccionar Orden</h3>
+
+        <!-- Selectores: Sin procesos / Con procesos -->
+        <div class="mb-4 flex gap-1 rounded-lg bg-[#1b263b] p-1">
+          <button (click)="setProcessFilter('sin_procesos')"
+            [class]="processFilterMode() === 'sin_procesos' ? 'bg-amber-600 text-white' : 'text-[#47607e] hover:text-white'"
+            class="flex-1 rounded-md px-3 py-1.5 text-[10px] font-bold uppercase transition-all">
+            <span class="material-symbols-outlined text-xs align-middle mr-0.5">warning</span>
+            Sin Procesos
+          </button>
+          <button (click)="setProcessFilter('con_procesos')"
+            [class]="processFilterMode() === 'con_procesos' ? 'bg-[#47607e] text-white' : 'text-[#47607e] hover:text-white'"
+            class="flex-1 rounded-md px-3 py-1.5 text-[10px] font-bold uppercase transition-all">
+            <span class="material-symbols-outlined text-xs align-middle mr-0.5">check_circle</span>
+            Con Procesos
+          </button>
+        </div>
+
+        <p class="mb-3 text-[10px] text-[var(--erp-login-muted)]">
+          {{ processFilterMode() === 'sin_procesos'
+            ? 'Órdenes que requieren definición de procesos.'
+            : 'Órdenes con procesos ya definidos. Puedes editarlos.'
+          }}
+        </p>
+
         <div class="space-y-2 max-h-[60vh] overflow-y-auto">
-          @for (row of requirements(); track row.id) {
+          @for (row of processOrders(); track row.id) {
           <button type="button" class="w-full rounded-lg border p-3 text-left transition-all" [class]="processSelectedTask()?.id === row.id
               ? 'border-[#47607e] bg-[#47607e]/10 dark:bg-[#47607e]/20'
               : 'border-[var(--erp-login-input-border)] hover:border-[#47607e]/50'"
             (click)="onSelectTaskForProcess(row.id)">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm font-bold text-[var(--erp-login-text-primary)]">{{ row.name }}</p>
-                <p class="text-[10px] text-[var(--erp-login-muted)]">{{ row.sku }}</p>
+                <p class="text-sm font-bold text-[var(--erp-login-text-primary)]">{{ row.productName }}</p>
+                <p class="text-[10px] text-[var(--erp-login-muted)]">Orden: {{ row.orderNumber || 'S/F' }}</p>
               </div>
               <span class="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase"
-                [class]="row.processCount > 0 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'">
-                {{ row.processCount > 0 ? row.processCount + ' pasos' : 'Sin procesos' }}
+                [class]="(row.processes?.length || 0) > 0 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'">
+                {{ (row.processes?.length || 0) > 0 ? (row.processes?.length || 0) + ' pasos' : 'Sin procesos' }}
               </span>
             </div>
           </button>
           } @empty {
-          <p class="py-6 text-center text-xs text-[var(--erp-login-muted)]">No hay órdenes de producción disponibles.
+          <p class="py-6 text-center text-xs text-[var(--erp-login-muted)]">
+            {{ processFilterMode() === 'sin_procesos'
+              ? 'Todas las órdenes ya tienen procesos definidos.'
+              : 'No hay órdenes con procesos definidos.'
+            }}
           </p>
           }
         </div>
@@ -445,7 +486,7 @@
                   row.orderIndex }}</span>
               </div>
               <button type="button" class="text-[#ba1a1a] transition-colors hover:text-[#ff3838]"
-                (click)="removeProcessRow(i)">
+                (click)="confirmRemoveProcessRow(i)">
                 <span class="material-symbols-outlined text-lg">delete</span>
               </button>
             </div>
@@ -669,6 +710,141 @@
               {{ isAssigning() ? 'Procesando...' : 'Sí, Aceptar Asignación' }}
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  Modal: Tiempo Total Estimado               -->
+  <!-- ═══════════════════════════════════════════ -->
+  @if (showTotalTimeModal()) {
+    <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-[#051125]/60 backdrop-blur-sm transition-opacity"
+        (click)="showTotalTimeModal.set(false)"></div>
+
+      <div
+        class="relative w-full max-w-md overflow-hidden rounded-2xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] shadow-2xl shadow-black/50 transition-all">
+
+        <div class="bg-[#051125] px-6 py-4 text-white">
+          <h3 class="text-lg font-bold">Tiempo Total Estimado</h3>
+          <p class="text-xs text-[#828da7] uppercase">¿Cuánto tiempo le tomará al trabajador completar todos los procesos?</p>
+        </div>
+
+        <div class="p-6">
+          <div class="mb-4 rounded-xl bg-[var(--erp-login-surface)] p-4 border border-[var(--erp-login-input-border)]">
+            <p class="mb-1 text-[10px] font-bold uppercase text-[var(--erp-login-muted)]">Producto</p>
+            <p class="text-sm font-bold text-[var(--erp-login-text-primary)]">{{ processSelectedTask()?.productName }}</p>
+            <p class="text-xs text-[var(--erp-login-muted)]">{{ processFormRows().length }} proceso(s) definidos</p>
+          </div>
+
+          <label class="mb-2 block text-[10px] font-bold uppercase tracking-wider text-[var(--erp-login-muted)]">
+            Tiempo total estimado para completar TODA la serie de procesos
+          </label>
+          <div class="flex gap-3 mb-6">
+            <input type="number" min="0"
+              class="flex-1 rounded-lg border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] px-4 py-3 text-lg font-mono font-bold text-[var(--erp-login-text-primary)] placeholder:text-[var(--erp-login-muted)] focus:border-[#47607e] focus:outline-none"
+              placeholder="0"
+              [ngModel]="totalEstimatedTimeValue()"
+              (ngModelChange)="totalEstimatedTimeValue.set(+$event)" />
+            <select
+              class="rounded-lg border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] px-4 py-3 text-sm text-[var(--erp-login-text-primary)] focus:border-[#47607e] focus:outline-none"
+              [ngModel]="totalEstimatedTimeUnit()"
+              (ngModelChange)="totalEstimatedTimeUnit.set($event)">
+              <option value="minutes">Minutos</option>
+              <option value="hours">Horas</option>
+              <option value="days">Días</option>
+              <option value="weeks">Semanas</option>
+            </select>
+          </div>
+
+          <div class="flex w-full flex-col gap-3 sm:flex-row border-t border-[var(--erp-login-input-border)] pt-5">
+            <button type="button"
+              class="flex-1 rounded-xl bg-[#e1e3e4] py-3 text-sm font-bold text-[#45474d] transition-colors hover:bg-[#d1d3d4] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)] dark:hover:bg-[var(--erp-login-input-border)]"
+              (click)="showTotalTimeModal.set(false)">
+              Cancelar
+            </button>
+            <button type="button"
+              class="flex-1 rounded-xl bg-[#051125] py-3 text-sm font-bold text-white shadow-lg transition-all hover:bg-[#1b263b] disabled:opacity-50"
+              (click)="onConfirmSaveProcesses()"
+              [disabled]="savingProcesses()">
+              {{ savingProcesses() ? 'Guardando...' : 'Confirmar y Guardar' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  Modal: Confirmar Eliminación de Proceso    -->
+  <!-- ═══════════════════════════════════════════ -->
+  @if (showDeleteProcessModal()) {
+    <div class="fixed inset-0 z-[110] flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-[#051125]/80 backdrop-blur-sm transition-opacity"
+        (click)="showDeleteProcessModal.set(false)"></div>
+
+      <div
+        class="relative w-full max-w-sm overflow-hidden rounded-2xl border border-[#ba1a1a]/20 bg-[var(--erp-login-card)] p-6 shadow-2xl shadow-black/50">
+        <div class="flex flex-col items-center text-center">
+          <div class="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#ba1a1a]/10 text-[#ba1a1a]">
+            <span class="material-symbols-outlined text-3xl">delete_forever</span>
+          </div>
+
+          <h3 class="mb-1 text-lg font-bold text-[var(--erp-login-text-primary)]">¿Eliminar este paso?</h3>
+          <p class="mb-6 text-xs text-[var(--erp-login-muted)]">
+            El proceso se quitará de la lista actual. Debes guardar los cambios para que sea permanente.
+          </p>
+
+          <div class="flex w-full gap-3">
+            <button type="button"
+              class="flex-1 rounded-xl bg-[var(--erp-login-surface)] py-2.5 text-xs font-bold text-[var(--erp-login-text-primary)] transition-colors hover:bg-[var(--erp-login-input-border)]"
+              (click)="showDeleteProcessModal.set(false)">
+              Cancelar
+            </button>
+            <button type="button"
+              class="flex-1 rounded-xl bg-[#ba1a1a] py-2.5 text-xs font-bold text-white transition-colors hover:bg-[#d32f2f]"
+              (click)="onConfirmDeleteProcess()">
+              Eliminar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  Modal: Éxito Premium (Guardado)            -->
+  <!-- ═══════════════════════════════════════════ -->
+  @if (showSuccessModal()) {
+    <div class="fixed inset-0 z-[120] flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-[#051125]/60 backdrop-blur-md transition-opacity"
+        (click)="onCloseSuccessModal()"></div>
+
+      <div
+        class="relative w-full max-w-md overflow-hidden rounded-3xl border border-emerald-500/20 bg-[var(--erp-login-card)] p-0 shadow-2xl shadow-emerald-500/10">
+        
+        <div class="flex flex-col items-center p-8 text-center" style="background: var(--erp-login-card); border-radius: 1.5rem;">
+          <div class="relative mb-6">
+            <div class="absolute inset-0 animate-ping rounded-full bg-emerald-500/20"></div>
+            <div class="relative flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/40">
+              <span class="material-symbols-outlined text-5xl">check_circle</span>
+            </div>
+          </div>
+
+          <h3 class="mb-2 text-2xl font-black tracking-tight text-[var(--erp-login-text-primary)]">
+            {{ successModalConfig().title }}
+          </h3>
+          <p class="mb-8 text-sm leading-relaxed text-[var(--erp-login-muted)]">
+            {{ successModalConfig().message }}
+          </p>
+
+          <button type="button"
+            class="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-[#051125] py-4 text-sm font-bold uppercase tracking-widest text-white transition-all hover:bg-[#1b263b] active:scale-[0.98]"
+            (click)="onCloseSuccessModal()">
+            <span>Entendido</span>
+            <span class="material-symbols-outlined text-base transition-transform group-hover:translate-x-1">arrow_forward</span>
+          </button>
         </div>
       </div>
     </div>

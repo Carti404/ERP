@@ -9,6 +9,7 @@ import { ProductionAssignment } from './entities/production-assignment.entity';
 import { ProductionProcess } from './entities/production-process.entity';
 import { ProductionProcessTracking } from './entities/production-process-tracking.entity';
 import { ProductionWaste } from './entities/production-waste.entity';
+import { ProductProcessTemplate } from './entities/product-process-template.entity';
 import { ProductionAssignmentStatus } from '../common/enums/production-assignment-status.enum';
 import { CreateAssignmentsDto } from './dto/create-assignments.dto';
 import { SetProcessesDto } from './dto/set-processes.dto';
@@ -34,6 +35,8 @@ export class ProductionSyncService {
     private readonly trackingRepo: Repository<ProductionProcessTracking>,
     @InjectRepository(ProductionWaste)
     private readonly wasteRepo: Repository<ProductionWaste>,
+    @InjectRepository(ProductProcessTemplate)
+    private readonly templateRepo: Repository<ProductProcessTemplate>,
     private readonly notificationsService: NotificationsService,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
@@ -56,6 +59,7 @@ export class ProductionSyncService {
 
       const orders = response.data;
       let newCount = 0;
+      const ordersWithoutProcesses: string[] = [];
 
       for (const order of orders) {
         const existing = await this.taskRepo.findOne({ where: { externalMtId: order.id } });
@@ -69,8 +73,60 @@ export class ProductionSyncService {
             recipe: order.recipe,
             status: 'DRAFT',
           });
-          await this.taskRepo.save(task);
+          const savedTask = await this.taskRepo.save(task);
           newCount++;
+
+          // ── Verificar si existe una plantilla de procesos para este producto ──
+          const templates = await this.templateRepo.find({
+            where: { productId: order.productId },
+            order: { orderIndex: 'ASC' },
+          });
+
+          if (templates.length > 0) {
+            // Crear procesos automáticamente a partir de la plantilla
+            const autoProcesses = templates.map(t =>
+              this.processRepo.create({
+                taskId: savedTask.id,
+                orderIndex: t.orderIndex,
+                name: t.name,
+                description: t.description || '',
+                estimatedTimeValue: t.estimatedTimeValue,
+                estimatedTimeUnit: t.estimatedTimeUnit || 'minutes',
+              }),
+            );
+            await this.processRepo.save(autoProcesses);
+
+            // Copiar el tiempo total estimado de la plantilla
+            savedTask.totalEstimatedTimeValue = templates[0].totalEstimatedTimeValue || 0;
+            savedTask.totalEstimatedTimeUnit = templates[0].totalEstimatedTimeUnit || 'minutes';
+            await this.taskRepo.save(savedTask);
+
+            this.logger.log(`Procesos heredados automáticamente de plantilla para producto ${order.productId} (${autoProcesses.length} pasos)`);
+          } else {
+            // No hay plantilla → notificar al admin
+            ordersWithoutProcesses.push(order.product?.name || order.orderNumber || 'Producto');
+          }
+        }
+      }
+
+      // ── Notificar a los admins si hay órdenes sin procesos ──
+      if (ordersWithoutProcesses.length > 0) {
+        try {
+          const admins = await this.userRepo.find({ where: { role: UserRole.ADMIN, activo: true } });
+          const adminIds = admins.map(a => a.id);
+
+          if (adminIds.length > 0) {
+            const productList = ordersWithoutProcesses.join(', ');
+            await this.notificationsService.createForMany(adminIds, {
+              title: 'Órdenes sin procesos definidos',
+              message: `Llegaron ${ordersWithoutProcesses.length} orden(es) de producción nuevas que no tienen procesos creados: ${productList}. Ve a la sección de Procesos para definirlos.`,
+              type: NotificationType.ALERT,
+              category: NotificationCategory.PRODUCTION_NO_PROCESSES,
+            });
+            this.logger.log(`Notificación enviada a ${adminIds.length} admins sobre ${ordersWithoutProcesses.length} órdenes sin procesos`);
+          }
+        } catch (err) {
+          this.logger.error('Error al notificar sobre órdenes sin procesos', err.message);
         }
       }
 
@@ -244,7 +300,48 @@ export class ProductionSyncService {
 
     const saved = await this.processRepo.save(newProcesses);
     this.logger.log(`Guardados ${saved.length} procesos para la tarea ${taskId}`);
+
+    // ── Guardar tiempo total estimado en la tarea ──
+    if (dto.totalEstimatedTimeValue !== undefined) {
+      task.totalEstimatedTimeValue = dto.totalEstimatedTimeValue;
+      task.totalEstimatedTimeUnit = dto.totalEstimatedTimeUnit || 'minutes';
+      await this.taskRepo.save(task);
+    }
+
+    // ── Actualizar o crear la plantilla para futuras órdenes del mismo producto ──
+    if (task.productId) {
+      await this.upsertProcessTemplate(task.productId, task.productName, dto);
+    }
+
     return saved;
+  }
+
+  /** Crea o actualiza la plantilla de procesos para un producto */
+  private async upsertProcessTemplate(productId: string, productName: string, dto: SetProcessesDto) {
+    try {
+      // Eliminar plantilla anterior para este producto
+      await this.templateRepo.delete({ productId });
+
+      // Crear nueva plantilla
+      const newTemplates = dto.processes.map(p =>
+        this.templateRepo.create({
+          productId,
+          productName,
+          orderIndex: p.orderIndex,
+          name: p.name,
+          description: p.description || '',
+          estimatedTimeValue: p.estimatedTimeValue,
+          estimatedTimeUnit: p.estimatedTimeUnit || 'minutes',
+          totalEstimatedTimeValue: dto.totalEstimatedTimeValue || 0,
+          totalEstimatedTimeUnit: dto.totalEstimatedTimeUnit || 'minutes',
+        }),
+      );
+
+      await this.templateRepo.save(newTemplates);
+      this.logger.log(`Plantilla actualizada para producto ${productId} (${newTemplates.length} pasos)`);
+    } catch (err) {
+      this.logger.error(`Error al guardar plantilla para producto ${productId}`, err.message);
+    }
   }
 
   // ──────────────────────────────────────────────
@@ -475,5 +572,19 @@ export class ProductionSyncService {
       this.logger.error(`Error reportando a MT: ${error.message}`);
       throw new BadRequestException(`Error al comunicar con Mundo Terapeuta: ${error.message}`);
     }
+  }
+
+  // ──────────────────────────────────────────────
+  //  LIMPIAR NOTIFICACIONES DE "SIN PROCESOS"
+  // ──────────────────────────────────────────────
+
+  /** Limpia las notificaciones de tipo PRODUCTION_NO_PROCESSES para un admin (cuando entra a la tab de Procesos) */
+  async clearNoProcessNotifications(userId: string) {
+    return this.notificationsService.deleteForUser(userId, NotificationCategory.PRODUCTION_NO_PROCESSES);
+  }
+
+  /** Limpiar notificaciones de "Nueva orden asignada" para el trabajador */
+  async clearAssignedNotifications(userId: string) {
+    return this.notificationsService.deleteForUser(userId, NotificationCategory.PRODUCTION_ASSIGNED);
   }
 }

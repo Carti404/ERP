@@ -138,4 +138,19 @@ export class ProductionController {
   async reportToMT(@Param('id') taskId: string) {
     return this.productionService.reportCompletionToMT(taskId);
   }
+
+  // ──── LIMPIEZA DE NOTIFICACIONES DE PROCESOS ────
+
+  @Post('clear-no-process-notifications')
+  @Roles(UserRole.ADMIN)
+  async clearNoProcessNotifications(@CurrentUser() user: any) {
+    const deleted = await this.productionService.clearNoProcessNotifications(user.userId);
+    return { cleared: deleted };
+  }
+
+  @Post('clear-assigned-notifications')
+  @Roles(UserRole.WORKER)
+  async clearAssignedNotifications(@CurrentUser() user: any) {
+    return this.productionService.clearAssignedNotifications(user.userId);
+  }
 }

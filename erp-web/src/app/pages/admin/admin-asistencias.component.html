@@ -1,16 +1,4 @@
 <div class="erp-admin-asistencias mx-auto max-w-[120rem] space-y-6 pb-2">
-  <!-- Barra módulo (coherente con producción / ERP) -->
-  <div class="rounded-xl bg-[#051125] px-4 py-3 shadow-md lg:px-6">
-    <div class="flex min-w-0 w-full max-w-md items-center gap-2 rounded-lg bg-[#1b263b] px-3 py-1.5">
-      <span class="material-symbols-outlined shrink-0 text-sm text-[#47607e]" aria-hidden="true">search</span>
-      <input
-        type="search"
-        class="min-w-0 flex-1 border-0 bg-transparent text-sm text-white placeholder:text-[#47607e] focus:outline-none focus:ring-0"
-        placeholder="Buscar trabajadores…"
-        aria-label="Buscar trabajadores"
-      />
-    </div>
-  </div>
 
   <div class="flex flex-col items-start justify-between gap-4 lg:flex-row lg:items-end">
     <div>
@@ -23,8 +11,7 @@
     </div>
     <div class="grid w-full grid-cols-1 gap-3 md:grid-cols-2 lg:w-auto">
       <div
-        class="flex items-center gap-4 rounded-xl border border-[#c5c6cd]/30 bg-white p-4 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]"
-      >
+        class="flex items-center gap-4 rounded-xl border border-[#c5c6cd]/30 bg-white p-4 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
         <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-[#1b263b] text-[#828da7]">
           <span class="material-symbols-outlined" aria-hidden="true">schedule</span>
         </div>
@@ -32,12 +19,12 @@
           <p class="text-[10px] font-bold uppercase tracking-wider text-[#45474d] dark:text-[var(--erp-login-muted)]">
             {{ kpis.avgEntryLabel }}
           </p>
-          <p class="text-2xl font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ kpis.avgEntryValue }}</p>
+          <p class="text-2xl font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ kpis.avgEntryValue
+            }}</p>
         </div>
       </div>
       <div
-        class="flex items-center gap-4 rounded-xl border border-[#c5c6cd]/30 bg-white p-4 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]"
-      >
+        class="flex items-center gap-4 rounded-xl border border-[#c5c6cd]/30 bg-white p-4 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
         <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-[#c2dcff] text-[#47607e]">
           <span class="material-symbols-outlined" aria-hidden="true">warning</span>
         </div>
@@ -54,31 +41,27 @@
   <div class="grid grid-cols-1 gap-6 xl:grid-cols-4">
     <div class="space-y-4 xl:col-span-3">
       <div class="overflow-hidden rounded-xl bg-[#edeeef] dark:bg-[var(--erp-login-input-bg)]">
-        <div class="flex flex-wrap items-center justify-between gap-3 bg-[#edeeef] p-4 dark:bg-[var(--erp-login-surface)]">
+        <div
+          class="flex flex-wrap items-center justify-between gap-3 bg-[#edeeef] p-4 dark:bg-[var(--erp-login-surface)]">
           <div class="flex items-center gap-2">
-            <button
-              type="button"
+            <button type="button"
               class="rounded p-1 transition-colors hover:bg-[#e1e3e4] dark:hover:bg-[var(--erp-login-input-border)]"
-              (click)="onPrevWeek()"
-              aria-label="Semana anterior"
-            >
-              <span class="material-symbols-outlined text-[#051125] dark:text-white" aria-hidden="true">chevron_left</span>
+              (click)="onPrevWeek()" aria-label="Semana anterior">
+              <span class="material-symbols-outlined text-[#051125] dark:text-white"
+                aria-hidden="true">chevron_left</span>
             </button>
-            <span class="text-sm font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ weekLabel }}</span>
-            <button
-              type="button"
+            <span class="text-sm font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ weekLabel
+              }}</span>
+            <button type="button"
               class="rounded p-1 transition-colors hover:bg-[#e1e3e4] dark:hover:bg-[var(--erp-login-input-border)]"
-              (click)="onNextWeek()"
-              aria-label="Semana siguiente"
-            >
-              <span class="material-symbols-outlined text-[#051125] dark:text-white" aria-hidden="true">chevron_right</span>
+              (click)="onNextWeek()" aria-label="Semana siguiente">
+              <span class="material-symbols-outlined text-[#051125] dark:text-white"
+                aria-hidden="true">chevron_right</span>
             </button>
           </div>
-          <button
-            type="button"
+          <button type="button"
             class="flex items-center gap-2 rounded-md bg-[#051125] px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-white transition-opacity hover:opacity-90"
-            (click)="onJustificacionOficio()"
-          >
+            (click)="onJustificacionOficio()">
             <span class="material-symbols-outlined text-sm" aria-hidden="true">add</span>
             Justificación de oficio
           </button>
@@ -86,78 +69,71 @@
         <div class="erp-asistencias-hide-scrollbar overflow-x-auto">
           <table class="w-full border-collapse text-left">
             <thead>
-              <tr class="border-b border-[#c5c6cd]/20 bg-[#e7e8e9]/80 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-surface)]">
+              <tr
+                class="border-b border-[#c5c6cd]/20 bg-[#e7e8e9]/80 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-surface)]">
                 <th
-                  class="sticky left-0 z-10 w-48 bg-[#edeeef] p-3 text-[10px] font-bold uppercase text-[#45474d] dark:bg-[var(--erp-login-input-bg)] dark:text-[var(--erp-login-muted)]"
-                >
+                  class="sticky left-0 z-10 w-48 bg-[#edeeef] p-3 text-[10px] font-bold uppercase text-[#45474d] dark:bg-[var(--erp-login-input-bg)] dark:text-[var(--erp-login-muted)]">
                   Trabajador
                 </th>
                 @for (h of dayHeaders; track h.key) {
-                  <th [class]="dayHeaderClass(h)">
-                    {{ h.label }}
-                  </th>
+                <th [class]="dayHeaderClass(h)">
+                  {{ h.label }}
+                </th>
                 }
               </tr>
             </thead>
             <tbody class="divide-y divide-[#c5c6cd]/15 dark:divide-[var(--erp-login-input-border)]">
               @for (row of rows; track row.id) {
-                <tr
-                  class="transition-colors hover:bg-[#e7e8e9]/40 dark:hover:bg-[var(--erp-login-surface)]"
-                  [class.erp-admin-asistencia-row--hl]="row.highlightRow"
-                >
-                  <td
-                    class="sticky left-0 z-10 border-r border-[#c5c6cd]/15 bg-[#edeeef] p-3 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-input-bg)]"
-                  >
-                    <div class="flex items-center gap-2">
-                      <div
-                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#e1e3e4] text-[10px] font-black text-[#051125] dark:bg-[var(--erp-login-input-border)] dark:text-[var(--erp-login-text-primary)]"
-                      >
-                        {{ row.initials }}
-                      </div>
-                      <span class="text-xs font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ row.name }}</span>
+              <tr class="transition-colors hover:bg-[#e7e8e9]/40 dark:hover:bg-[var(--erp-login-surface)]"
+                [class.erp-admin-asistencia-row--hl]="row.highlightRow">
+                <td
+                  class="sticky left-0 z-10 border-r border-[#c5c6cd]/15 bg-[#edeeef] p-3 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-input-bg)]">
+                  <div class="flex items-center gap-2">
+                    <div
+                      class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#e1e3e4] text-[10px] font-black text-[#051125] dark:bg-[var(--erp-login-input-border)] dark:text-[var(--erp-login-text-primary)]">
+                      {{ row.initials }}
                     </div>
-                  </td>
-                  @for (cell of row.cells; track $index; let di = $index) {
-                    <td class="p-2 text-center">
-                      @if (cell.kind === 'off') {
-                        <span class="text-xs text-[#75777d] dark:text-[var(--erp-login-muted)]">—</span>
-                      } @else {
-                        <button
-                          type="button"
-                          class="mx-auto flex min-h-[2rem] min-w-[2rem] items-center justify-center rounded-lg border text-[10px] font-bold transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-[#47607e]"
-                          [class.erp-asistencia-cell--selected]="cellRingClass(row.id, di)"
-                          (click)="onCellClick(row.id, di, cell)"
-                          [attr.aria-label]="'Celda ' + row.name + ' ' + dayHeaders[di].label"
-                          [class.border-[#051125]/20]="cell.kind === 'punctual'"
-                          [class.bg-[#051125]/15]="cell.kind === 'punctual'"
-                          [class.text-[#051125]]="cell.kind === 'punctual'"
-                          [class.border-[#47607e]/30]="cell.kind === 'delay'"
-                          [class.bg-[#c2dcff]]="cell.kind === 'delay'"
-                          [class.text-[#47607e]]="cell.kind === 'delay'"
-                          [class.border-[#92001c]/25]="cell.kind === 'absence'"
-                          [class.bg-[#ffdad8]]="cell.kind === 'absence'"
-                          [class.border-[#47607e]/30]="cell.kind === 'justification'"
-                          [class.bg-[#c2dcff]]="cell.kind === 'justification'"
-                        >
-                          @switch (cell.kind) {
-                            @case ('punctual') {
-                              {{ cell.time }}
-                            }
-                            @case ('delay') {
-                              {{ cell.time }}
-                            }
-                            @case ('absence') {
-                              <span class="material-symbols-outlined text-base text-[#92001c]" aria-hidden="true">block</span>
-                            }
-                            @case ('justification') {
-                              <span class="material-symbols-outlined text-base text-[#47607e]" aria-hidden="true">history_edu</span>
-                            }
-                          }
-                        </button>
-                      }
-                    </td>
+                    <span class="text-xs font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ row.name
+                      }}</span>
+                  </div>
+                </td>
+                @for (cell of row.cells; track $index; let di = $index) {
+                <td class="p-2 text-center">
+                  @if (cell.kind === 'off') {
+                  <span class="text-xs text-[#75777d] dark:text-[var(--erp-login-muted)]">—</span>
+                  } @else {
+                  <button type="button"
+                    class="mx-auto flex min-h-[2rem] min-w-[2rem] items-center justify-center rounded-lg border text-[10px] font-bold transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-[#47607e]"
+                    [class.erp-asistencia-cell--selected]="cellRingClass(row.id, di)"
+                    (click)="onCellClick(row.id, di, cell)"
+                    [attr.aria-label]="'Celda ' + row.name + ' ' + dayHeaders[di].label"
+                    [class.border-[#051125]/20]="cell.kind === 'punctual'"
+                    [class.bg-[#051125]/15]="cell.kind === 'punctual'" [class.text-[#051125]]="cell.kind === 'punctual'"
+                    [class.border-[#47607e]/30]="cell.kind === 'delay'" [class.bg-[#c2dcff]]="cell.kind === 'delay'"
+                    [class.text-[#47607e]]="cell.kind === 'delay'" [class.border-[#92001c]/25]="cell.kind === 'absence'"
+                    [class.bg-[#ffdad8]]="cell.kind === 'absence'"
+                    [class.border-[#47607e]/30]="cell.kind === 'justification'"
+                    [class.bg-[#c2dcff]]="cell.kind === 'justification'">
+                    @switch (cell.kind) {
+                    @case ('punctual') {
+                    {{ cell.time }}
+                    }
+                    @case ('delay') {
+                    {{ cell.time }}
+                    }
+                    @case ('absence') {
+                    <span class="material-symbols-outlined text-base text-[#92001c]" aria-hidden="true">block</span>
+                    }
+                    @case ('justification') {
+                    <span class="material-symbols-outlined text-base text-[#47607e]"
+                      aria-hidden="true">history_edu</span>
+                    }
+                    }
+                  </button>
                   }
-                </tr>
+                </td>
+                }
+              </tr>
               }
             </tbody>
           </table>
@@ -175,117 +151,114 @@
         </div>
         <div class="flex items-center gap-2">
           <span class="h-3 w-3 rounded-sm border border-[#92001c]/25 bg-[#ffdad8]"></span>
-          <span class="text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]">Ausencia</span>
+          <span
+            class="text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]">Ausencia</span>
         </div>
         <div class="flex items-center gap-2">
           <span class="flex h-3 w-3 items-center justify-center rounded-sm bg-[#c2dcff]">
             <span class="material-symbols-outlined text-[10px] text-[#47607e]" aria-hidden="true">history_edu</span>
           </span>
-          <span class="text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]"
-            >Justif. pendiente</span
-          >
+          <span class="text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]">Justif.
+            pendiente</span>
         </div>
       </div>
     </div>
 
     <aside class="space-y-5 xl:col-span-1">
       @if (panelDetail(); as d) {
-        <div class="overflow-hidden rounded-xl border border-[#c5c6cd]/20 bg-white dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
-          <div class="bg-[#051125] p-4 text-white">
-            <p class="text-[10px] font-bold uppercase tracking-widest opacity-70">Detalle de turno · {{ d.dayLabel }}</p>
-            <h2 class="text-lg font-bold">{{ d.workerName }}</h2>
-          </div>
-          <div class="space-y-4 p-5">
-            <div class="grid grid-cols-2 gap-3">
-              <div class="rounded-lg bg-[#edeeef] p-3 dark:bg-[var(--erp-login-surface)]">
-                <p class="text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]">Entrada</p>
-                @if (d.checkInUrgent) {
-                  <p class="mt-1 text-sm font-bold text-[#47607e]">{{ d.checkIn }}</p>
-                  <p class="mt-1 text-[10px] text-[#55000c] dark:text-[#fe4b55]">{{ d.checkInNote }}</p>
-                } @else {
-                  <p class="mt-1 text-sm font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ d.checkIn }}</p>
-                  <p class="mt-1 text-[10px] text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ d.checkInNote }}</p>
-                }
-              </div>
-              <div class="rounded-lg bg-[#edeeef] p-3 dark:bg-[var(--erp-login-surface)]">
-                <p class="text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]">Salida</p>
-                <p class="mt-1 text-sm font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ d.checkOut }}</p>
-                <p class="mt-1 text-[10px] text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ d.checkOutNote }}</p>
-              </div>
-            </div>
-            <div class="space-y-3">
-              <p class="border-b border-[#c5c6cd]/20 pb-1 text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]">
-                Registro de actividad
+      <div
+        class="overflow-hidden rounded-xl border border-[#c5c6cd]/20 bg-white dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
+        <div class="bg-[#051125] p-4 text-white">
+          <p class="text-[10px] font-bold uppercase tracking-widest opacity-70">Detalle de turno · {{ d.dayLabel }}</p>
+          <h2 class="text-lg font-bold">{{ d.workerName }}</h2>
+        </div>
+        <div class="space-y-4 p-5">
+          <div class="grid grid-cols-2 gap-3">
+            <div class="rounded-lg bg-[#edeeef] p-3 dark:bg-[var(--erp-login-surface)]">
+              <p class="text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]">Entrada</p>
+              @if (d.checkInUrgent) {
+              <p class="mt-1 text-sm font-bold text-[#47607e]">{{ d.checkIn }}</p>
+              <p class="mt-1 text-[10px] text-[#55000c] dark:text-[#fe4b55]">{{ d.checkInNote }}</p>
+              } @else {
+              <p class="mt-1 text-sm font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ d.checkIn }}
               </p>
-              @for (log of d.logs; track log.title) {
-                <div class="flex items-start justify-between gap-2">
-                  <div class="flex gap-2">
-                    <span
-                      class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full"
-                      [class.bg-[#47607e]]="log.dot === 'secondary'"
-                      [class.bg-[#051125]]="log.dot === 'primary'"
-                      [class.dark:bg-slate-300]="log.dot === 'primary'"
-                      aria-hidden="true"
-                    ></span>
-                    <div>
-                      <p class="text-xs font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ log.title }}</p>
-                      <p class="text-[10px] text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ log.range }}</p>
-                    </div>
-                  </div>
-                  <span class="text-[10px] font-bold text-[#48617e]">{{ log.duration }}</span>
-                </div>
+              <p class="mt-1 text-[10px] text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ d.checkInNote }}</p>
               }
             </div>
-            @if (d.justification) {
-              <div class="space-y-3 rounded-xl border border-[#ffb3b1]/40 bg-[#ffdad8]/35 p-4 dark:bg-[#55000c]/20">
-                <div class="flex items-center gap-2 text-[#92001c]">
-                  <span class="material-symbols-outlined text-sm" aria-hidden="true">info</span>
-                  <p class="text-xs font-bold uppercase">Justificación pendiente</p>
-                </div>
-                <p class="text-xs italic text-[#45474d] dark:text-[var(--erp-login-muted)]">«{{ d.justification.text }}»</p>
-                <div class="grid grid-cols-2 gap-2 pt-1">
-                  <button
-                    type="button"
-                    class="rounded-lg border border-[#ffb3b1]/50 bg-white py-2 text-[10px] font-bold uppercase text-[#55000c] transition-colors hover:bg-[#ffdad8] dark:bg-[var(--erp-login-card)]"
-                    (click)="onRejectJustification()"
-                  >
-                    Rechazar
-                  </button>
-                  <button
-                    type="button"
-                    class="rounded-lg bg-[#47607e] py-2 text-[10px] font-bold uppercase text-white transition-opacity hover:opacity-90"
-                    (click)="onApproveJustification()"
-                  >
-                    Aprobar
-                  </button>
+            <div class="rounded-lg bg-[#edeeef] p-3 dark:bg-[var(--erp-login-surface)]">
+              <p class="text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]">Salida</p>
+              <p class="mt-1 text-sm font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ d.checkOut
+                }}</p>
+              <p class="mt-1 text-[10px] text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ d.checkOutNote }}</p>
+            </div>
+          </div>
+          <div class="space-y-3">
+            <p
+              class="border-b border-[#c5c6cd]/20 pb-1 text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]">
+              Registro de actividad
+            </p>
+            @for (log of d.logs; track log.title) {
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex gap-2">
+                <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" [class.bg-[#47607e]]="log.dot === 'secondary'"
+                  [class.bg-[#051125]]="log.dot === 'primary'" [class.dark:bg-slate-300]="log.dot === 'primary'"
+                  aria-hidden="true"></span>
+                <div>
+                  <p class="text-xs font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ log.title }}
+                  </p>
+                  <p class="text-[10px] text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ log.range }}</p>
                 </div>
               </div>
+              <span class="text-[10px] font-bold text-[#48617e]">{{ log.duration }}</span>
+            </div>
             }
           </div>
+          @if (d.justification) {
+          <div class="space-y-3 rounded-xl border border-[#ffb3b1]/40 bg-[#ffdad8]/35 p-4 dark:bg-[#55000c]/20">
+            <div class="flex items-center gap-2 text-[#92001c]">
+              <span class="material-symbols-outlined text-sm" aria-hidden="true">info</span>
+              <p class="text-xs font-bold uppercase">Justificación pendiente</p>
+            </div>
+            <p class="text-xs italic text-[#45474d] dark:text-[var(--erp-login-muted)]">«{{ d.justification.text }}»</p>
+            <div class="grid grid-cols-2 gap-2 pt-1">
+              <button type="button"
+                class="rounded-lg border border-[#ffb3b1]/50 bg-white py-2 text-[10px] font-bold uppercase text-[#55000c] transition-colors hover:bg-[#ffdad8] dark:bg-[var(--erp-login-card)]"
+                (click)="onRejectJustification()">
+                Rechazar
+              </button>
+              <button type="button"
+                class="rounded-lg bg-[#47607e] py-2 text-[10px] font-bold uppercase text-white transition-opacity hover:opacity-90"
+                (click)="onApproveJustification()">
+                Aprobar
+              </button>
+            </div>
+          </div>
+          }
         </div>
+      </div>
       } @else if (panelContext(); as ctx) {
-        <div class="rounded-xl border border-[#c5c6cd]/20 bg-white p-5 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
-          <h2 class="text-sm font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ ctx.workerName }}</h2>
-          <p class="mt-1 text-xs text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ ctx.dayLabel }}</p>
-          <p class="mt-4 text-sm text-[var(--erp-login-muted)]">
-            No hay panel de detalle ampliado para esta celda en la demo. Selecciona Jue 26 de Elena Vance para ver el flujo
-            completo.
-          </p>
-        </div>
+      <div
+        class="rounded-xl border border-[#c5c6cd]/20 bg-white p-5 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
+        <h2 class="text-sm font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ ctx.workerName }}</h2>
+        <p class="mt-1 text-xs text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ ctx.dayLabel }}</p>
+        <p class="mt-4 text-sm text-[var(--erp-login-muted)]">
+          No hay panel de detalle ampliado para esta celda en la demo. Selecciona Jue 26 de Elena Vance para ver el
+          flujo
+          completo.
+        </p>
+      </div>
       } @else {
-        <div class="rounded-xl border border-dashed border-[#c5c6cd] p-5 text-sm text-[var(--erp-login-muted)]">
-          Selecciona una celda de la matriz para ver detalle.
-        </div>
+      <div class="rounded-xl border border-dashed border-[#c5c6cd] p-5 text-sm text-[var(--erp-login-muted)]">
+        Selecciona una celda de la matriz para ver detalle.
+      </div>
       }
 
       <div class="rounded-xl bg-[#1b263b] p-5 text-[#828da7]">
         <h3 class="text-sm font-bold text-white">Exportar datos</h3>
         <p class="mt-1 text-xs opacity-80">Genera informes PDF/CSV de asistencias para el período actual.</p>
-        <button
-          type="button"
+        <button type="button"
           class="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-[#828da7] py-3 text-xs font-bold uppercase text-[#051125] transition-opacity hover:opacity-90"
-          (click)="onExportReport()"
-        >
+          (click)="onExportReport()">
           <span class="material-symbols-outlined text-sm" aria-hidden="true">download</span>
           Descargar informe octubre
         </button>
