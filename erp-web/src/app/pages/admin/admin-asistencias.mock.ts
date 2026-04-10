@@ -24,6 +24,7 @@ export interface AdminAsistenciaActivityLogMock {
 }
 
 export interface AdminAsistenciaDetailMock {
+  readonly workerId?: string;
   readonly workerName: string;
   readonly dayLabel: string;
   readonly checkIn: string;

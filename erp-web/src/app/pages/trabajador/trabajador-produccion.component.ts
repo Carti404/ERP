@@ -49,11 +49,19 @@ export class TrabajadorProduccionComponent implements OnInit, OnDestroy {
   protected readonly submittingWaste = signal(false);
 
   protected readonly pendingAssignments = computed(() => 
-    this.assignments().filter(a => a.status === 'ASSIGNED' || a.status === 'IN_PROGRESS')
+    this.assignments().filter(a => 
+      (a.status === 'ASSIGNED' || a.status === 'IN_PROGRESS') && 
+      a.task?.status !== 'REPORTED_TO_MT' &&
+      a.task?.status !== 'COMPLETED'
+    )
   );
 
   protected readonly historyAssignments = computed(() => 
-    this.assignments().filter(a => a.status === 'COMPLETED')
+    this.assignments().filter(a => 
+      a.status === 'COMPLETED' || 
+      a.task?.status === 'COMPLETED' || 
+      a.task?.status === 'REPORTED_TO_MT'
+    )
   );
 
   // Computados para la vista de procesos
@@ -313,6 +321,12 @@ export class TrabajadorProduccionComponent implements OnInit, OnDestroy {
         this.productionService.completeAssignment(assignment.id).subscribe({
           next: () => {
             this.submittingWaste.set(false);
+            
+            // Actualizar el estado localmente para que desaparezca de "Pendientes" de inmediato
+            this.assignments.update(list => 
+              list.map(a => a.id === assignment.id ? { ...a, status: 'COMPLETED' as const, completedAt: new Date().toISOString() } : a)
+            );
+
             this.activeView.set('completed');
           },
           error: (err) => {
@@ -338,6 +352,12 @@ export class TrabajadorProduccionComponent implements OnInit, OnDestroy {
     this.productionService.completeAssignment(assignment.id).subscribe({
       next: () => {
         this.submittingWaste.set(false);
+        
+        // Actualizar el estado localmente
+        this.assignments.update(list => 
+          list.map(a => a.id === assignment.id ? { ...a, status: 'COMPLETED' as const, completedAt: new Date().toISOString() } : a)
+        );
+
         this.activeView.set('completed');
       },
       error: (err) => {

@@ -3,6 +3,7 @@ import { afterNextRender, Component, computed, DestroyRef, inject, signal } from
 import { RouterLink } from '@angular/router';
 import { AttendanceService } from '../../core/http/attendance.service';
 import { MessagesApiService } from '../../core/messages/messages-api.service';
+import { ErpMessageRow } from '../../core/messages/messages-api.types';
 import { NotificationService, AppNotification } from '../../core/services/notification.service';
 
 /** Color de los dígitos del reloj según acción de checador. */
@@ -40,9 +41,11 @@ export class TrabajadorHomeComponent {
 
   protected unreadCount = 0;
 
-  // Order alerts from notifications API
   protected readonly orderAlerts = signal<AppNotification[]>([]);
   protected readonly hasUrgentAlert = computed(() => this.orderAlerts().length > 0);
+
+  /** Última incidencia sin leer para mostrar en el dashboard principal */
+  protected readonly activeIncidence = signal<ErpMessageRow | null>(null);
 
   protected readonly events: readonly {
     id: string;
@@ -146,6 +149,15 @@ export class TrabajadorHomeComponent {
           dimmed: false,
           importance: (r.importance || 'LOW').toLowerCase(),
         }));
+
+        // Buscar incidencias sin leer
+        const incidences = rows.filter(r => r.category === 'INCIDENCE' && !r.read);
+        if (incidences.length > 0) {
+          // Tomar la más reciente
+          this.activeIncidence.set(incidences[0]);
+        } else {
+          this.activeIncidence.set(null);
+        }
       },
     });
   }
@@ -253,6 +265,19 @@ export class TrabajadorHomeComponent {
 
   protected onReportIssue(): void {
     return;
+  }
+
+  protected onReplyIncidence(msgId: string): void {
+    if (!msgId) return;
+
+    this.messagesApi.markRead(msgId).subscribe({
+      next: () => {
+        this.activeIncidence.set(null);
+        this.showToast('Incidencia marcada como leída.', 'success');
+        this.loadInbox(); // Recargar bandeja para actualizar contadores
+      },
+      error: () => this.showToast('No se pudo actualizar la incidencia', 'error')
+    });
   }
 
   private showToast(message: string, variant: WorkerToastVariant): void {

@@ -1,59 +1,74 @@
-[Nest] 7440  - 09/04/2026, 12:52:07 p.m.     LOG [RouterExplorer] Mapped {/api/v1/production/assignments/:id/complete, POST} route +1ms        
-[Nest] 7440  - 09/04/2026, 12:52:07 p.m.     LOG [NestApplication] Nest application successfully started +14ms
-[Nest] 7440  - 09/04/2026, 12:52:33 p.m.     LOG [ProductionSyncService] Obteniendo catálogo de productos producibles desde Mundo Terapeuta...
-[Nest] 7440  - 09/04/2026, 12:52:33 p.m.   ERROR [ExceptionsHandler] QueryFailedError: relation "production_processes" does not exist
+Nest] 20864  - 10/04/2026, 4:25:19 p.m.     LOG [RouterExplorer] Mapped {/api/v1/production/clear-assigned-notifications, POST} route +0ms    
+[Nest] 20864  - 10/04/2026, 4:25:19 p.m.     LOG [RoutesResolver] NotificationsController {/api/v1/notifications}: +0ms
+[Nest] 20864  - 10/04/2026, 4:25:19 p.m.     LOG [RouterExplorer] Mapped {/api/v1/notifications, GET} route +1ms
+[Nest] 20864  - 10/04/2026, 4:25:19 p.m.     LOG [RouterExplorer] Mapped {/api/v1/notifications/unread-count, GET} route +0ms
+[Nest] 20864  - 10/04/2026, 4:25:19 p.m.     LOG [RouterExplorer] Mapped {/api/v1/notifications/:id/read, PATCH} route +0ms
+[Nest] 20864  - 10/04/2026, 4:25:19 p.m.     LOG [RouterExplorer] Mapped {/api/v1/notifications/mark-all-read, POST} route +0ms
+[Nest] 20864  - 10/04/2026, 4:25:19 p.m.     LOG [RouterExplorer] Mapped {/api/v1/notifications, DELETE} route +1ms
+[Nest] 20864  - 10/04/2026, 4:25:19 p.m.     LOG [NestApplication] Nest application successfully started +12ms
+[Nest] 20864  - 10/04/2026, 4:26:00 p.m.     LOG [ProductionSyncService] Sincronizando órdenes de producción desde Mundo Terapeuta...
+[Nest] 20864  - 10/04/2026, 4:26:00 p.m.     LOG [ProductionSyncService] Sincronización completada. 0 nuevas órdenes importadas.
+[Nest] 20864  - 10/04/2026, 4:26:31 p.m.   ERROR [ExceptionsHandler] QueryFailedError: null value in column "user_id" of relation "attendance_records" violates not-null constraint
     at PostgresQueryRunner.query (H:\dev\ERP\erp-api\node_modules\typeorm\driver\src\driver\postgres\PostgresQueryRunner.ts:325:19)
     at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
-    at async SelectQueryBuilder.loadRawResults (H:\dev\ERP\erp-api\node_modules\typeorm\query-builder\src\query-builder\SelectQueryBuilder.ts:3868:25)
-    at async SelectQueryBuilder.executeEntitiesAndRawResults (H:\dev\ERP\erp-api\node_modules\typeorm\query-builder\src\query-builder\SelectQueryBuilder.ts:3614:26)
-    at async SelectQueryBuilder.getRawAndEntities (H:\dev\ERP\erp-api\node_modules\typeorm\query-builder\src\query-builder\SelectQueryBuilder.ts:1671:29)
-    at async SelectQueryBuilder.getMany (H:\dev\ERP\erp-api\node_modules\typeorm\query-builder\src\query-builder\SelectQueryBuilder.ts:1761:25)    at async H:\dev\ERP\erp-api\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at async InsertQueryBuilder.execute (H:\dev\ERP\erp-api\node_modules\typeorm\query-builder\src\query-builder\InsertQueryBuilder.ts:164:33) 
+    at async SubjectExecutor.executeInsertOperations (H:\dev\ERP\erp-api\node_modules\typeorm\persistence\src\persistence\SubjectExecutor.ts:435:42)
+    at async SubjectExecutor.execute (H:\dev\ERP\erp-api\node_modules\typeorm\persistence\src\persistence\SubjectExecutor.ts:137:9)
+    at async EntityPersistExecutor.execute (H:\dev\ERP\erp-api\node_modules\typeorm\persistence\src\persistence\EntityPersistExecutor.ts:182:21)
+    at async AttendanceService.registerEvent (H:\dev\ERP\erp-api\src\attendance\attendance.service.ts:76:16)
+    at async H:\dev\ERP\erp-api\node_modules\@nestjs\core\router\router-execution-context.js:46:28
     at async H:\dev\ERP\erp-api\node_modules\@nestjs\core\router\router-proxy.js:9:17 {
-  query: 'SELECT "ProductionTask"."id" AS "ProductionTask_id", "ProductionTask"."external_mt_id" AS "ProductionTask_external_mt_id", "ProductionTask"."order_number" AS "ProductionTask_order_number", "ProductionTask"."product_id" AS "ProductionTask_product_id", "ProductionTask"."product_name" AS "ProductionTask_product_name", "ProductionTask"."quantity_to_produce" AS "ProductionTask_quantity_to_produce", "ProductionTask"."recipe" AS "ProductionTask_recipe", "ProductionTask"."assigned_worker_id" AS "ProductionTask_assigned_worker_id", "ProductionTask"."status" AS "ProductionTask_status", "ProductionTask"."created_at" AS "ProductionTask_created_at", "ProductionTask"."updated_at" AS "ProductionTask_updated_at", "ProductionTask__ProductionTask_processes"."id" AS "ProductionTask__ProductionTask_processes_id", "ProductionTask__ProductionTask_processes"."task_id" AS "ProductionTask__ProductionTask_processes_task_id", "ProductionTask__ProductionTask_processes"."order_index" AS "ProductionTask__ProductionTask_processes_order_index", "ProductionTask__ProductionTask_processes"."name" AS "ProductionTask__ProductionTask_processes_name", "ProductionTask__ProductionTask_processes"."description" AS "ProductionTask__ProductionTask_processes_description", "ProductionTask__ProductionTask_processes"."estimated_time_minutes" AS "ProductionTask__ProductionTask_processes_estimated_time_minutes", "ProductionTask__ProductionTask_processes"."created_at" AS "ProductionTask__ProductionTask_processes_created_at", "ProductionTask__ProductionTask_processes"."updated_at" AS "ProductionTask__ProductionTask_processes_updated_at" FROM "production_tasks" "ProductionTask" LEFT JOIN "production_processes" "ProductionTask__ProductionTask_processes" ON "ProductionTask__ProductionTask_processes"."task_id"="ProductionTask"."id" ORDER BY "ProductionTask"."created_at" DESC',
-  parameters: [],
-  driverError: error: relation "production_processes" does not exist
+  query: 'INSERT INTO "attendance_records"("id", "work_date", "status", "created_at", "updated_at") VALUES (DEFAULT, $1, $2, DEFAULT, DEFAULT) 
+RETURNING "id", "status", "created_at", "updated_at"',
+  parameters: [
+    '2026-04-10',
+    'Puntual'
+  ],
+  driverError: error: null value in column "user_id" of relation "attendance_records" violates not-null constraint
       at H:\dev\ERP\erp-api\node_modules\pg\lib\client.js:631:17
       at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
       at async PostgresQueryRunner.query (H:\dev\ERP\erp-api\node_modules\typeorm\driver\src\driver\postgres\PostgresQueryRunner.ts:254:25)    
-      at async SelectQueryBuilder.loadRawResults (H:\dev\ERP\erp-api\node_modules\typeorm\query-builder\src\query-builder\SelectQueryBuilder.ts:3868:25)
-      at async SelectQueryBuilder.executeEntitiesAndRawResults (H:\dev\ERP\erp-api\node_modules\typeorm\query-builder\src\query-builder\SelectQueryBuilder.ts:3614:26)
-      at async SelectQueryBuilder.getRawAndEntities (H:\dev\ERP\erp-api\node_modules\typeorm\query-builder\src\query-builder\SelectQueryBuilder.ts:1671:29)
-      at async SelectQueryBuilder.getMany (H:\dev\ERP\erp-api\node_modules\typeorm\query-builder\src\query-builder\SelectQueryBuilder.ts:1761:25)
+      at async InsertQueryBuilder.execute (H:\dev\ERP\erp-api\node_modules\typeorm\query-builder\src\query-builder\InsertQueryBuilder.ts:164:33)
+      at async SubjectExecutor.executeInsertOperations (H:\dev\ERP\erp-api\node_modules\typeorm\persistence\src\persistence\SubjectExecutor.ts:435:42)
+      at async SubjectExecutor.execute (H:\dev\ERP\erp-api\node_modules\typeorm\persistence\src\persistence\SubjectExecutor.ts:137:9)
+      at async EntityPersistExecutor.execute (H:\dev\ERP\erp-api\node_modules\typeorm\persistence\src\persistence\EntityPersistExecutor.ts:182:21)
+      at async AttendanceService.registerEvent (H:\dev\ERP\erp-api\src\attendance\attendance.service.ts:76:16)
       at async H:\dev\ERP\erp-api\node_modules\@nestjs\core\router\router-execution-context.js:46:28
       at async H:\dev\ERP\erp-api\node_modules\@nestjs\core\router\router-proxy.js:9:17 {
-    length: 121,
+    length: 343,
     severity: 'ERROR',
-    code: '42P01',
-    detail: undefined,
+    code: '23502',
+    detail: 'Failing row contains (85a45bc1-b55c-46c3-be03-c8c6882dc438, null, 2026-04-10, Puntual, 2026-04-10 22:26:31.194759+00, 2026-04-10 22:26:31.194759+00).',
     hint: undefined,
-    position: '1664',
+    position: undefined,
     internalPosition: undefined,
     internalQuery: undefined,
     where: undefined,
-    schema: undefined,
-    table: undefined,
-    column: undefined,
+    schema: 'public',
+    table: 'attendance_records',
+    column: 'user_id',
     dataType: undefined,
     constraint: undefined,
-    file: 'parse_relation.c',
-    line: '1449',
-    routine: 'parserOpenTable'
+    file: 'execMain.c',
+    line: '2057',
+    routine: 'ExecConstraints'
   },
-  length: 121,
+  length: 343,
   severity: 'ERROR',
-  code: '42P01',
-  detail: undefined,
+  code: '23502',
+  detail: 'Failing row contains (85a45bc1-b55c-46c3-be03-c8c6882dc438, null, 2026-04-10, Puntual, 2026-04-10 22:26:31.194759+00, 2026-04-10 22:26:31.194759+00).',
   hint: undefined,
-  position: '1664',
+  position: undefined,
   internalPosition: undefined,
   internalQuery: undefined,
   where: undefined,
-  schema: undefined,
-  table: undefined,
-  column: undefined,
+  schema: 'public',
+  table: 'attendance_records',
+  column: 'user_id',
   dataType: undefined,
   constraint: undefined,
-  file: 'parse_relation.c',
-  line: '1449',
-  routine: 'parserOpenTable'
+  file: 'execMain.c',
+  line: '2057',
+  routine: 'ExecConstraints'
 }
+^CPS H:\dev\ERP\erp-api> 

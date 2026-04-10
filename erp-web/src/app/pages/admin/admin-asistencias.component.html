@@ -9,33 +9,7 @@
         Octubre 2023 · Planta piso 04 (demo)
       </p>
     </div>
-    <div class="grid w-full grid-cols-1 gap-3 md:grid-cols-2 lg:w-auto">
-      <div
-        class="flex items-center gap-4 rounded-xl border border-[#c5c6cd]/30 bg-white p-4 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
-        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-[#1b263b] text-[#828da7]">
-          <span class="material-symbols-outlined" aria-hidden="true">schedule</span>
-        </div>
-        <div>
-          <p class="text-[10px] font-bold uppercase tracking-wider text-[#45474d] dark:text-[var(--erp-login-muted)]">
-            {{ kpis.avgEntryLabel }}
-          </p>
-          <p class="text-2xl font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ kpis.avgEntryValue
-            }}</p>
-        </div>
-      </div>
-      <div
-        class="flex items-center gap-4 rounded-xl border border-[#c5c6cd]/30 bg-white p-4 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
-        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-[#c2dcff] text-[#47607e]">
-          <span class="material-symbols-outlined" aria-hidden="true">warning</span>
-        </div>
-        <div>
-          <p class="text-[10px] font-bold uppercase tracking-wider text-[#45474d] dark:text-[var(--erp-login-muted)]">
-            {{ kpis.pendingLabel }}
-          </p>
-          <p class="text-2xl font-bold text-[#47607e]">{{ kpis.pendingValue }}</p>
-        </div>
-      </div>
-    </div>
+
   </div>
 
   <div class="grid grid-cols-1 gap-6 xl:grid-cols-4">
@@ -50,7 +24,7 @@
               <span class="material-symbols-outlined text-[#051125] dark:text-white"
                 aria-hidden="true">chevron_left</span>
             </button>
-            <span class="text-sm font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ weekLabel
+            <span class="text-sm font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ weekLabel()
               }}</span>
             <button type="button"
               class="rounded p-1 transition-colors hover:bg-[#e1e3e4] dark:hover:bg-[var(--erp-login-input-border)]"
@@ -75,7 +49,7 @@
                   class="sticky left-0 z-10 w-48 bg-[#edeeef] p-3 text-[10px] font-bold uppercase text-[#45474d] dark:bg-[var(--erp-login-input-bg)] dark:text-[var(--erp-login-muted)]">
                   Trabajador
                 </th>
-                @for (h of dayHeaders; track h.key) {
+                @for (h of dayHeaders(); track h.fullDate) {
                 <th [class]="dayHeaderClass(h)">
                   {{ h.label }}
                 </th>
@@ -83,14 +57,13 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-[#c5c6cd]/15 dark:divide-[var(--erp-login-input-border)]">
-              @for (row of rows; track row.id) {
-              <tr class="transition-colors hover:bg-[#e7e8e9]/40 dark:hover:bg-[var(--erp-login-surface)]"
-                [class.erp-admin-asistencia-row--hl]="row.highlightRow">
+              @for (row of rows(); track row.id) {
+              <tr class="transition-colors hover:bg-[#e7e8e9]/40 dark:hover:bg-[var(--erp-login-surface)]">
                 <td
                   class="sticky left-0 z-10 border-r border-[#c5c6cd]/15 bg-[#edeeef] p-3 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-input-bg)]">
                   <div class="flex items-center gap-2">
                     <div
-                      class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#e1e3e4] text-[10px] font-black text-[#051125] dark:bg-[var(--erp-login-input-border)] dark:text-[var(--erp-login-text-primary)]">
+                      class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1e293b] text-[10px] font-black text-white">
                       {{ row.initials }}
                     </div>
                     <span class="text-xs font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ row.name
@@ -99,35 +72,27 @@
                 </td>
                 @for (cell of row.cells; track $index; let di = $index) {
                 <td class="p-2 text-center">
-                  @if (cell.kind === 'off') {
+                  @if (cell.kind === 'off' && !cell.time) {
                   <span class="text-xs text-[#75777d] dark:text-[var(--erp-login-muted)]">—</span>
                   } @else {
                   <button type="button"
-                    class="mx-auto flex min-h-[2rem] min-w-[2rem] items-center justify-center rounded-lg border text-[10px] font-bold transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-[#47607e]"
-                    [class.erp-asistencia-cell--selected]="cellRingClass(row.id, di)"
-                    (click)="onCellClick(row.id, di, cell)"
-                    [attr.aria-label]="'Celda ' + row.name + ' ' + dayHeaders[di].label"
-                    [class.border-[#051125]/20]="cell.kind === 'punctual'"
-                    [class.bg-[#051125]/15]="cell.kind === 'punctual'" [class.text-[#051125]]="cell.kind === 'punctual'"
-                    [class.border-[#47607e]/30]="cell.kind === 'delay'" [class.bg-[#c2dcff]]="cell.kind === 'delay'"
-                    [class.text-[#47607e]]="cell.kind === 'delay'" [class.border-[#92001c]/25]="cell.kind === 'absence'"
-                    [class.bg-[#ffdad8]]="cell.kind === 'absence'"
-                    [class.border-[#47607e]/30]="cell.kind === 'justification'"
-                    [class.bg-[#c2dcff]]="cell.kind === 'justification'">
-                    @switch (cell.kind) {
-                    @case ('punctual') {
-                    {{ cell.time }}
-                    }
-                    @case ('delay') {
-                    {{ cell.time }}
-                    }
-                    @case ('absence') {
-                    <span class="material-symbols-outlined text-base text-[#92001c]" aria-hidden="true">block</span>
-                    }
-                    @case ('justification') {
-                    <span class="material-symbols-outlined text-base text-[#47607e]"
-                      aria-hidden="true">history_edu</span>
-                    }
+                    class="mx-auto flex min-h-[2rem] min-w-[2rem] items-center justify-center rounded-lg border text-[10px] font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#47607e]"
+                    (click)="onCellClick(row.id, cell.realDate, cell)"
+                    [class.ring-2]="isCellSelected(row.id, cell.realDate)"
+                    [class.ring-amber-500]="isCellSelected(row.id, cell.realDate)"
+                    [class.border-emerald-600/30]="cell.kind === 'punctual'"
+                    [class.bg-emerald-50]="cell.kind === 'punctual'"
+                    [class.text-emerald-700]="cell.kind === 'punctual'"
+                    [class.border-amber-600/30]="cell.kind === 'delay'"
+                    [class.bg-amber-50]="cell.kind === 'delay'"
+                    [class.text-amber-700]="cell.kind === 'delay'"
+                    [class.border-rose-600/30]="cell.kind === 'absence'"
+                    [class.bg-rose-50]="cell.kind === 'absence'"
+                    [class.text-rose-700]="cell.kind === 'absence'">
+                    @if (cell.kind === 'absence') {
+                      <span class="material-symbols-outlined text-base">close</span>
+                    } @else {
+                      {{ cell.time }}
                     }
                   </button>
                   }
@@ -176,76 +141,51 @@
           <div class="grid grid-cols-2 gap-3">
             <div class="rounded-lg bg-[#edeeef] p-3 dark:bg-[var(--erp-login-surface)]">
               <p class="text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]">Entrada</p>
-              @if (d.checkInUrgent) {
-              <p class="mt-1 text-sm font-bold text-[#47607e]">{{ d.checkIn }}</p>
-              <p class="mt-1 text-[10px] text-[#55000c] dark:text-[#fe4b55]">{{ d.checkInNote }}</p>
-              } @else {
               <p class="mt-1 text-sm font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ d.checkIn }}
               </p>
-              <p class="mt-1 text-[10px] text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ d.checkInNote }}</p>
-              }
             </div>
             <div class="rounded-lg bg-[#edeeef] p-3 dark:bg-[var(--erp-login-surface)]">
               <p class="text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]">Salida</p>
               <p class="mt-1 text-sm font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ d.checkOut
                 }}</p>
-              <p class="mt-1 text-[10px] text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ d.checkOutNote }}</p>
             </div>
           </div>
-          <div class="space-y-3">
-            <p
-              class="border-b border-[#c5c6cd]/20 pb-1 text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]">
-              Registro de actividad
-            </p>
-            @for (log of d.logs; track log.title) {
-            <div class="flex items-start justify-between gap-2">
-              <div class="flex gap-2">
-                <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" [class.bg-[#47607e]]="log.dot === 'secondary'"
-                  [class.bg-[#051125]]="log.dot === 'primary'" [class.dark:bg-slate-300]="log.dot === 'primary'"
-                  aria-hidden="true"></span>
-                <div>
-                  <p class="text-xs font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ log.title }}
-                  </p>
-                  <p class="text-[10px] text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ log.range }}</p>
-                </div>
-              </div>
-              <span class="text-[10px] font-bold text-[#48617e]">{{ log.duration }}</span>
+
+          <!-- Sección de comunicación por incidencias -->
+          @if (isIncidenceCell(d.kind)) {
+          <div class="mt-6 space-y-3 rounded-xl border border-amber-200 bg-amber-50/30 p-4 dark:border-amber-900/50 dark:bg-amber-950/20">
+            <div class="flex items-center gap-2 text-amber-800 dark:text-amber-200">
+              <span class="material-symbols-outlined text-sm">contact_support</span>
+              <p class="text-[10px] font-black uppercase tracking-wider">Consultar incidencia</p>
             </div>
-            }
-          </div>
-          @if (d.justification) {
-          <div class="space-y-3 rounded-xl border border-[#ffb3b1]/40 bg-[#ffdad8]/35 p-4 dark:bg-[#55000c]/20">
-            <div class="flex items-center gap-2 text-[#92001c]">
-              <span class="material-symbols-outlined text-sm" aria-hidden="true">info</span>
-              <p class="text-xs font-bold uppercase">Justificación pendiente</p>
+            
+            <div class="relative">
+              <textarea 
+                [(ngModel)]="incidenceNote"
+                rows="3" 
+                placeholder="Preguntar el motivo del retardo o falta..."
+                class="w-full rounded-lg border border-amber-200 bg-white p-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/20 dark:border-amber-900/50 dark:bg-slate-900 dark:text-white"
+              ></textarea>
             </div>
-            <p class="text-xs italic text-[#45474d] dark:text-[var(--erp-login-muted)]">«{{ d.justification.text }}»</p>
-            <div class="grid grid-cols-2 gap-2 pt-1">
-              <button type="button"
-                class="rounded-lg border border-[#ffb3b1]/50 bg-white py-2 text-[10px] font-bold uppercase text-[#55000c] transition-colors hover:bg-[#ffdad8] dark:bg-[var(--erp-login-card)]"
-                (click)="onRejectJustification()">
-                Rechazar
-              </button>
-              <button type="button"
-                class="rounded-lg bg-[#47607e] py-2 text-[10px] font-bold uppercase text-white transition-opacity hover:opacity-90"
-                (click)="onApproveJustification()">
-                Aprobar
-              </button>
-            </div>
+
+            <button 
+              type="button"
+              class="flex w-full items-center justify-center gap-2 rounded-lg bg-amber-600 py-2.5 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:bg-amber-700 active:scale-[0.98] disabled:opacity-50"
+              [disabled]="!incidenceNote || isSendingIncidence()"
+              (click)="onSendIncidenceMessage(d.workerId || '')"
+            >
+              @if (isSendingIncidence()) {
+                <span class="h-3 w-3 animate-spin rounded-full border-2 border-white/20 border-t-white"></span>
+                Enviando...
+              } @else {
+                <span class="material-symbols-outlined text-sm">send</span>
+                Notificar al trabajador
+              }
+            </button>
+            <p class="text-center text-[9px] text-amber-700/60 dark:text-amber-400/40">El trabajador verá esta consulta en su dashboard principal.</p>
           </div>
           }
         </div>
-      </div>
-      } @else if (panelContext(); as ctx) {
-      <div
-        class="rounded-xl border border-[#c5c6cd]/20 bg-white p-5 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
-        <h2 class="text-sm font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ ctx.workerName }}</h2>
-        <p class="mt-1 text-xs text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ ctx.dayLabel }}</p>
-        <p class="mt-4 text-sm text-[var(--erp-login-muted)]">
-          No hay panel de detalle ampliado para esta celda en la demo. Selecciona Jue 26 de Elena Vance para ver el
-          flujo
-          completo.
-        </p>
       </div>
       } @else {
       <div class="rounded-xl border border-dashed border-[#c5c6cd] p-5 text-sm text-[var(--erp-login-muted)]">
@@ -260,7 +200,7 @@
           class="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-[#828da7] py-3 text-xs font-bold uppercase text-[#051125] transition-opacity hover:opacity-90"
           (click)="onExportReport()">
           <span class="material-symbols-outlined text-sm" aria-hidden="true">download</span>
-          Descargar informe octubre
+          Descargar {{ weekLabel() }}
         </button>
       </div>
     </aside>

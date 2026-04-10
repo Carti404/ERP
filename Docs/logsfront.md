@@ -1,105 +1,62 @@
-Lazy chunk files    | Names             |  Raw size
-chunk-Q6LJXRBE.js   | admin-routes      | 485.30 kB |
-chunk-UVLWAOW2.js   | trabajador-routes | 250.20 kB |
-chunk-5BMYL4XU.js   | -                 | 100.31 kB |
 
-Application bundle generation complete. [0.295 seconds] - 2026-04-10T18:24:11.478Z
+X [ERROR] NG5002: Unexpected closing tag "div". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags [plugin angular-compiler]
 
-Page reload sent to client(s).
-Initial chunk files | Names             |  Raw size
-main.js             | main              |  39.89 kB |
+    src/app/pages/admin/admin-asistencias.component.html:190:6:
+      190 │       </div>
+          ╵       ~~~~~~
 
-Lazy chunk files    | Names             |  Raw size
-chunk-ZWW3D4QR.js   | trabajador-routes | 250.27 kB |
+  Error occurs in the template of component AdminAsistenciasComponent.
 
-Application bundle generation complete. [0.353 seconds] - 2026-04-10T18:24:17.182Z
-
-Page reload sent to client(s).
-Application bundle generation failed. [0.710 seconds] - 2026-04-10T18:24:56.683Z
-
-X [ERROR] TS2339: Property 'removeProcessRow' does not exist on type 'AdminProduccionComponent'. [plugin angular-compiler]
-
-    src/app/pages/admin/admin-produccion.component.html:489:25:
-      489 │                 (click)="removeProcessRow(i)">
-          ╵                          ~~~~~~~~~~~~~~~~
-
-  Error occurs in the template of component AdminProduccionComponent.
-
-    src/app/pages/admin/admin-produccion.component.ts:15:15:
-      15 │   templateUrl: './admin-produccion.component.html',
-         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    src/app/pages/admin/admin-asistencias.component.ts:30:15:
+      30 │   templateUrl: './admin-asistencias.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-X [ERROR] TS2551: Property 'loadRequirements' does not exist on type 'AdminProduccionComponent'. Did you mean 'requirements'? [plugin angular-compiler]
+X [ERROR] NG5002: Unexpected closing block. The block may have been closed earlier. If you meant to write the `}` character, you should use the "&#125;" HTML entity instead. [plugin angular-compiler]
 
-    src/app/pages/admin/admin-produccion.component.ts:488:13:
-      488 │         this.loadRequirements();
-          ╵              ~~~~~~~~~~~~~~~~
+    src/app/pages/admin/admin-asistencias.component.html:191:6:
+      191 │       } @else {
+          ╵       ^
 
-  'requirements' is declared here.
+  Error occurs in the template of component AdminAsistenciasComponent.
 
-    src/app/pages/admin/admin-produccion.component.ts:34:21:
-      34 │   protected readonly requirements = computed(() => {
-         ╵                      ~~~~~~~~~~~~
-
-
-Application bundle generation failed. [0.483 seconds] - 2026-04-10T18:25:33.588Z
-
-X [ERROR] TS2551: Property 'loadRequirements' does not exist on type 'AdminProduccionComponent'. Did you mean 'requirements'? [plugin angular-compiler]
-
-    src/app/pages/admin/admin-produccion.component.ts:488:13:
-      488 │         this.loadRequirements();
-          ╵              ~~~~~~~~~~~~~~~~
-
-  'requirements' is declared here.
-
-    src/app/pages/admin/admin-produccion.component.ts:34:21:
-      34 │   protected readonly requirements = computed(() => {
-         ╵                      ~~~~~~~~~~~~
+    src/app/pages/admin/admin-asistencias.component.ts:30:15:
+      30 │   templateUrl: './admin-asistencias.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-Application bundle generation failed. [0.724 seconds] - 2026-04-10T18:26:03.425Z
+X [ERROR] NG5002: Unexpected closing tag "aside". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags [plugin angular-compiler]
 
-X [ERROR] TS2551: Property 'loadRequirements' does not exist on type 'AdminProduccionComponent'. Did you mean 'requirements'? [plugin angular-compiler]
+    src/app/pages/admin/admin-asistencias.component.html:207:4:
+      207 │     </aside>
+          ╵     ~~~~~~~~
 
-    src/app/pages/admin/admin-produccion.component.ts:488:13:
-      488 │         this.loadRequirements();
-          ╵              ~~~~~~~~~~~~~~~~
+  Error occurs in the template of component AdminAsistenciasComponent.
 
-  'requirements' is declared here.
-
-    src/app/pages/admin/admin-produccion.component.ts:34:21:
-      34 │   protected readonly requirements = computed(() => {
-         ╵                      ~~~~~~~~~~~~
+    src/app/pages/admin/admin-asistencias.component.ts:30:15:
+      30 │   templateUrl: './admin-asistencias.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-Application bundle generation failed. [0.567 seconds] - 2026-04-10T18:26:15.958Z
+X [ERROR] NG5002: Unexpected closing tag "div". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags [plugin angular-compiler]
 
-X [ERROR] TS2551: Property 'loadRequirements' does not exist on type 'AdminProduccionComponent'. Did you mean 'requirements'? [plugin angular-compiler]
+    src/app/pages/admin/admin-asistencias.component.html:209:0:
+      209 │ </div>
+          ╵ ~~~~~~
 
-    src/app/pages/admin/admin-produccion.component.ts:488:13:
-      488 │         this.loadRequirements();
-          ╵              ~~~~~~~~~~~~~~~~
+  Error occurs in the template of component AdminAsistenciasComponent.
 
-  'requirements' is declared here.
-
-    src/app/pages/admin/admin-produccion.component.ts:34:21:
-      34 │   protected readonly requirements = computed(() => {
-         ╵                      ~~~~~~~~~~~~
+    src/app/pages/admin/admin-asistencias.component.ts:30:15:
+      30 │   templateUrl: './admin-asistencias.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-Application bundle generation failed. [0.342 seconds] - 2026-04-10T18:26:23.183Z
+X [ERROR] TS2349: This expression is not callable.
+  Type 'String' has no call signatures. [plugin angular-compiler]
 
-X [ERROR] TS2551: Property 'loadRequirements' does not exist on type 'AdminProduccionComponent'. Did you mean 'requirements'? [plugin angular-compiler]
-
-    src/app/pages/admin/admin-produccion.component.ts:488:13:
-      488 │         this.loadRequirements();
-          ╵              ~~~~~~~~~~~~~~~~
-
-  'requirements' is declared here.
-
-    src/app/pages/admin/admin-produccion.component.ts:34:21:
-      34 │   protected readonly requirements = computed(() => {
-         ╵                      ~~~~~~~~~~~~
+    src/app/pages/admin/admin-asistencias.component.ts:172:22:
+      172 │     const note = this.incidenceNote().trim();
+          ╵                       ~~~~~~~~~~~~~
 
 
+Watch mode enabled. Watching for file changes...

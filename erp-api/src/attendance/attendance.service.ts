@@ -5,6 +5,10 @@ import { AttendanceRecord } from './entities/attendance-record.entity';
 import { AttendanceLog } from './entities/attendance-log.entity';
 import { RegisterAttendanceEventDto } from './dto/register-attendance-event.dto';
 import { AttendanceEventType } from '../common/enums/attendance-event-type.enum';
+import { UsersService } from '../users/users.service';
+import { UserRole } from '../common/enums/user-role.enum';
+import { Between } from 'typeorm';
+import { AttendanceMatrixQueryDto } from './dto/attendance-matrix-query.dto';
 
 @Injectable()
 export class AttendanceService {
@@ -13,6 +17,7 @@ export class AttendanceService {
     private readonly recordRepository: Repository<AttendanceRecord>,
     @InjectRepository(AttendanceLog)
     private readonly logRepository: Repository<AttendanceLog>,
+    private readonly usersService: UsersService,
   ) {}
 
   /**
@@ -63,8 +68,7 @@ export class AttendanceService {
       const calculatedStatus = 'Puntual'; 
 
       record = this.recordRepository.create({
-        user: { id: userId },
-        userId: userId, // To be safe we pass both
+        userId: userId,
         workDate: today,
         status: calculatedStatus,
       });
@@ -91,6 +95,55 @@ export class AttendanceService {
       message: `Event ${eventType} registered successfully`,
       recordId: record.id,
       timestamp: log.timestamp,
+    };
+  }
+
+  /**
+   * Obtiene la matriz de asistencias para todos los trabajadores activos en un rango de fechas.
+   */
+  async getMatrixData(query: AttendanceMatrixQueryDto) {
+    const { startDate, endDate } = query;
+
+    // 1. Obtener todos los trabajadores activos
+    const allActives = await this.usersService.listActives();
+    const workers = allActives.filter(u => u.role === UserRole.WORKER);
+
+    // 2. Obtener los registros de asistencia en el rango
+    const records = await this.recordRepository.find({
+      where: {
+        workDate: Between(startDate, endDate),
+      },
+      relations: ['logs'],
+    });
+
+    // 3. Estructurar para el frontend
+    // Agrupamos por usuario y luego por fecha para fácil acceso
+    const matrixMap: Record<string, Record<string, any>> = {};
+
+    records.forEach(r => {
+      if (!matrixMap[r.userId]) matrixMap[r.userId] = {};
+      
+      // Extraer CLOCK_IN y CLOCK_OUT logs si existen
+      const inLog = r.logs.find(l => l.eventType === AttendanceEventType.CLOCK_IN);
+      const outLog = r.logs.find(l => l.eventType === AttendanceEventType.CLOCK_OUT);
+
+      matrixMap[r.userId][r.workDate] = {
+        id: r.id,
+        status: r.status,
+        checkIn: inLog?.timestamp || null,
+        checkOut: outLog?.timestamp || null,
+      };
+    });
+
+    return {
+      workers: workers.map(w => ({
+        id: w.id,
+        fullName: w.fullName,
+        puesto: w.puesto,
+      })),
+      matrix: matrixMap,
+      startDate,
+      endDate,
     };
   }
 }

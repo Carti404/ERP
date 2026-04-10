@@ -15,6 +15,11 @@ export enum MessageImportance {
   HIGH = 'HIGH',
 }
 
+export enum MessageCategory {
+  GENERAL = 'GENERAL',
+  INCIDENCE = 'INCIDENCE',
+}
+
 @Entity('internal_messages')
 export class InternalMessage {
   @PrimaryGeneratedColumn('uuid')
@@ -54,4 +59,8 @@ export class InternalMessage {
 
   @Column({ type: 'varchar', length: 20, default: MessageImportance.LOW })
   importance: MessageImportance;
+
+  @Column({ type: 'varchar', length: 20, default: MessageCategory.GENERAL })
+  category: MessageCategory;
 }
+

@@ -39,4 +39,26 @@ export class AttendanceService {
   registerEvent(eventType: string): Observable<RegisterEventResponse> {
     return this.http.post<RegisterEventResponse>(`${this.baseUrl}/event`, { eventType });
   }
+
+  getMatrixData(startDate: string, endDate: string): Observable<AttendanceMatrixResponse> {
+    return this.http.get<AttendanceMatrixResponse>(`${this.baseUrl}/matrix`, {
+      params: { startDate, endDate }
+    });
+  }
+}
+
+export interface AttendanceMatrixResponse {
+  workers: Array<{
+    id: string;
+    fullName: string;
+    puesto: string;
+  }>;
+  matrix: Record<string, Record<string, {
+    id: string;
+    status: string;
+    checkIn: string | null;
+    checkOut: string | null;
+  }>>;
+  startDate: string;
+  endDate: string;
 }
