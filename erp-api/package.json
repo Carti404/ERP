@@ -22,6 +22,7 @@
     "migration:run": "npm run build && npm run typeorm -- migration:run -d dist/database/data-source.js",
     "migration:revert": "npm run typeorm -- migration:revert -d dist/database/data-source.js",
     "seed:admin": "ts-node -r tsconfig-paths/register src/scripts/seed-admin.ts",
+    "seed:holidays": "ts-node -r tsconfig-paths/register src/scripts/seed-holidays.ts",
     "db:setup": "npm run build && npm run typeorm -- migration:run -d dist/database/data-source.js && npm run seed:admin",
     "db:ping": "ts-node -r tsconfig-paths/register src/scripts/db-ping.ts",
     "db:ping:docker": "docker compose exec postgres psql -U postgres -d erp -c \"SELECT 1 AS ok;\""

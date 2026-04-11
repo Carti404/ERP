@@ -344,3 +344,64 @@
     </div>
   </div>
 </div>
+
+<!-- Modales de Confirmación -->
+@if (showConfirmSchedule()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="w-full max-w-md scale-in-center rounded-2xl bg-white p-8 shadow-2xl dark:bg-[var(--erp-login-card)]">
+      <div class="mb-6 flex items-center gap-4 text-[#ba1a1a]">
+        <span class="material-symbols-outlined text-4xl">warning</span>
+        <h3 class="text-xl font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Confirmar cambios</h3>
+      </div>
+      <p class="mb-8 text-sm leading-relaxed text-[#47607e] dark:text-[var(--erp-login-muted)]">
+        ¿Estás seguro de que deseas actualizar la configuración de jornada y descansos? Estos cambios afectarán el cálculo de asistencia de todo el personal de la planta de forma inmediata.
+      </p>
+      <div class="flex justify-end gap-3">
+        <button 
+          type="button"
+          class="rounded-xl px-6 py-3 text-sm font-bold text-[#47607e] transition-colors hover:bg-gray-100 dark:hover:bg-white/5"
+          (click)="showConfirmSchedule.set(false)"
+        >
+          Cancelar
+        </button>
+        <button 
+          type="button"
+          class="rounded-xl bg-[#051125] px-8 py-3 text-sm font-bold text-white transition-all hover:bg-[#47607e] active:scale-95"
+          (click)="confirmSaveSchedule()"
+        >
+          Sí, actualizar
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showConfirmHolidays()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="w-full max-w-md scale-in-center rounded-2xl bg-white p-8 shadow-2xl dark:bg-[var(--erp-login-card)]">
+      <div class="mb-6 flex items-center gap-4 text-[#051125] dark:text-[#c2dcff]">
+        <span class="material-symbols-outlined text-4xl">event_available</span>
+        <h3 class="text-xl font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Actualizar calendario</h3>
+      </div>
+      <p class="mb-8 text-sm leading-relaxed text-[#47607e] dark:text-[var(--erp-login-muted)]">
+        Se va a actualizar la lista de días no laborables. El calendario visual y los reportes de nómina se ajustarán para reflejar estos nuevos días festivos.
+      </p>
+      <div class="flex justify-end gap-3">
+        <button 
+          type="button"
+          class="rounded-xl px-6 py-3 text-sm font-bold text-[#47607e] transition-colors hover:bg-gray-100 dark:hover:bg-white/5"
+          (click)="showConfirmHolidays.set(false)"
+        >
+          Cancelar
+        </button>
+        <button 
+          type="button"
+          class="rounded-xl bg-[#051125] px-8 py-3 text-sm font-bold text-white transition-all hover:bg-[#47607e] active:scale-95"
+          (click)="confirmSaveHolidays()"
+        >
+          Confirmar calendario
+        </button>
+      </div>
+    </div>
+  </div>
+}

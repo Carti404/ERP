@@ -21,18 +21,5 @@ export const ADMIN_PARAMETROS_INITIAL = {
   snackMin: 20,
   lunchFrom: '12:00',
   lunchDurationMin: 60,
-  holidays: [
-    {
-      id: 'local-seed',
-      title: '1 de mayo',
-      sub: 'Día del trabajador',
-      date: '2024-05-01',
-    },
-    {
-      id: 'local-seed-2',
-      title: '21 de mayo',
-      sub: 'Glorias navales',
-      date: '2024-05-21',
-    },
-  ] as AdminParametrosHolidayRow[],
+  holidays: [] as AdminParametrosHolidayRow[],
 } as const;

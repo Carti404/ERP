@@ -126,14 +126,28 @@ export class AdminParametrosComponent implements OnInit {
   protected readonly draftHolidayTitle = signal('');
   protected readonly draftHolidaySub = signal('');
 
+  protected readonly showConfirmSchedule = signal(false);
+  protected readonly showConfirmHolidays = signal(false);
+
   protected readonly calMonthLabel = computed(() => {
     const d = this.calCursor();
     return `${MONTHS_ES[d.getMonth()]} ${d.getFullYear()}`;
   });
 
-  protected readonly sortedHolidays = computed(() =>
-    [...this.state().holidays].sort((a, b) => a.date.localeCompare(b.date)),
-  );
+  protected readonly sortedHolidays = computed(() => {
+    const holidays = this.state().holidays;
+    const now = new Date();
+    const todayStr = now.toISOString().slice(0, 10);
+    
+    // Calcular fecha límite (31 días después)
+    const limit = new Date(now);
+    limit.setDate(limit.getDate() + 31);
+    const limitStr = limit.toISOString().slice(0, 10);
+
+    return [...holidays]
+      .filter((h) => h.date >= todayStr && h.date <= limitStr)
+      .sort((a, b) => a.date.localeCompare(b.date));
+  });
 
   /**
    * Mini calendario: resalta festivo si coincide la fecha exacta en el mes visible
@@ -148,11 +162,9 @@ export class AdminParametrosComponent implements OnInit {
     const startPad = (first.getDay() + 6) % 7;
 
     const holidays = this.state().holidays;
+    // Solo comparar por fecha exacta YYYY-MM-DD para evitar marcas cruzadas entre años.
     const holidayExact = new Set(
       holidays.map((h) => normalizeHolidayDate(h.date)),
-    );
-    const holidayMonthDay = new Set(
-      holidays.map((h) => normalizeHolidayDate(h.date).slice(5, 10)),
     );
 
     const cells: { label: string; tone: 'muted' | 'day' | 'holiday' }[] = [];
@@ -167,12 +179,9 @@ export class AdminParametrosComponent implements OnInit {
       const mm = String(m + 1).padStart(2, '0');
       const dd = String(day).padStart(2, '0');
       const iso = `${y}-${mm}-${dd}`;
-      const mdKey = `${mm}-${dd}`;
-      const isHoliday =
-        holidayExact.has(iso) || holidayMonthDay.has(mdKey);
       cells.push({
         label: String(day),
-        tone: isHoliday ? 'holiday' : 'day',
+        tone: holidayExact.has(iso) ? 'holiday' : 'day',
       });
     }
     let nextMuted = 1;
@@ -319,6 +328,11 @@ export class AdminParametrosComponent implements OnInit {
   }
 
   protected onSaveSchedule(): void {
+    this.showConfirmSchedule.set(true);
+  }
+
+  protected confirmSaveSchedule(): void {
+    this.showConfirmSchedule.set(false);
     const s = this.state();
     const payload: UpdateSchedulePayload = {
       monFri: { ...s.monFri },
@@ -357,6 +371,11 @@ export class AdminParametrosComponent implements OnInit {
   }
 
   protected onSaveHolidays(): void {
+    this.showConfirmHolidays.set(true);
+  }
+
+  protected confirmSaveHolidays(): void {
+    this.showConfirmHolidays.set(false);
     const s = this.state();
     const payload: UpdateHolidaysPayload = {
       holidays: s.holidays.map((h) => ({
