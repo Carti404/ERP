@@ -30,7 +30,7 @@ Se realizaron mejoras críticas en la interfaz de administración para prevenir 
 
 ### Corrección del Calendario Visual
 - **Precisión por Año**: Se corrigió un error de lógica donde los festivos se resaltaban en todos los años si coincidían en mes y día.
-- **Referencia Exacta**: El resaltado del calendario ahora utiliza la fecha completa (`YYYY-MM-DD`), asegurando que cada festivo aparezca únicamente en el año que le corresponde según el cursor del calendario.
+- **Referencia Exacta**: El resaltado del calendario ahora utiliza la fecha completa (`YYYY-MM-DD`), asegurando que cada festivo aparezca únicamente en el año que le corresponde. Esta corrección se aplicó tanto en la vista de **Administrador** como en la de **Trabajador** (Permisos y Vacaciones).
 
 ---
 

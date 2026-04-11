@@ -103,11 +103,9 @@ export class TrabajadorPermisosComponent implements OnInit {
     }
 
     const currentHolidays = this.holidays();
+    // Solo comparar por fecha exacta YYYY-MM-DD para evitar marcas cruzadas entre años.
     const holidayExact = new Set(
       currentHolidays.map((h) => h.date.slice(0, 10)),
-    );
-    const holidayMonthDay = new Set(
-      currentHolidays.map((h) => h.date.slice(5, 10)),
     );
 
     const cells: Array<{
@@ -137,9 +135,8 @@ export class TrabajadorPermisosComponent implements OnInit {
       const mm = String(m + 1).padStart(2, '0');
       const dd = String(day).padStart(2, '0');
       const iso = `${y}-${mm}-${dd}`;
-      const mdKey = `${mm}-${dd}`;
 
-      const hInfo = currentHolidays.find(h => h.date.slice(0, 10) === iso || h.date.slice(5, 10) === mdKey);
+      const hInfo = currentHolidays.find(h => h.date.slice(0, 10) === iso);
       const isHoliday = !!hInfo;
 
       let inRange = false;
