@@ -109,12 +109,11 @@ export class UsersService {
     });
   }
 
-  /** Listado administración: activos primero, luego por nombre. */
+  /** Listado administración: por nombre alfabéticamente. */
   async listForAdmin(): Promise<User[]> {
     return this.usersRepo
       .createQueryBuilder('u')
-      .orderBy('u.activo', 'DESC')
-      .addOrderBy('u.fullName', 'ASC')
+      .orderBy('u.fullName', 'ASC')
       .getMany();
   }
 

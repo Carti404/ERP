@@ -18,7 +18,7 @@
     </button>
   </div>
 
-  <div class="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
+  <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
     <div class="rounded-xl border-l-4 border-[#051125] bg-[#f3f4f5] p-5 dark:bg-[var(--erp-login-input-bg)]">
       <div class="mb-4 flex items-start justify-between">
         <span class="material-symbols-outlined text-3xl text-[#051125] dark:text-[var(--erp-login-text-primary)]" aria-hidden="true"
@@ -40,14 +40,7 @@
       <div class="text-4xl font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ kpiActive }}</div>
       <div class="mt-2 text-sm text-[#45474d] dark:text-[var(--erp-login-muted)]">Con acceso al sistema</div>
     </div>
-    <div class="rounded-xl border-l-4 border-[#fe4b55] bg-[#f3f4f5] p-5 dark:bg-[var(--erp-login-input-bg)]">
-      <div class="mb-4 flex items-start justify-between">
-        <span class="material-symbols-outlined text-3xl text-[#fe4b55]" aria-hidden="true">event_busy</span>
-        <span class="text-xs font-bold uppercase tracking-wider text-[#45474d] dark:text-[var(--erp-login-muted)]">En licencia</span>
-      </div>
-      <div class="text-4xl font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">0</div>
-      <div class="mt-2 text-sm font-medium text-[#fe4b55]">Próximamente</div>
-    </div>
+
   </div>
 
   @if (loadError()) {
@@ -260,13 +253,7 @@
       <div class="flex items-center gap-1.5">
         <div class="h-2 w-2 rounded-full bg-[#47607e]" aria-hidden="true"></div>
         <span class="text-[10px] font-bold uppercase tracking-widest text-[#45474d] dark:text-[var(--erp-login-muted)]"
-          >PIN único entre activos</span
-        >
-      </div>
-      <div class="flex items-center gap-1.5">
-        <div class="h-2 w-2 rounded-full bg-[#ba1a1a]" aria-hidden="true"></div>
-        <span class="text-[10px] font-bold uppercase tracking-widest text-[#45474d] dark:text-[var(--erp-login-muted)]"
-          >Conflictos al crear</span
+          >Personal activo</span
         >
       </div>
     </div>

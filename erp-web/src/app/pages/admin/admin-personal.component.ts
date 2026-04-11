@@ -26,7 +26,7 @@ export class AdminPersonalComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly usersApi = inject(UsersApiService);
 
-  protected readonly pageSize = 10;
+  protected readonly pageSize = 5;
 
   protected readonly workers = signal<ErpUserPublic[]>([]);
   protected readonly loading = signal(false);
@@ -85,7 +85,10 @@ export class AdminPersonalComponent implements OnInit {
           this.normalizeText(w.username).includes(q),
       );
     }
-    return list;
+
+    return [...list].sort((a, b) =>
+      a.fullName.localeCompare(b.fullName, 'es-MX', { sensitivity: 'base' }),
+    );
   });
 
   protected readonly totalPages = computed(() => {
