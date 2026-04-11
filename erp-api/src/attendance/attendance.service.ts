@@ -9,6 +9,7 @@ import { UsersService } from '../users/users.service';
 import { UserRole } from '../common/enums/user-role.enum';
 import { Between } from 'typeorm';
 import { AttendanceMatrixQueryDto } from './dto/attendance-matrix-query.dto';
+import { SystemParametersService } from '../system-parameters/system-parameters.service';
 
 @Injectable()
 export class AttendanceService {
@@ -18,6 +19,7 @@ export class AttendanceService {
     @InjectRepository(AttendanceLog)
     private readonly logRepository: Repository<AttendanceLog>,
     private readonly usersService: UsersService,
+    private readonly systemParamsService: SystemParametersService,
   ) {}
 
   /**
@@ -63,9 +65,33 @@ export class AttendanceService {
         throw new BadRequestException('El turno aún no ha sido iniciado el día de hoy');
       }
 
-      // TODO: Comparar con "Parámetros de sistema" para calcular si es Puntual
-      // Por ahora asignaremos que es puntual por defecto:
-      const calculatedStatus = 'Puntual'; 
+      // Lógica de cálculo basada en parámetros
+      const params = await this.systemParamsService.getSnapshot();
+      const now = new Date();
+      const dayOfWeek = now.getDay(); // 0: Dom, 1: Lun, ..., 6: Sab
+      
+      // Determinar qué horario usar
+      const config = (dayOfWeek === 6) ? params.saturday : params.monFri;
+      
+      let calculatedStatus = 'Puntual';
+      
+      if (config) {
+        // Convertir config.entry (HH:mm) a un objeto Date de hoy
+        const [entryH, entryM] = config.entry.split(':').map(Number);
+        const entryDate = new Date(now);
+        entryDate.setHours(entryH, entryM, 0, 0);
+        
+        const toleranceMs = config.tolerance * 60 * 1000;
+        const limitDate = new Date(entryDate.getTime() + toleranceMs);
+        
+        if (now <= entryDate) {
+          calculatedStatus = 'Puntual';
+        } else if (now <= limitDate) {
+          calculatedStatus = 'Retardo';
+        } else {
+          calculatedStatus = 'Falta';
+        }
+      }
 
       record = this.recordRepository.create({
         userId: userId,

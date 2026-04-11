@@ -12,13 +12,11 @@ export const ADMIN_PARAMETROS_INITIAL = {
     entry: '08:00',
     exit: '17:00',
     tolerance: 15,
-    active: true,
   },
   saturday: {
     entry: '08:00',
     exit: '13:00',
     tolerance: 10,
-    active: true,
   },
   snackMin: 20,
   lunchFrom: '12:00',

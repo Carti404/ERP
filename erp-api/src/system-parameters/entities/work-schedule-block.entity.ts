@@ -16,7 +16,4 @@ export class WorkScheduleBlock {
 
   @Column({ name: 'tolerance_minutes', type: 'int' })
   toleranceMinutes: number;
-
-  @Column({ type: 'boolean', default: true })
-  active: boolean;
 }

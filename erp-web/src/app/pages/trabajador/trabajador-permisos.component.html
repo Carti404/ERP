@@ -82,6 +82,8 @@
                 class="erp-permisos-cal-cell erp-permisos-cal-cell--btn transition-colors"
                 [class.erp-permisos-cal-cell--range]="c.inRange"
                 [class.erp-permisos-cal-cell--selected]="c.isStart || c.isEnd"
+                [class.erp-permisos-cal-cell--holiday]="c.isHoliday"
+                [attr.title]="c.isHoliday ? c.holidayTitle : null"
                 [attr.aria-label]="cellAriaLabel(c)"
                 (click)="onDayClick(c.label)"
               >

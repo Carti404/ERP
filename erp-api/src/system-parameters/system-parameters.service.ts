@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 
-import { PutSystemParametersDto } from './dto/put-system-parameters.dto';
+import { HolidayInputDto, PutSystemParametersDto, UpdateHolidaysDto, UpdateScheduleDto } from './dto/put-system-parameters.dto';
 import { Holiday } from './entities/holiday.entity';
 import { PlantRestSettings } from './entities/plant-rest-settings.entity';
 import { WorkScheduleBlock } from './entities/work-schedule-block.entity';
@@ -34,13 +34,11 @@ export type SystemParametersResponse = {
     entry: string;
     exit: string;
     tolerance: number;
-    active: boolean;
   };
   saturday: {
     entry: string;
     exit: string;
     tolerance: number;
-    active: boolean;
   };
   snackMin: number;
   lunchFrom: string;
@@ -79,13 +77,11 @@ export class SystemParametersService {
         entry: toHm(monFri.startTime),
         exit: toHm(monFri.endTime),
         tolerance: monFri.toleranceMinutes,
-        active: monFri.active,
       },
       saturday: {
         entry: toHm(saturday.startTime),
         exit: toHm(saturday.endTime),
         tolerance: saturday.toleranceMinutes,
-        active: saturday.active,
       },
       snackMin: rest.snackNominalMinutes,
       lunchFrom: toHm(rest.lunchFromTime),
@@ -114,13 +110,11 @@ export class SystemParametersService {
       monFri.startTime = toHm(dto.monFri.entry);
       monFri.endTime = toHm(dto.monFri.exit);
       monFri.toleranceMinutes = dto.monFri.tolerance;
-      monFri.active = dto.monFri.active;
       await manager.save(WorkScheduleBlock, monFri);
 
       saturday.startTime = toHm(dto.saturday.entry);
       saturday.endTime = toHm(dto.saturday.exit);
       saturday.toleranceMinutes = dto.saturday.tolerance;
-      saturday.active = dto.saturday.active;
       await manager.save(WorkScheduleBlock, saturday);
 
       const rest = await manager.findOne(PlantRestSettings, {
@@ -134,6 +128,65 @@ export class SystemParametersService {
       rest.lunchDurationMinutes = dto.lunchDurationMin;
       await manager.save(PlantRestSettings, rest);
 
+      await manager.clear(Holiday);
+      const seenDates = new Set<string>();
+      for (const h of dto.holidays) {
+        const d = h.date.slice(0, 10);
+        if (seenDates.has(d)) {
+          continue;
+        }
+        seenDates.add(d);
+        const row = manager.create(Holiday, {
+          holidayDate: d,
+          title: h.title.trim(),
+          description: h.sub?.trim() ? h.sub.trim() : null,
+        });
+        await manager.save(Holiday, row);
+      }
+    });
+
+    return this.getSnapshot();
+  }
+
+  async updateSchedule(dto: UpdateScheduleDto): Promise<SystemParametersResponse> {
+    await this.dataSource.transaction(async (manager) => {
+      const monFri = await manager.findOne(WorkScheduleBlock, {
+        where: { blockKey: KEY_MON_FRI },
+      });
+      const saturday = await manager.findOne(WorkScheduleBlock, {
+        where: { blockKey: KEY_SATURDAY },
+      });
+      if (!monFri || !saturday) {
+        throw new NotFoundException('Bloques de jornada no encontrados.');
+      }
+
+      monFri.startTime = toHm(dto.monFri.entry);
+      monFri.endTime = toHm(dto.monFri.exit);
+      monFri.toleranceMinutes = dto.monFri.tolerance;
+      await manager.save(WorkScheduleBlock, monFri);
+
+      saturday.startTime = toHm(dto.saturday.entry);
+      saturday.endTime = toHm(dto.saturday.exit);
+      saturday.toleranceMinutes = dto.saturday.tolerance;
+      await manager.save(WorkScheduleBlock, saturday);
+
+      const rest = await manager.findOne(PlantRestSettings, {
+        where: { id: PLANT_SETTINGS_ID },
+      });
+      if (!rest) {
+        throw new NotFoundException('Parámetros de descanso no encontrados.');
+      }
+      rest.snackNominalMinutes = dto.snackMin;
+      rest.lunchFromTime = toHm(dto.lunchFrom);
+      rest.lunchDurationMinutes = dto.lunchDurationMin;
+      await manager.save(PlantRestSettings, rest);
+    });
+
+    return this.getSnapshot();
+  }
+
+  async updateHolidays(dto: UpdateHolidaysDto): Promise<SystemParametersResponse> {
+    await this.dataSource.transaction(async (manager) => {
       await manager.clear(Holiday);
       const seenDates = new Set<string>();
       for (const h of dto.holidays) {

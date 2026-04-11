@@ -1,4 +1,6 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { SystemParametersApiService } from '../../core/system-parameters/system-parameters-api.service';
+import type { HolidayRowDto } from '../../core/system-parameters/system-parameters-api.types';
 
 export type WorkerPermisoHistoryStatus = 'propuesta_admin' | 'aprobado' | 'revision';
 
@@ -19,7 +21,9 @@ export interface WorkerPermisoHistoryItem {
   standalone: true,
   templateUrl: './trabajador-permisos.component.html',
 })
-export class TrabajadorPermisosComponent {
+export class TrabajadorPermisosComponent implements OnInit {
+  private readonly sysParams = inject(SystemParametersApiService);
+
   protected readonly balance = {
     availableDays: '—' as const,
     periodLabel: 'Sin datos de periodo',
@@ -36,6 +40,8 @@ export class TrabajadorPermisosComponent {
   protected readonly selectionStartMs = signal<number | null>(null);
 
   protected readonly selectionEndMs = signal<number | null>(null);
+
+  protected readonly holidays = signal<HolidayRowDto[]>([]);
 
   protected readonly monthTitle = computed(() => {
     const d = this.viewDate();
@@ -96,20 +102,46 @@ export class TrabajadorPermisosComponent {
       hi = s;
     }
 
+    const currentHolidays = this.holidays();
+    const holidayExact = new Set(
+      currentHolidays.map((h) => h.date.slice(0, 10)),
+    );
+    const holidayMonthDay = new Set(
+      currentHolidays.map((h) => h.date.slice(5, 10)),
+    );
+
     const cells: Array<{
       label: number | null;
       timeMs: number | null;
       inRange: boolean;
       isStart: boolean;
       isEnd: boolean;
+      isHoliday: boolean;
+      holidayTitle?: string;
     }> = [];
 
     for (let i = 0; i < startPad; i++) {
-      cells.push({ label: null, timeMs: null, inRange: false, isStart: false, isEnd: false });
+      cells.push({
+        label: null,
+        timeMs: null,
+        inRange: false,
+        isStart: false,
+        isEnd: false,
+        isHoliday: false,
+      });
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
-      const timeMs = new Date(y, m, day).getTime();
+      const dateObj = new Date(y, m, day);
+      const timeMs = dateObj.getTime();
+      const mm = String(m + 1).padStart(2, '0');
+      const dd = String(day).padStart(2, '0');
+      const iso = `${y}-${mm}-${dd}`;
+      const mdKey = `${mm}-${dd}`;
+
+      const hInfo = currentHolidays.find(h => h.date.slice(0, 10) === iso || h.date.slice(5, 10) === mdKey);
+      const isHoliday = !!hInfo;
+
       let inRange = false;
       let isStart = false;
       let isEnd = false;
@@ -120,17 +152,41 @@ export class TrabajadorPermisosComponent {
           inRange = timeMs > lo && timeMs < hi;
         }
       }
-      cells.push({ label: day, timeMs, inRange, isStart, isEnd });
+      cells.push({
+        label: day,
+        timeMs,
+        inRange,
+        isStart,
+        isEnd,
+        isHoliday,
+        holidayTitle: hInfo?.title,
+      });
     }
 
     while (cells.length % 7 !== 0) {
-      cells.push({ label: null, timeMs: null, inRange: false, isStart: false, isEnd: false });
+      cells.push({
+        label: null,
+        timeMs: null,
+        inRange: false,
+        isStart: false,
+        isEnd: false,
+        isHoliday: false,
+      });
     }
 
     return cells;
   });
 
   protected readonly weekdayLabels = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'] as const;
+
+  ngOnInit(): void {
+    this.sysParams.get().subscribe({
+      next: (snap) => {
+        this.holidays.set(snap.holidays);
+      },
+      error: (err) => console.error('Error al cargar parámetros del sistema', err),
+    });
+  }
 
   protected prevMonth(): void {
     const d = new Date(this.viewDate());
@@ -192,11 +248,16 @@ export class TrabajadorPermisosComponent {
     isStart: boolean;
     isEnd: boolean;
     inRange: boolean;
+    isHoliday: boolean;
+    holidayTitle?: string;
   }): string {
     if (c.label === null) {
       return '';
     }
     const parts: string[] = [`Día ${c.label}`];
+    if (c.isHoliday) {
+      parts.push(`No laborable: ${c.holidayTitle}`);
+    }
     if (c.isStart && c.isEnd) {
       parts.push('seleccionado');
     } else if (c.isStart) {

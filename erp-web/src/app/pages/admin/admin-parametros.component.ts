@@ -3,8 +3,9 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { messageFromApiError } from '../../core/http/api-error.util';
 import { SystemParametersApiService } from '../../core/system-parameters/system-parameters-api.service';
 import type {
-  PutSystemParametersPayload,
   SystemParametersSnapshot,
+  UpdateHolidaysPayload,
+  UpdateSchedulePayload,
 } from '../../core/system-parameters/system-parameters-api.types';
 import {
   ADMIN_PARAMETROS_INITIAL,
@@ -16,13 +17,11 @@ type ParamState = {
     entry: string;
     exit: string;
     tolerance: number;
-    active: boolean;
   };
   saturday: {
     entry: string;
     exit: string;
     tolerance: number;
-    active: boolean;
   };
   snackMin: number;
   lunchFrom: string;
@@ -98,21 +97,6 @@ function snapshotToState(s: SystemParametersSnapshot): ParamState {
   };
 }
 
-function stateToPayload(s: ParamState): PutSystemParametersPayload {
-  return {
-    monFri: { ...s.monFri },
-    saturday: { ...s.saturday },
-    snackMin: s.snackMin,
-    lunchFrom: normalizeHm(s.lunchFrom),
-    lunchDurationMin: s.lunchDurationMin,
-    holidays: s.holidays.map((h) => ({
-      date: normalizeHolidayDate(h.date),
-      title: h.title.trim(),
-      sub: (h.sub ?? '').trim(),
-    })),
-  };
-}
-
 @Component({
   selector: 'app-admin-parametros',
   standalone: true,
@@ -125,9 +109,15 @@ export class AdminParametrosComponent implements OnInit {
   private readonly serverSnapshot = signal<ParamState | null>(null);
 
   protected readonly loading = signal(true);
-  protected readonly saving = signal(false);
   protected readonly loadError = signal<string | null>(null);
-  protected readonly saveError = signal<string | null>(null);
+
+  // Estados para sección de Jornada/Descansos
+  protected readonly savingSchedule = signal(false);
+  protected readonly saveScheduleError = signal<string | null>(null);
+
+  // Estados para sección de Calendario/Festivos
+  protected readonly savingHolidays = signal(false);
+  protected readonly saveHolidaysError = signal<string | null>(null);
 
   protected readonly calCursor = signal<Date>(new Date());
 
@@ -213,20 +203,6 @@ export class AdminParametrosComponent implements OnInit {
         this.loading.set(false);
       },
     });
-  }
-
-  protected setMonFriActive(v: boolean): void {
-    this.state.update((s) => ({
-      ...s,
-      monFri: { ...s.monFri, active: v },
-    }));
-  }
-
-  protected setSaturdayActive(v: boolean): void {
-    this.state.update((s) => ({
-      ...s,
-      saturday: { ...s.saturday, active: v },
-    }));
   }
 
   protected patchMonFri(
@@ -326,30 +302,83 @@ export class AdminParametrosComponent implements OnInit {
     this.calCursor.update((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1));
   }
 
-  protected onDiscard(): void {
+  // --- Lógica de Guardado ---
+
+  protected onDiscardSchedule(): void {
     const snap = this.serverSnapshot();
-    if (!snap) {
-      this.reloadFromServer();
-      return;
-    }
-    this.saveError.set(null);
-    this.state.set(deepCloneState(snap));
+    if (!snap) return;
+    this.saveScheduleError.set(null);
+    this.state.update((s) => ({
+      ...s,
+      monFri: { ...snap.monFri },
+      saturday: { ...snap.saturday },
+      snackMin: snap.snackMin,
+      lunchFrom: snap.lunchFrom,
+      lunchDurationMin: snap.lunchDurationMin,
+    }));
   }
 
-  protected onSave(): void {
-    this.saveError.set(null);
-    this.saving.set(true);
-    this.api.put(stateToPayload(this.state())).subscribe({
+  protected onSaveSchedule(): void {
+    const s = this.state();
+    const payload: UpdateSchedulePayload = {
+      monFri: { ...s.monFri },
+      saturday: { ...s.saturday },
+      snackMin: s.snackMin,
+      lunchFrom: normalizeHm(s.lunchFrom),
+      lunchDurationMin: s.lunchDurationMin,
+    };
+
+    this.saveScheduleError.set(null);
+    this.savingSchedule.set(true);
+    this.api.putSchedule(payload).subscribe({
       next: (snap) => {
-        const st = snapshotToState(snap);
-        this.state.set(st);
-        this.serverSnapshot.set(deepCloneState(st));
-        this.saving.set(false);
+        const fullState = snapshotToState(snap);
+        this.state.set(fullState);
+        this.serverSnapshot.set(deepCloneState(fullState));
+        this.savingSchedule.set(false);
       },
       error: (err: unknown) => {
-        this.saving.set(false);
-        this.saveError.set(
-          messageFromApiError(err) ?? 'No se pudo guardar la configuración.',
+        this.savingSchedule.set(false);
+        this.saveScheduleError.set(
+          messageFromApiError(err) ?? 'No se pudo guardar la jornada.',
+        );
+      },
+    });
+  }
+
+  protected onDiscardHolidays(): void {
+    const snap = this.serverSnapshot();
+    if (!snap) return;
+    this.saveHolidaysError.set(null);
+    this.state.update((s) => ({
+      ...s,
+      holidays: snap.holidays.map((h) => ({ ...h })),
+    }));
+  }
+
+  protected onSaveHolidays(): void {
+    const s = this.state();
+    const payload: UpdateHolidaysPayload = {
+      holidays: s.holidays.map((h) => ({
+        date: normalizeHolidayDate(h.date),
+        title: h.title.trim(),
+        sub: (h.sub ?? '').trim(),
+      })),
+    };
+
+    this.saveHolidaysError.set(null);
+    this.savingHolidays.set(true);
+    this.api.putHolidays(payload).subscribe({
+      next: (snap) => {
+        const fullState = snapshotToState(snap);
+        this.state.set(fullState);
+        this.serverSnapshot.set(deepCloneState(fullState));
+        this.savingHolidays.set(false);
+      },
+      error: (err: unknown) => {
+        this.savingHolidays.set(false);
+        this.saveHolidaysError.set(
+          messageFromApiError(err) ?? 'No se pudieron guardar los festivos.',
         );
       },
     });

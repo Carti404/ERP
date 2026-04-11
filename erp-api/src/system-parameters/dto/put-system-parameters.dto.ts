@@ -1,7 +1,6 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
-  IsBoolean,
   IsInt,
   IsOptional,
   IsString,
@@ -27,9 +26,6 @@ export class ScheduleBlockInputDto {
   @IsInt()
   @Min(0)
   tolerance: number;
-
-  @IsBoolean()
-  active: boolean;
 }
 
 export class HolidayInputDto {
@@ -49,6 +45,40 @@ export class HolidayInputDto {
   sub?: string;
 }
 
+/** DTO para actualizar solo la jornada y descansos */
+export class UpdateScheduleDto {
+  @ValidateNested()
+  @Type(() => ScheduleBlockInputDto)
+  monFri: ScheduleBlockInputDto;
+
+  @ValidateNested()
+  @Type(() => ScheduleBlockInputDto)
+  saturday: ScheduleBlockInputDto;
+
+  @IsInt()
+  @Min(0)
+  snackMin: number;
+
+  @IsString()
+  @Matches(/^\d{2}:\d{2}$/, {
+    message: 'La hora de comida debe tener formato HH:mm.',
+  })
+  lunchFrom: string;
+
+  @IsInt()
+  @Min(0)
+  lunchDurationMin: number;
+}
+
+/** DTO para actualizar solo los festivos */
+export class UpdateHolidaysDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => HolidayInputDto)
+  holidays: HolidayInputDto[];
+}
+
+/** DTO original para compatibilidad (opcional mantenerlo) */
 export class PutSystemParametersDto {
   @ValidateNested()
   @Type(() => ScheduleBlockInputDto)

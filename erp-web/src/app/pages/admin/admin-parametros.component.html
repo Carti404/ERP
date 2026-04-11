@@ -1,4 +1,4 @@
-<div class="erp-admin-parametros mx-auto max-w-[120rem] space-y-8 pb-4">
+<div class="erp-admin-parametros mx-auto max-w-[120rem] space-y-8 pb-8">
   <header>
     <h1 class="text-2xl font-extrabold tracking-tight text-[#051125] dark:text-[var(--erp-login-text-primary)] sm:text-3xl">
       Parámetros del sistema
@@ -19,348 +19,328 @@
 
   <div class="grid grid-cols-12 gap-6 lg:gap-8">
     <div class="col-span-12 space-y-8 lg:col-span-8">
-      <!-- Jornada -->
-      <section class="relative overflow-hidden rounded-lg bg-[#f3f4f5] p-5 dark:bg-[var(--erp-login-input-bg)] sm:p-6">
-        <div class="mb-6 flex items-center gap-3">
-          <span class="material-symbols-outlined text-[#1b263b] dark:text-[#c2dcff]" aria-hidden="true">calendar_month</span>
-          <h2 class="text-lg font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Días laborables y jornada</h2>
-        </div>
-        <div class="space-y-4">
+      <!-- Sección: Jornada y Descansos -->
+      <section class="flex flex-col rounded-xl bg-[#f3f4f5] p-5 dark:bg-[var(--erp-login-input-bg)] sm:p-6">
+        <div class="mb-6 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-[#1b263b] dark:text-[#c2dcff]" aria-hidden="true">calendar_month</span>
+            <h2 class="text-lg font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Jornada y descansos</h2>
+          </div>
           <div
-            class="flex flex-wrap items-center gap-6 rounded border border-[#c5c6cd]/30 bg-white p-5 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)] lg:flex-nowrap lg:gap-8"
+            class="hidden items-start gap-3 rounded-lg border-l-4 border-[#ba1a1a] bg-[#ffb3b1]/15 px-3 py-2 dark:bg-[#55000c]/20 md:flex"
           >
-            <div class="min-w-[140px]">
-              <span class="mb-1 block text-xs font-bold uppercase tracking-widest text-[#45474d] dark:text-[var(--erp-login-muted)]"
-                >Frecuencia</span
-              >
-              <p class="text-sm font-semibold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Lunes a viernes</p>
-            </div>
-            <div class="grid flex-1 grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
-              <div>
-                <label class="mb-2 block text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]"
-                  >Entrada</label
-                >
-                <input
-                  type="time"
-                  class="w-full rounded border-0 bg-[#f8f9fa] p-2 text-sm font-bold text-[#051125] focus:ring-2 focus:ring-[#47607e] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
-                  [value]="state().monFri.entry"
-                  (input)="patchMonFri('entry', $any($event.target).value)"
-                />
-              </div>
-              <div>
-                <label class="mb-2 block text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]"
-                  >Salida</label
-                >
-                <input
-                  type="time"
-                  class="w-full rounded border-0 bg-[#f8f9fa] p-2 text-sm font-bold text-[#051125] focus:ring-2 focus:ring-[#47607e] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
-                  [value]="state().monFri.exit"
-                  (input)="patchMonFri('exit', $any($event.target).value)"
-                />
-              </div>
-              <div>
-                <label class="mb-2 block text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]"
-                  >Tolerancia (min)</label
-                >
-                <input
-                  type="number"
-                  min="0"
-                  class="w-full rounded border-0 bg-[#f8f9fa] p-2 text-sm font-bold text-[#051125] focus:ring-2 focus:ring-[#47607e] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
-                  [value]="state().monFri.tolerance"
-                  (input)="patchMonFri('tolerance', $any($event.target).value)"
-                />
-              </div>
-              <div class="flex items-end pb-2">
-                <label class="flex cursor-pointer items-center">
+            <span class="material-symbols-outlined text-sm text-[#ba1a1a]" aria-hidden="true">warning</span>
+            <p class="text-[10px] font-medium text-[#93000a] dark:text-[#ffdad6]">
+              Afecta el cómputo de asistencia actual.
+            </p>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <!-- Bloques de jornada -->
+          <div class="grid gap-4 md:grid-cols-2">
+            <div
+              class="rounded-lg border border-[#c5c6cd]/30 bg-white p-5 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]"
+            >
+              <p class="mb-4 text-xs font-bold uppercase tracking-widest text-[#45474d] dark:text-[var(--erp-login-muted)]">
+                Lunes a Viernes
+              </p>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="mb-2 block text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]"
+                    >Entrada</label
+                  >
                   <input
-                    type="checkbox"
-                    class="peer sr-only"
-                    [checked]="state().monFri.active"
-                    (change)="setMonFriActive($any($event.target).checked)"
+                    type="time"
+                    class="w-full rounded border-0 bg-[#f8f9fa] p-2 text-sm font-bold text-[#051125] focus:ring-2 focus:ring-[#47607e] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
+                    [value]="state().monFri.entry"
+                    (input)="patchMonFri('entry', $any($event.target).value)"
                   />
-                  <div
-                    class="relative h-5 w-10 shrink-0 rounded-full bg-[#c5c6cd] after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[#47607e] peer-checked:after:translate-x-5"
-                    aria-hidden="true"
-                  ></div>
-                  <span class="ml-3 text-xs font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Activo</span>
-                </label>
+                </div>
+                <div>
+                  <label class="mb-2 block text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]"
+                    >Salida</label
+                  >
+                  <input
+                    type="time"
+                    class="w-full rounded border-0 bg-[#f8f9fa] p-2 text-sm font-bold text-[#051125] focus:ring-2 focus:ring-[#47607e] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
+                    [value]="state().monFri.exit"
+                    (input)="patchMonFri('exit', $any($event.target).value)"
+                  />
+                </div>
+                <div class="col-span-2">
+                  <label class="mb-2 block text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]"
+                    >Tolerancia (minutos)</label
+                  >
+                  <input
+                    type="number"
+                    min="0"
+                    class="w-full rounded border-0 bg-[#f8f9fa] p-2 text-sm font-bold text-[#051125] focus:ring-2 focus:ring-[#47607e] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
+                    [value]="state().monFri.tolerance"
+                    (input)="patchMonFri('tolerance', $any($event.target).value)"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="rounded-lg border border-[#c5c6cd]/30 bg-white p-5 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]"
+            >
+              <p class="mb-4 text-xs font-bold uppercase tracking-widest text-[#45474d] dark:text-[var(--erp-login-muted)]">
+                Sábados
+              </p>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="mb-2 block text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]"
+                    >Entrada</label
+                  >
+                  <input
+                    type="time"
+                    class="w-full rounded border-0 bg-[#f8f9fa] p-2 text-sm font-bold text-[#051125] focus:ring-2 focus:ring-[#47607e] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
+                    [value]="state().saturday.entry"
+                    (input)="patchSaturday('entry', $any($event.target).value)"
+                  />
+                </div>
+                <div>
+                  <label class="mb-2 block text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]"
+                    >Salida</label
+                  >
+                  <input
+                    type="time"
+                    class="w-full rounded border-0 bg-[#f8f9fa] p-2 text-sm font-bold text-[#051125] focus:ring-2 focus:ring-[#47607e] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
+                    [value]="state().saturday.exit"
+                    (input)="patchSaturday('exit', $any($event.target).value)"
+                  />
+                </div>
+                <div class="col-span-2">
+                  <label class="mb-2 block text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]"
+                    >Tolerancia (minutos)</label
+                  >
+                  <input
+                    type="number"
+                    min="0"
+                    class="w-full rounded border-0 bg-[#f8f9fa] p-2 text-sm font-bold text-[#051125] focus:ring-2 focus:ring-[#47607e] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
+                    [value]="state().saturday.tolerance"
+                    (input)="patchSaturday('tolerance', $any($event.target).value)"
+                  />
+                </div>
               </div>
             </div>
           </div>
 
-          <div
-            class="flex flex-wrap items-center gap-6 rounded border border-[#c5c6cd]/30 bg-white p-5 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)] lg:flex-nowrap lg:gap-8"
-          >
-            <div class="min-w-[140px]">
-              <span class="mb-1 block text-xs font-bold uppercase tracking-widest text-[#45474d] dark:text-[var(--erp-login-muted)]"
-                >Frecuencia</span
-              >
-              <p class="text-sm font-semibold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Sábado</p>
-            </div>
-            <div class="grid flex-1 grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
-              <div>
-                <label class="mb-2 block text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]"
-                  >Entrada</label
-                >
-                <input
-                  type="time"
-                  class="w-full rounded border-0 bg-[#f8f9fa] p-2 text-sm font-bold text-[#051125] focus:ring-2 focus:ring-[#47607e] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
-                  [value]="state().saturday.entry"
-                  (input)="patchSaturday('entry', $any($event.target).value)"
-                />
-              </div>
-              <div>
-                <label class="mb-2 block text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]"
-                  >Salida</label
-                >
-                <input
-                  type="time"
-                  class="w-full rounded border-0 bg-[#f8f9fa] p-2 text-sm font-bold text-[#051125] focus:ring-2 focus:ring-[#47607e] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
-                  [value]="state().saturday.exit"
-                  (input)="patchSaturday('exit', $any($event.target).value)"
-                />
-              </div>
-              <div>
-                <label class="mb-2 block text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]"
-                  >Tolerancia (min)</label
-                >
-                <input
-                  type="number"
-                  min="0"
-                  class="w-full rounded border-0 bg-[#f8f9fa] p-2 text-sm font-bold text-[#051125] focus:ring-2 focus:ring-[#47607e] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
-                  [value]="state().saturday.tolerance"
-                  (input)="patchSaturday('tolerance', $any($event.target).value)"
-                />
-              </div>
-              <div class="flex items-end pb-2">
-                <label class="flex cursor-pointer items-center">
+          <!-- Descansos -->
+          <div class="grid gap-6 md:grid-cols-2 text-balance">
+            <div class="rounded-lg border border-[#c5c6cd]/30 bg-white p-5 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
+              <label class="mb-4 block text-[10px] font-extrabold uppercase tracking-wider text-[#45474d] dark:text-[var(--erp-login-muted)]">
+                Primer descanso (snack)
+              </label>
+              <div class="flex items-center gap-4">
+                <span class="material-symbols-outlined text-[#47607e]" aria-hidden="true">timer</span>
+                <div class="min-w-0 flex-1">
                   <input
-                    type="checkbox"
-                    class="peer sr-only"
-                    [checked]="state().saturday.active"
-                    (change)="setSaturdayActive($any($event.target).checked)"
+                    type="number"
+                    min="0"
+                    class="w-full border-0 bg-transparent p-0 text-2xl font-bold text-[#051125] focus:ring-0 dark:text-[var(--erp-login-text-primary)]"
+                    [value]="state().snackMin"
+                    (input)="patchSnack($any($event.target).value)"
                   />
-                  <div
-                    class="relative h-5 w-10 shrink-0 rounded-full bg-[#c5c6cd] after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[#47607e] peer-checked:after:translate-x-5"
-                    aria-hidden="true"
-                  ></div>
-                  <span class="ml-3 text-xs font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Activo</span>
-                </label>
+                  <span class="text-xs font-medium text-[#47607e]">minutos de duración</span>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Descansos -->
-      <section class="rounded-lg bg-[#f3f4f5] p-5 dark:bg-[var(--erp-login-input-bg)] sm:p-6">
-        <div class="mb-6 flex items-center gap-3">
-          <span class="material-symbols-outlined text-[#1b263b] dark:text-[#c2dcff]" aria-hidden="true">coffee</span>
-          <h2 class="text-lg font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Configuración de descansos</h2>
-        </div>
-        <div class="grid gap-6 md:grid-cols-2">
-          <div class="rounded border border-[#c5c6cd]/30 bg-white p-5 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
-            <label class="mb-4 block text-[10px] font-extrabold uppercase tracking-wider text-[#45474d] dark:text-[var(--erp-login-muted)]">
-              Primer descanso (snack)
-            </label>
-            <div class="flex items-center gap-4">
-              <span class="material-symbols-outlined text-[#47607e]" aria-hidden="true">timer</span>
-              <div class="min-w-0 flex-1">
+            <div class="rounded-lg border border-[#c5c6cd]/30 bg-white p-5 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
+              <label class="mb-4 block text-[10px] font-extrabold uppercase tracking-wider text-[#45474d] dark:text-[var(--erp-login-muted)]">
+                Ventana de almuerzo
+              </label>
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="material-symbols-outlined text-[#47607e]" aria-hidden="true">restaurant</span>
+                <span class="text-xs font-bold text-[#45474d] dark:text-[var(--erp-login-muted)]">Desde</span>
+                <input
+                  type="time"
+                  class="rounded border-0 bg-[#f3f4f5] p-1 text-sm font-bold text-[#051125] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
+                  [value]="state().lunchFrom"
+                  (input)="patchLunchFrom($any($event.target).value)"
+                />
                 <input
                   type="number"
                   min="0"
-                  class="w-full border-0 bg-transparent p-0 text-2xl font-bold text-[#051125] focus:ring-0 dark:text-[var(--erp-login-text-primary)]"
-                  [value]="state().snackMin"
-                  (input)="patchSnack($any($event.target).value)"
+                  class="w-16 rounded border border-[#c5c6cd]/40 bg-[#f3f4f5] p-1 text-center text-sm font-bold dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-surface)]"
+                  [value]="state().lunchDurationMin"
+                  (input)="patchLunchDur($any($event.target).value)"
                 />
-                <span class="text-xs font-medium text-[#47607e]">minutos de duración</span>
+                <span class="text-xs font-bold text-[#45474d] dark:text-[var(--erp-login-muted)]">min</span>
               </div>
             </div>
           </div>
-          <div class="rounded border border-[#c5c6cd]/30 bg-white p-5 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
-            <label class="mb-4 block text-[10px] font-extrabold uppercase tracking-wider text-[#45474d] dark:text-[var(--erp-login-muted)]">
-              Ventana de almuerzo
-            </label>
-            <div class="flex flex-wrap items-center gap-2">
-              <span class="material-symbols-outlined text-[#47607e]" aria-hidden="true">restaurant</span>
-              <span class="text-xs font-bold text-[#45474d] dark:text-[var(--erp-login-muted)]">Desde</span>
-              <input
-                type="time"
-                class="rounded border-0 bg-[#f3f4f5] p-1 text-sm font-bold text-[#051125] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
-                [value]="state().lunchFrom"
-                (input)="patchLunchFrom($any($event.target).value)"
-              />
-              <input
-                type="number"
-                min="0"
-                class="w-16 rounded border border-[#c5c6cd]/40 bg-[#f3f4f5] p-1 text-center text-sm font-bold dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-surface)]"
-                [value]="state().lunchDurationMin"
-                (input)="patchLunchDur($any($event.target).value)"
-              />
-              <span class="text-xs font-bold text-[#45474d] dark:text-[var(--erp-login-muted)]">min</span>
-            </div>
+        </div>
+
+        <!-- Acciones: Jornada -->
+        <div class="mt-8 flex flex-col items-stretch gap-4 border-t border-[#c5c6cd]/20 pt-6 sm:flex-row sm:items-center sm:justify-end">
+          @if (saveScheduleError()) {
+            <p class="text-xs font-bold text-[#ba1a1a]">{{ saveScheduleError() }}</p>
+          }
+          <div class="flex gap-3">
+            <button
+              type="button"
+              class="rounded-lg border border-[#47607e] px-4 py-2 text-xs font-bold text-[#47607e] hover:bg-[#47607e]/5 disabled:opacity-50"
+              [disabled]="loading() || savingSchedule()"
+              (click)="onDiscardSchedule()"
+            >
+              Descartar
+            </button>
+            <button
+              type="button"
+              class="flex items-center gap-2 rounded-lg bg-[#47607e] px-6 py-2 text-xs font-bold text-white hover:bg-[#051125] disabled:opacity-50"
+              [disabled]="loading() || savingSchedule()"
+              (click)="onSaveSchedule()"
+            >
+              @if (savingSchedule()) {
+                <span class="material-symbols-outlined animate-spin text-sm" aria-hidden="true">sync</span>
+                Guardando…
+              } @else {
+                <span class="material-symbols-outlined text-sm" aria-hidden="true">save</span>
+                Guardar jornada
+              }
+            </button>
           </div>
         </div>
       </section>
     </div>
 
-    <!-- Festivos -->
+    <!-- Sección: Calendario y Festivos -->
     <div class="col-span-12 lg:col-span-4">
-      <section class="h-full rounded-lg bg-[#f3f4f5] p-5 dark:bg-[var(--erp-login-input-bg)] sm:p-6">
+      <section class="flex flex-col rounded-xl bg-[#f3f4f5] p-5 dark:bg-[var(--erp-login-input-bg)] sm:p-6">
         <div class="mb-6 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <span class="material-symbols-outlined text-[#1b263b] dark:text-[#c2dcff]" aria-hidden="true">event_busy</span>
-            <h2 class="text-lg font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Festivos</h2>
+            <h2 class="text-lg font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">Días no laborables</h2>
           </div>
           <button
             type="button"
             class="text-[#47607e] transition-colors hover:text-[#051125] dark:hover:text-white"
             (click)="onAddHoliday()"
-            aria-label="Añadir festivo"
+            aria-label="Añadir día"
           >
-            <span class="material-symbols-outlined" aria-hidden="true">add_circle</span>
+            <span class="material-symbols-outlined text-2xl" aria-hidden="true">add_circle</span>
           </button>
         </div>
-        <div class="mb-6 rounded-md border border-[#c5c6cd]/30 bg-white p-4 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
-          <div class="mb-4 flex items-center justify-between">
-            <span class="text-xs font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ calMonthLabel() }}</span>
-            <div class="flex gap-1">
-              <button type="button" class="rounded p-0.5 hover:bg-[#edeeef] dark:hover:bg-[var(--erp-login-surface)]" (click)="onPrevMonth()">
-                <span class="material-symbols-outlined text-sm" aria-hidden="true">chevron_left</span>
-              </button>
-              <button type="button" class="rounded p-0.5 hover:bg-[#edeeef] dark:hover:bg-[var(--erp-login-surface)]" (click)="onNextMonth()">
-                <span class="material-symbols-outlined text-sm" aria-hidden="true">chevron_right</span>
-              </button>
+
+        <div class="flex-1 space-y-4">
+          <!-- Calendario -->
+          <div class="rounded-lg border border-[#c5c6cd]/30 bg-white p-4 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
+            <div class="mb-4 flex items-center justify-between">
+              <span class="text-xs font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ calMonthLabel() }}</span>
+              <div class="flex gap-1">
+                <button type="button" class="rounded p-0.5 hover:bg-[#edeeef] dark:hover:bg-[var(--erp-login-surface)]" (click)="onPrevMonth()">
+                  <span class="material-symbols-outlined text-sm" aria-hidden="true">chevron_left</span>
+                </button>
+                <button type="button" class="rounded p-0.5 hover:bg-[#edeeef] dark:hover:bg-[var(--erp-login-surface)]" (click)="onNextMonth()">
+                  <span class="material-symbols-outlined text-sm" aria-hidden="true">chevron_right</span>
+                </button>
+              </div>
+            </div>
+            <div class="mb-2 grid grid-cols-7 gap-1 text-center">
+              @for (d of ['L', 'M', 'X', 'J', 'V', 'S', 'D']; track d) {
+                <span class="text-[10px] font-bold text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ d }}</span>
+              }
+            </div>
+            <div class="grid grid-cols-7 gap-1">
+              @for (c of calCells(); track $index) {
+                <div [class]="calCellClass(c.tone)">{{ c.label }}</div>
+              }
             </div>
           </div>
-          <div class="mb-2 grid grid-cols-7 gap-1 text-center">
-            @for (d of ['L', 'M', 'X', 'J', 'V', 'S', 'D']; track d) {
-              <span class="text-[10px] font-bold text-[#45474d] dark:text-[var(--erp-login-muted)]">{{ d }}</span>
-            }
-          </div>
-          <div class="grid grid-cols-7 gap-1">
-            @for (c of calCells(); track $index) {
-              <div [class]="calCellClass(c.tone)">{{ c.label }}</div>
+
+          <!-- Lista de festivos -->
+          <div class="space-y-3">
+            <p class="border-b border-[#c5c6cd]/20 pb-2 text-[10px] font-bold uppercase tracking-widest text-[#45474d] dark:text-[var(--erp-login-muted)]">
+              PRÓXIMOS DÍAS LIBRES
+            </p>
+            <div class="max-h-[12rem] space-y-3 overflow-y-auto pr-1">
+              @for (h of sortedHolidays(); track h.id) {
+                <div class="group flex items-start justify-between gap-2 border-l-2 border-[#ba1a1a]/40 pl-3">
+                  <div>
+                    <p class="text-xs font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ h.title }}</p>
+                    <p class="text-[10px] text-[#47607e]">
+                      {{ h.date }}@if (h.sub) {
+                      <span> · {{ h.sub }}</span>
+                      }
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    class="text-[#ba1a1a] opacity-0 transition-opacity group-hover:opacity-100"
+                    (click)="removeHoliday(h.id)"
+                    aria-label="Eliminar festivo"
+                  >
+                    <span class="material-symbols-outlined text-sm" aria-hidden="true">delete</span>
+                  </button>
+                </div>
+              }
+            </div>
+
+            @if (addingHoliday()) {
+              <div class="mt-3 space-y-2 rounded-lg border border-[#c5c6cd]/30 bg-white p-3 shadow-sm dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
+                <input
+                  type="date"
+                  class="w-full rounded border-0 bg-[#f8f9fa] p-2 text-sm font-bold text-[#051125] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
+                  [value]="draftHolidayDate()"
+                  (input)="draftHolidayDate.set($any($event.target).value)"
+                />
+                <input
+                  type="text"
+                  class="w-full rounded border-0 bg-[#f8f9fa] p-2 text-sm font-bold text-[#051125] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
+                  placeholder="Motivo (ej. Día festivo)"
+                  [value]="draftHolidayTitle()"
+                  (input)="draftHolidayTitle.set($any($event.target).value)"
+                />
+                <input
+                  type="text"
+                  class="w-full rounded border-0 bg-[#f8f9fa] p-2 text-sm text-[#051125] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
+                  placeholder="Descripción opcional"
+                  [value]="draftHolidaySub()"
+                  (input)="draftHolidaySub.set($any($event.target).value)"
+                />
+                <div class="flex justify-end gap-2 pt-1">
+                  <button type="button" class="rounded px-2 py-1 text-xs font-bold text-[#45474d]" (click)="cancelAddHoliday()">Cancelar</button>
+                  <button type="button" class="rounded bg-[#47607e] px-3 py-1 text-xs font-bold text-white hover:bg-[#051125]" (click)="confirmAddHoliday()">Añadir</button>
+                </div>
+              </div>
             }
           </div>
         </div>
-        <div class="space-y-3">
-          <p
-            class="border-b border-[#c5c6cd]/20 pb-2 text-[10px] font-bold uppercase tracking-widest text-[#45474d] dark:text-[var(--erp-login-muted)]"
-          >
-            Próximos festivos
-          </p>
-          @for (h of sortedHolidays(); track h.id) {
-            <div class="group flex items-center justify-between gap-2">
-              <div>
-                <p class="text-xs font-bold text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{ h.title }}</p>
-                <p class="text-[10px] text-[#47607e]">
-                  {{ h.date }}@if (h.sub) {
-                  <span> · {{ h.sub }}</span>
-                  }
-                </p>
-              </div>
-              <button
-                type="button"
-                class="text-[#ba1a1a] opacity-0 transition-opacity group-hover:opacity-100"
-                (click)="removeHoliday(h.id)"
-                aria-label="Eliminar festivo"
-              >
-                <span class="material-symbols-outlined text-sm" aria-hidden="true">delete</span>
-              </button>
-            </div>
+
+        <!-- Acciones: Festivos -->
+        <div class="mt-6 flex flex-col items-stretch gap-3 border-t border-[#c5c6cd]/20 pt-5">
+          @if (saveHolidaysError()) {
+            <p class="text-center text-[10px] font-bold text-[#ba1a1a]">{{ saveHolidaysError() }}</p>
           }
-          @if (addingHoliday()) {
-            <div
-              class="mt-3 space-y-2 rounded-md border border-[#c5c6cd]/30 bg-white p-3 dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]"
+          <div class="flex gap-2">
+            <button
+              type="button"
+              class="flex-1 rounded-lg border border-[#47607e] py-2 text-xs font-bold text-[#47607e] hover:bg-[#47607e]/5 disabled:opacity-50"
+              [disabled]="loading() || savingHolidays()"
+              (click)="onDiscardHolidays()"
             >
-              <label class="block text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]"
-                >Fecha</label
-              >
-              <input
-                type="date"
-                class="w-full rounded border-0 bg-[#f8f9fa] p-2 text-sm font-bold text-[#051125] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
-                [value]="draftHolidayDate()"
-                (input)="draftHolidayDate.set($any($event.target).value)"
-              />
-              <label class="block text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]"
-                >Nombre</label
-              >
-              <input
-                type="text"
-                class="w-full rounded border-0 bg-[#f8f9fa] p-2 text-sm font-bold text-[#051125] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
-                placeholder="Ej. Día del trabajador"
-                [value]="draftHolidayTitle()"
-                (input)="draftHolidayTitle.set($any($event.target).value)"
-              />
-              <label class="block text-[10px] font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]"
-                >Descripción (opcional)</label
-              >
-              <input
-                type="text"
-                class="w-full rounded border-0 bg-[#f8f9fa] p-2 text-sm text-[#051125] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)]"
-                [value]="draftHolidaySub()"
-                (input)="draftHolidaySub.set($any($event.target).value)"
-              />
-              <div class="flex justify-end gap-2 pt-1">
-                <button
-                  type="button"
-                  class="rounded px-3 py-1.5 text-xs font-bold text-[#051125] hover:bg-[#edeeef] dark:text-[var(--erp-login-text-primary)] dark:hover:bg-[var(--erp-login-surface)]"
-                  (click)="cancelAddHoliday()"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  class="rounded bg-[#47607e] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#051125]"
-                  (click)="confirmAddHoliday()"
-                >
-                  Añadir
-                </button>
-              </div>
-            </div>
-          }
+              Descartar
+            </button>
+            <button
+              type="button"
+              class="flex-[2] flex items-center justify-center gap-2 rounded-lg bg-[#051125] py-2 text-xs font-bold text-white hover:bg-[#47607e] disabled:opacity-50"
+              [disabled]="loading() || savingHolidays()"
+              (click)="onSaveHolidays()"
+            >
+              @if (savingHolidays()) {
+                <span class="material-symbols-outlined animate-spin text-sm" aria-hidden="true">sync</span>
+                Guardando…
+              } @else {
+                <span class="material-symbols-outlined text-sm" aria-hidden="true">save_as</span>
+                Guardar calendario
+              }
+            </button>
+          </div>
         </div>
       </section>
-    </div>
-  </div>
-
-  <div class="flex flex-col items-stretch gap-4 sm:items-end">
-    @if (saveError()) {
-      <div
-        class="w-full max-w-lg rounded-lg border border-[#ba1a1a]/40 bg-[#ffdad6] px-4 py-3 text-sm text-[#410002] dark:border-[#ba1a1a] dark:bg-[#93000a]/20 dark:text-[#ffb4ab]"
-        role="alert"
-      >
-        {{ saveError() }}
-      </div>
-    }
-    <div
-      class="flex max-w-lg items-start gap-3 rounded-lg border-l-4 border-[#ba1a1a] bg-[#ffb3b1]/15 p-4 dark:bg-[#55000c]/20"
-    >
-      <span class="material-symbols-outlined shrink-0 text-[#ba1a1a]" aria-hidden="true">warning</span>
-      <p class="text-xs font-medium text-[#93000a] dark:text-[#ffdad6]">
-        <span class="font-bold">Cambio crítico:</span> modificar estos parámetros puede afectar el cómputo de asistencia y
-        puntualidad del ciclo actual.
-      </p>
-    </div>
-    <div class="flex flex-wrap gap-3">
-      <button
-        type="button"
-        class="rounded border-2 border-[#47607e] bg-transparent px-8 py-3 text-sm font-bold text-[#47607e] shadow-sm transition-colors hover:bg-[#47607e]/10 disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#c2dcff] dark:text-[#c2dcff] dark:hover:bg-[#c2dcff]/10"
-        [disabled]="loading() || saving()"
-        (click)="onDiscard()"
-      >
-        Descartar
-      </button>
-      <button
-        type="button"
-        class="flex items-center gap-2 rounded bg-[#47607e] px-8 py-3 text-sm font-bold text-white shadow-lg transition-all hover:bg-[#051125] disabled:cursor-not-allowed disabled:opacity-50"
-        [disabled]="loading() || saving()"
-        (click)="onSave()"
-      >
-        <span class="material-symbols-outlined text-sm" aria-hidden="true">save</span>
-        {{ saving() ? 'Guardando…' : 'Guardar configuración' }}
-      </button>
     </div>
   </div>
 </div>

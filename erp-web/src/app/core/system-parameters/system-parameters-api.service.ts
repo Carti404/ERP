@@ -3,7 +3,12 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { apiBaseUrl } from '../environment';
-import type { PutSystemParametersPayload, SystemParametersSnapshot } from './system-parameters-api.types';
+import type { 
+  PutSystemParametersPayload, 
+  SystemParametersSnapshot, 
+  UpdateHolidaysPayload, 
+  UpdateSchedulePayload 
+} from './system-parameters-api.types';
 
 @Injectable({ providedIn: 'root' })
 export class SystemParametersApiService {
@@ -19,6 +24,20 @@ export class SystemParametersApiService {
   put(body: PutSystemParametersPayload): Observable<SystemParametersSnapshot> {
     return this.http.put<SystemParametersSnapshot>(
       `${this.base}/system-parameters`,
+      body,
+    );
+  }
+
+  putSchedule(body: UpdateSchedulePayload): Observable<SystemParametersSnapshot> {
+    return this.http.put<SystemParametersSnapshot>(
+      `${this.base}/system-parameters/schedule`,
+      body,
+    );
+  }
+
+  putHolidays(body: UpdateHolidaysPayload): Observable<SystemParametersSnapshot> {
+    return this.http.put<SystemParametersSnapshot>(
+      `${this.base}/system-parameters/holidays`,
       body,
     );
   }

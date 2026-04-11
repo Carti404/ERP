@@ -2,7 +2,6 @@ export interface ScheduleBlockDto {
   entry: string;
   exit: string;
   tolerance: number;
-  active: boolean;
 }
 
 export interface HolidayRowDto {
@@ -34,5 +33,17 @@ export interface PutSystemParametersPayload {
   snackMin: number;
   lunchFrom: string;
   lunchDurationMin: number;
+  holidays: HolidayPutRow[];
+}
+
+export interface UpdateSchedulePayload {
+  monFri: ScheduleBlockDto;
+  saturday: ScheduleBlockDto;
+  snackMin: number;
+  lunchFrom: string;
+  lunchDurationMin: number;
+}
+
+export interface UpdateHolidaysPayload {
   holidays: HolidayPutRow[];
 }
