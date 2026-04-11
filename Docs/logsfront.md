@@ -1,62 +1,34 @@
+PS H:\dev\ERP\erp-web> npm start
+
+> erp-web@0.0.0 start
+> ng serve
+
+Application bundle generation failed. [2.554 seconds] - 2026-04-11T19:10:10.986Z
 
 X [ERROR] NG5002: Unexpected closing tag "div". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags [plugin angular-compiler]
 
-    src/app/pages/admin/admin-asistencias.component.html:190:6:
-      190 │       </div>
-          ╵       ~~~~~~
+    src/app/pages/admin/admin-permisos.component.html:85:6:
+      85 │       </div>
+         ╵       ~~~~~~
 
-  Error occurs in the template of component AdminAsistenciasComponent.
+  Error occurs in the template of component AdminPermisosComponent.
 
-    src/app/pages/admin/admin-asistencias.component.ts:30:15:
-      30 │   templateUrl: './admin-asistencias.component.html',
-         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-X [ERROR] NG5002: Unexpected closing block. The block may have been closed earlier. If you meant to write the `}` character, you should use the "&#125;" HTML entity instead. [plugin angular-compiler]
-
-    src/app/pages/admin/admin-asistencias.component.html:191:6:
-      191 │       } @else {
-          ╵       ^
-
-  Error occurs in the template of component AdminAsistenciasComponent.
-
-    src/app/pages/admin/admin-asistencias.component.ts:30:15:
-      30 │   templateUrl: './admin-asistencias.component.html',
-         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-X [ERROR] NG5002: Unexpected closing tag "aside". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags [plugin angular-compiler]
-
-    src/app/pages/admin/admin-asistencias.component.html:207:4:
-      207 │     </aside>
-          ╵     ~~~~~~~~
-
-  Error occurs in the template of component AdminAsistenciasComponent.
-
-    src/app/pages/admin/admin-asistencias.component.ts:30:15:
-      30 │   templateUrl: './admin-asistencias.component.html',
-         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    src/app/pages/admin/admin-permisos.component.ts:14:15:
+      14 │   templateUrl: './admin-permisos.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 X [ERROR] NG5002: Unexpected closing tag "div". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags [plugin angular-compiler]
 
-    src/app/pages/admin/admin-asistencias.component.html:209:0:
-      209 │ </div>
-          ╵ ~~~~~~
+    src/app/pages/admin/admin-permisos.component.html:202:2:
+      202 │   </div>
+          ╵   ~~~~~~
 
-  Error occurs in the template of component AdminAsistenciasComponent.
+  Error occurs in the template of component AdminPermisosComponent.
 
-    src/app/pages/admin/admin-asistencias.component.ts:30:15:
-      30 │   templateUrl: './admin-asistencias.component.html',
-         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-X [ERROR] TS2349: This expression is not callable.
-  Type 'String' has no call signatures. [plugin angular-compiler]
-
-    src/app/pages/admin/admin-asistencias.component.ts:172:22:
-      172 │     const note = this.incidenceNote().trim();
-          ╵                       ~~~~~~~~~~~~~
+    src/app/pages/admin/admin-permisos.component.ts:14:15:
+      14 │   templateUrl: './admin-permisos.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 Watch mode enabled. Watching for file changes...

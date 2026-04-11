@@ -13,25 +13,17 @@ export const ADMIN_PERMISOS_KPIS: AdminPermisoKpi[] = [
   {
     id: 'ops',
     label: 'Total operarios',
-    value: '142',
-    sub: '94% disponibilidad',
+    value: '0',
+    sub: 'Actualizado',
     icon: 'group',
   },
   {
     id: 'pend',
     label: 'Pendientes',
-    value: '12',
+    value: '0',
     sub: 'Acción requerida',
     icon: 'priority_high',
     tone: 'alert',
-  },
-  {
-    id: 'cap',
-    label: 'Alerta de capacidad',
-    value: 'Taller estampado',
-    sub: 'Crítico (72%) · mínimo 85%',
-    icon: 'analytics',
-    tone: 'wide',
   },
 ];
 
@@ -155,3 +147,4 @@ export const ADMIN_PERMISOS_PANEL_BY_ROW_ID: Record<string, AdminPermisoPanelDet
     ],
   },
 };
+

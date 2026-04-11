@@ -24,7 +24,8 @@ export class AdminPermisosComponent {
 
   protected readonly panelDetail = computed(() => {
     const id = this.selectedRowId();
-    return ADMIN_PERMISOS_PANEL_BY_ROW_ID[id] ?? ADMIN_PERMISOS_PANEL_BY_ROW_ID['r2'];
+    if (!id) return null;
+    return (ADMIN_PERMISOS_PANEL_BY_ROW_ID as any)[id] ?? (ADMIN_PERMISOS_PANEL_BY_ROW_ID as any)['r2'];
   });
 
   protected readonly viewMode = signal<'gantt' | 'list'>('gantt');
