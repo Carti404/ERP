@@ -4,6 +4,8 @@ import type { HolidayRowDto } from '../../core/system-parameters/system-paramete
 import { LeaveRequestsService } from '../../core/services/leave-requests.service';
 
 export type WorkerPermisoHistoryStatus = 'propuesta_admin' | 'aprobado' | 'revision';
+export type LeaveRequestNature = 'VACATION' | 'ABSENCE';
+export type AbsenceSubtype = 'PROGRAMMED' | 'URGENT';
 
 export type LeaveRequestType = 'VACATION' | 'LATENESS' | 'ABSENCE' | 'PERSONAL' | 'MEDICAL';
 
@@ -47,6 +49,8 @@ export class TrabajadorPermisosComponent implements OnInit {
 
   protected readonly holidays = signal<HolidayRowDto[]>([]);
 
+  protected readonly requestNature = signal<LeaveRequestNature>('VACATION');
+  protected readonly absenceSubtype = signal<AbsenceSubtype>('PROGRAMMED');
   protected readonly requestType = signal<LeaveRequestType>('VACATION');
   protected readonly reason = signal<string>('');
   protected readonly evidenceFile = signal<File | null>(null);
@@ -64,44 +68,49 @@ export class TrabajadorPermisosComponent implements OnInit {
   });
 
   protected readonly selectionHint = computed(() => {
-    if (this.selectionReady()) {
-      return '';
-    }
+    if (this.selectionReady()) return '';
+    const nature = this.requestNature();
     const s = this.selectionStartMs();
-    if (s === null) {
-      return 'Pulsa el primer día. Después el último del rango, o vuelve a pulsar el mismo día si solo necesitas uno.';
+
+    if (nature === 'VACATION') {
+      if (s === null) return 'Selecciona el primer día de tus vacaciones.';
+      return 'Ahora selecciona el último día de tu periodo vacacional.';
+    } else {
+      return 'Selecciona el día de tu inasistencia en el calendario.';
     }
-    return 'Pulsa el último día del rango, o el mismo día otra vez para solicitar un solo día.';
   });
 
   protected readonly selectionSummary = computed(() => {
-    if (!this.selectionReady() && this.requestType() === 'VACATION') {
-      return '';
-    }
     const s = this.selectionStartMs();
     if (s === null) return '';
-    const e = this.selectionEndMs() ?? s;
+    const nature = this.requestNature();
+    
+    // Si es vacación pero no está listo el rango, no mostramos resumen aún
+    if (nature === 'VACATION' && !this.selectionReady()) return '';
 
-    const lo = Math.min(s as number, e as number);
-    const hi = Math.max(s as number, e as number);
+    const e = this.selectionEndMs() ?? s;
+    const lo = Math.min(s, e);
+    const hi = Math.max(s, e);
     const a = new Date(lo);
     const b = new Date(hi);
     const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
     const na = a.toLocaleDateString('es-MX', opts);
     const nb = b.toLocaleDateString('es-MX', opts);
     
-    // Calcula días laborables (lun-sáb) entre `a` y `b`
+    // Calcula días laborables (lun-sáb)
     let workingDaysCount = 0;
     let currentDate = new Date(a);
     while (currentDate <= b) {
-      if (currentDate.getDay() !== 0) { // No es Domingo
-        workingDaysCount++;
-      }
+      if (currentDate.getDay() !== 0) workingDaysCount++;
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
     const dayWord = workingDaysCount === 1 ? '1 día laborable' : `${workingDaysCount} días laborables`;
-    return na === nb ? `${na} · ${dayWord}` : `${na} — ${nb} · ${dayWord}`;
+    const prefix = nature === 'VACATION' ? 'Vacaciones:' : 'Justificante:';
+    
+    return na === nb 
+      ? `${prefix} ${na} · ${dayWord}` 
+      : `${prefix} ${na} al ${nb} · ${dayWord}`;
   });
 
 
@@ -269,9 +278,9 @@ export class TrabajadorPermisosComponent implements OnInit {
     const t = new Date(y, m, day).getTime();
 
     // Si no es vacaciones, solo se permite elegir un día.
-    if (this.requestType() !== 'VACATION') {
+    if (this.requestNature() !== 'VACATION') {
       this.selectionStartMs.set(t);
-      this.selectionEndMs.set(null); // O set(t) si preferimos igualarlo, lo dejas null para que el compute lo entienda como mismo día
+      this.selectionEndMs.set(null);
       return;
     }
 
@@ -337,7 +346,7 @@ export class TrabajadorPermisosComponent implements OnInit {
       return;
     }
 
-    if (this.requestType() !== 'VACATION' && !this.reason()) {
+    if (this.requestNature() === 'ABSENCE' && !this.reason()) {
       window.alert('Debes proporcionar un motivo para el justificante.');
       return;
     }
@@ -349,11 +358,18 @@ export class TrabajadorPermisosComponent implements OnInit {
       const lo = new Date(Math.min(s!, e!)).toISOString().slice(0, 10);
       const hi = new Date(Math.max(s!, e!)).toISOString().slice(0, 10);
 
+      // Manejar subtipo como "metadato" en el motivo
+      let finalReason = this.reason();
+      if (this.requestNature() === 'ABSENCE') {
+        const subtypeLabel = this.absenceSubtype() === 'PROGRAMMED' ? '[FALTA PROGRAMADA]' : '[MOTIVO URGENTE]';
+        finalReason = `${subtypeLabel} ${finalReason}`;
+      }
+
       this.leaveService.createRequest({
-        type: this.requestType(),
+        type: this.requestNature() === 'VACATION' ? 'VACATION' : 'ABSENCE',
         startDate: lo,
         endDate: hi,
-        reason: this.reason(),
+        reason: finalReason,
         evidenceUrl: this.evidenceFile()?.name // Mocked por ahora hasta tener S3
       }).subscribe({
         next: () => {
@@ -370,9 +386,9 @@ export class TrabajadorPermisosComponent implements OnInit {
     }
   }
 
-  protected setRequestType(type: LeaveRequestType): void {
-    this.requestType.set(type);
-    this.clearSelection(); // Limpiar el calendario al cambiar de tipo
+  protected setRequestNature(nature: LeaveRequestNature): void {
+    this.requestNature.set(nature);
+    this.clearSelection(); 
   }
 
   protected updateReason(event: Event): void {

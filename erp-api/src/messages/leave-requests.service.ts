@@ -75,8 +75,8 @@ export class LeaveRequestsService {
 
     // Initial history record
     const history = this.historyRepo.create({
-      leaveRequest: { id: saved.id },
-      author: { id: userId },
+      leaveRequestId: saved.id,
+      authorId: userId,
       actionType: LeaveRequestActionType.CREATED,
       message: data.reason,
     });
@@ -103,8 +103,8 @@ export class LeaveRequestsService {
     await this.requestRepo.save(req);
 
     const history = this.historyRepo.create({
-      leaveRequest: { id: req.id },
-      author: { id: authorId },
+      leaveRequestId: req.id,
+      authorId: authorId,
       actionType: data.status as unknown as LeaveRequestActionType,
       message: data.message || '',
       proposedStartDate: data.proposedStartDate ? new Date(data.proposedStartDate) : null,

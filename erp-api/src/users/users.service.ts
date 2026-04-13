@@ -97,6 +97,7 @@ export class UsersService {
       role: dto.role,
       fullName: dto.fullName.trim(),
       puesto: dto.puesto?.trim() || null,
+      fechaIngreso: dto.fechaIngreso ? new Date(dto.fechaIngreso) : null,
       activo: true,
     });
     return this.usersRepo.save(user);
@@ -170,6 +171,10 @@ export class UsersService {
     if (dto.pin !== undefined && dto.pin.trim() !== '') {
       await this.assertPinUniqueAmongActive(dto.pin, id);
       user.pinHash = await bcrypt.hash(dto.pin, BCRYPT_ROUNDS);
+    }
+
+    if (dto.fechaIngreso !== undefined) {
+      user.fechaIngreso = dto.fechaIngreso ? new Date(dto.fechaIngreso) : null;
     }
 
     return this.usersRepo.save(user);

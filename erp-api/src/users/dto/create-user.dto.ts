@@ -1,6 +1,8 @@
 import {
+  IsDateString,
   IsEmail,
   IsEnum,
+  IsNotEmpty,
   IsOptional,
   IsString,
   Matches,
@@ -40,4 +42,8 @@ export class CreateUserDto {
   @IsString()
   @MaxLength(120)
   puesto?: string;
+
+  @IsNotEmpty()
+  @IsDateString()
+  fechaIngreso: string;
 }

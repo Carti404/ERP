@@ -9,6 +9,7 @@ export interface ErpUserPublic {
   puesto: string | null;
   activo: boolean;
   inactivoDesde?: string | null;
+  fechaIngreso?: string | null;
   createdAt: string;
 }
 
@@ -19,6 +20,7 @@ export interface CreateUserPayload {
   role: ErpUserRole;
   email?: string;
   puesto?: string;
+  fechaIngreso: string;
 }
 
 export interface UpdateUserPayload {
@@ -27,5 +29,6 @@ export interface UpdateUserPayload {
   role: ErpUserRole;
   email: string | null;
   puesto: string | null;
+  fechaIngreso?: string | null;
   pin?: string;
 }

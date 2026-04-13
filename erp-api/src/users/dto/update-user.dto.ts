@@ -1,4 +1,5 @@
 import {
+  IsDateString,
   IsEmail,
   IsEnum,
   IsOptional,
@@ -48,4 +49,7 @@ export class UpdateUserDto {
     message: 'El PIN debe ser exactamente 4 dígitos numéricos.',
   })
   pin?: string;
+  @IsOptional()
+  @IsDateString()
+  fechaIngreso?: string;
 }

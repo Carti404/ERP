@@ -69,6 +69,7 @@ export class AdminPersonalComponent implements OnInit {
     puesto: ['', [Validators.maxLength(120)]],
     role: ['worker' as 'admin' | 'worker', [Validators.required]],
     pin: ['', [Validators.required, Validators.pattern(/^\d{4}$/)]],
+    fechaIngreso: ['', [Validators.required]],
   });
 
   protected readonly filteredWorkers = computed(() => {
@@ -242,6 +243,7 @@ export class AdminPersonalComponent implements OnInit {
       puesto: '',
       role: 'worker',
       pin: '',
+      fechaIngreso: new Date().toISOString().split('T')[0],
     });
     this.formError.set(null);
     this.pinServerError.set(null);
@@ -258,6 +260,7 @@ export class AdminPersonalComponent implements OnInit {
       puesto: w.puesto ?? '',
       role: w.role,
       pin: '',
+      fechaIngreso: w.fechaIngreso ? new Date(w.fechaIngreso).toISOString().split('T')[0] : '',
     });
     this.formError.set(null);
     this.pinServerError.set(null);
@@ -320,6 +323,7 @@ export class AdminPersonalComponent implements OnInit {
         role: v.role,
         email: v.email.trim() ? v.email.trim() : null,
         puesto: v.puesto.trim() ? v.puesto.trim() : null,
+        fechaIngreso: v.fechaIngreso,
       };
       const pinTrim = v.pin.trim();
       if (pinTrim) {
@@ -344,6 +348,7 @@ export class AdminPersonalComponent implements OnInit {
       fullName: v.fullName.trim(),
       pin: v.pin,
       role: v.role,
+      fechaIngreso: v.fechaIngreso,
     };
     const emailTrim = v.email.trim();
     if (emailTrim) {

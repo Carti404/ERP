@@ -320,6 +320,16 @@
         }
       </div>
 
+      <div>
+        <label for="worker-fecha-ingreso"
+          class="mb-1 block text-xs font-bold uppercase tracking-wide text-[#45474d] dark:text-[var(--erp-login-muted)]">Fecha de ingreso</label>
+        <input id="worker-fecha-ingreso" formControlName="fechaIngreso" type="date"
+          class="w-full rounded-lg border border-[#c5c6cd]/40 bg-[#f3f4f5] px-3 py-2.5 text-sm dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-input-bg)] dark:text-[var(--erp-login-text-primary)]" />
+        @if (form.controls.fechaIngreso.touched && form.controls.fechaIngreso.errors?.['required']) {
+        <p class="mt-1 text-xs text-[#ba1a1a]">La fecha de ingreso es obligatoria.</p>
+        }
+      </div>
+
       <div class="flex flex-wrap justify-end gap-3 pt-2">
         <button type="button"
           class="rounded-lg border border-[#c5c6cd]/50 px-5 py-2.5 text-sm font-semibold text-[#051125] dark:border-[var(--erp-login-input-border)] dark:text-[var(--erp-login-text-primary)]"

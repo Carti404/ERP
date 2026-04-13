@@ -42,197 +42,243 @@
             {{ monthTitle() }}
           </h2>
           <div class="flex gap-1">
-            <button
-              type="button"
+            <button type="button"
               class="rounded-lg p-1.5 text-[var(--erp-login-muted)] hover:bg-[color-mix(in_srgb,var(--erp-login-muted)_10%,transparent)]"
-              (click)="prevMonth()"
-              aria-label="Mes anterior"
-            >
+              (click)="prevMonth()" aria-label="Mes anterior">
               <span class="material-symbols-outlined text-xl" aria-hidden="true">chevron_left</span>
             </button>
-            <button
-              type="button"
+            <button type="button"
               class="rounded-lg p-1.5 text-[var(--erp-login-muted)] hover:bg-[color-mix(in_srgb,var(--erp-login-muted)_10%,transparent)]"
-              (click)="nextMonth()"
-              aria-label="Mes siguiente"
-            >
+              (click)="nextMonth()" aria-label="Mes siguiente">
               <span class="material-symbols-outlined text-xl" aria-hidden="true">chevron_right</span>
             </button>
           </div>
         </div>
 
-        <!-- Tipo de Solicitud -->
-        <div class="mb-5 flex flex-wrap gap-2">
-          <button type="button" class="erp-permisos-chip" [class.erp-permisos-chip--active]="requestType() === 'VACATION'" (click)="setRequestType('VACATION')">
-            Vacaciones
-          </button>
-          <button type="button" class="erp-permisos-chip" [class.erp-permisos-chip--active]="requestType() === 'LATENESS'" (click)="setRequestType('LATENESS')">
-            Retardo
-          </button>
-          <button type="button" class="erp-permisos-chip" [class.erp-permisos-chip--active]="requestType() === 'ABSENCE'" (click)="setRequestType('ABSENCE')">
-            Falta
-          </button>
-          <button type="button" class="erp-permisos-chip" [class.erp-permisos-chip--active]="requestType() === 'MEDICAL'" (click)="setRequestType('MEDICAL')">
-            Baja médica
-          </button>
-          <button type="button" class="erp-permisos-chip" [class.erp-permisos-chip--active]="requestType() === 'PERSONAL'" (click)="setRequestType('PERSONAL')">
-            Asunto personal
-          </button>
+        <!-- Naturaleza de la Solicitud -->
+        <div class="mb-6 px-1">
+          <p class="mb-3 text-[10px] font-black uppercase tracking-widest text-[var(--erp-login-label)]">
+            ¿Qué deseas solicitar?
+          </p>
+          <div class="flex p-1 bg-slate-200/50 rounded-xl gap-1 dark:bg-slate-800/40">
+            <button 
+              type="button" 
+              class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all border-2"
+              [class.bg-indigo-600]="requestNature() === 'VACATION'"
+              [class.text-white]="requestNature() === 'VACATION'"
+              [class.border-indigo-600]="requestNature() === 'VACATION'"
+              [class.border-transparent]="requestNature() !== 'VACATION'"
+              [class.text-slate-500]="requestNature() !== 'VACATION'"
+              (click)="setRequestNature('VACATION')"
+            >
+              <span class="material-symbols-outlined text-lg">beach_access</span>
+              Vacaciones
+            </button>
+            <button 
+              type="button" 
+              class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all border-2"
+              [class.bg-amber-600]="requestNature() === 'ABSENCE'"
+              [class.text-white]="requestNature() === 'ABSENCE'"
+              [class.border-amber-600]="requestNature() === 'ABSENCE'"
+              [class.border-transparent]="requestNature() !== 'ABSENCE'"
+              [class.text-slate-500]="requestNature() !== 'ABSENCE'"
+              (click)="setRequestNature('ABSENCE')"
+            >
+              <span class="material-symbols-outlined text-lg">description</span>
+              Falta
+            </button>
+          </div>
         </div>
 
-        <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold uppercase tracking-wide text-[var(--erp-login-muted)]">
+        @if (requestNature() === 'ABSENCE') {
+        <div class="mb-5 animate-in fade-in slide-in-from-top-1 duration-200">
+          <div class="flex items-center gap-2 mb-3 px-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
+            <p class="text-[10px] font-black uppercase tracking-widest text-amber-700 dark:text-amber-400">¿Qué tipo de falta es?</p>
+          </div>
+          <div class="grid grid-cols-2 gap-2 p-1 bg-amber-50 rounded-xl dark:bg-amber-900/10">
+            <button 
+              type="button" 
+              class="flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all border-2" 
+              [class.bg-white]="absenceSubtype() === 'PROGRAMMED'"
+              [class.text-amber-700]="absenceSubtype() === 'PROGRAMMED'"
+              [class.border-amber-200]="absenceSubtype() === 'PROGRAMMED'"
+              [class.border-transparent]="absenceSubtype() !== 'PROGRAMMED'"
+              [class.text-amber-600/60]="absenceSubtype() !== 'PROGRAMMED'"
+              (click)="absenceSubtype.set('PROGRAMMED')"
+            >
+              <span class="material-symbols-outlined text-sm">calendar_today</span>
+              Programada
+            </button>
+            <button 
+              type="button" 
+              class="flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all border-2" 
+              [class.bg-white]="absenceSubtype() === 'URGENT'"
+              [class.text-amber-700]="absenceSubtype() === 'URGENT'"
+              [class.border-amber-200]="absenceSubtype() === 'URGENT'"
+              [class.border-transparent]="absenceSubtype() !== 'URGENT'"
+              [class.text-amber-600/60]="absenceSubtype() !== 'URGENT'"
+              (click)="absenceSubtype.set('URGENT')"
+            >
+              <span class="material-symbols-outlined text-sm">emergency</span>
+              Urgente
+            </button>
+          </div>
+        </div>
+        }
+
+        <!-- Visual Feedback Indicator -->
+        <div
+          class="mb-4 flex items-center gap-3 px-3 py-2 rounded-lg border border-dashed transition-colors"
+          [class.border-indigo-200]="requestNature() === 'VACATION'"
+          [class.bg-indigo-50/50]="requestNature() === 'VACATION'"
+          [class.border-amber-200]="requestNature() === 'ABSENCE'"
+          [class.bg-amber-50/50]="requestNature() === 'ABSENCE'">
+          <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+            [class.bg-indigo-100]="requestNature() === 'VACATION'"
+            [class.text-indigo-600]="requestNature() === 'VACATION'"
+            [class.bg-amber-100]="requestNature() === 'ABSENCE'" 
+            [class.text-amber-600]="requestNature() === 'ABSENCE'">
+            <span class="material-symbols-outlined text-xl">
+              {{ requestNature() === 'VACATION' ? 'event_available' : 'report_problem' }}
+            </span>
+          </div>
+          <p class="text-[11px] leading-tight"
+             [class.text-indigo-900/70]="requestNature() === 'VACATION'"
+             [class.text-amber-900/70]="requestNature() === 'ABSENCE'">
+            El sistema solicita:
+            <strong class="font-black"
+                    [class.text-indigo-900]="requestNature() === 'VACATION'"
+                    [class.text-amber-900]="requestNature() === 'ABSENCE'">
+              {{ requestNature() === 'VACATION' ? 'Periodo Vacacional' : 'Justificación ' + (absenceSubtype() === 'PROGRAMMED' ? 'Programada' : 'Urgente') }}
+            </strong>
+            <br>
+            {{ requestNature() === 'VACATION' ? 'Define un rango (fecha inicio y fin).' : 'Selecciona el día de la falta.' }}
+          </p>
+        </div>
+
+        <div
+          class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold uppercase tracking-wide text-[var(--erp-login-muted)]">
           @for (w of weekdayLabels; track w) {
-            <span class="py-1">{{ w }}</span>
+          <span class="py-1">{{ w }}</span>
           }
         </div>
         <p class="mb-2 text-[11px] leading-snug text-[var(--erp-login-muted)]">
           @if (selectionSummary()) {
-            <span class="font-semibold text-[var(--erp-login-text-primary)]">{{ selectionSummary() }}</span>
+          <span class="font-semibold text-[var(--erp-login-text-primary)]">{{ selectionSummary() }}</span>
           } @else {
-            {{ selectionHint() }}
+          {{ selectionHint() }}
           }
         </p>
         <div class="mt-1 grid grid-cols-7 gap-1" role="grid" [attr.aria-label]="'Calendario de ' + monthTitle()">
           @for (c of calendarCells(); track $index) {
-            @if (c.label === null) {
-              <span class="aspect-square"></span>
-            } @else {
-              <button
-                type="button"
-                class="erp-permisos-cal-cell erp-permisos-cal-cell--btn transition-colors"
-                [class.erp-permisos-cal-cell--range]="c.inRange"
-                [class.erp-permisos-cal-cell--selected]="c.isStart || c.isEnd"
-                [class.erp-permisos-cal-cell--holiday]="c.isHoliday"
-                [attr.title]="c.isHoliday ? c.holidayTitle : null"
-                [attr.aria-label]="cellAriaLabel(c)"
-                (click)="onDayClick(c.label)"
-              >
-                {{ c.label }}
-              </button>
-            }
+          @if (c.label === null) {
+          <span class="aspect-square"></span>
+          } @else {
+          <button type="button" class="erp-permisos-cal-cell erp-permisos-cal-cell--btn transition-colors"
+            [class.erp-permisos-cal-cell--range]="c.inRange"
+            [class.erp-permisos-cal-cell--selected]="c.isStart || c.isEnd"
+            [class.erp-permisos-cal-cell--holiday]="c.isHoliday" [attr.title]="c.isHoliday ? c.holidayTitle : null"
+            [attr.aria-label]="cellAriaLabel(c)" (click)="onDayClick(c.label)">
+            {{ c.label }}
+          </button>
+          }
           }
         </div>
         <div class="mt-2 flex justify-end">
-          <button
-            type="button"
+          <button type="button"
             class="text-[10px] font-bold uppercase tracking-wide text-[var(--erp-login-muted)] underline-offset-2 hover:text-[#47607e] hover:underline"
-            (click)="clearSelection()"
-          >
+            (click)="clearSelection()">
             Limpiar selección
           </button>
         </div>
-        <div class="mt-4 flex items-center justify-between gap-3 border-t border-[var(--erp-login-input-border)] pt-4 dark:border-[rgb(255_255_255/0.08)]">
-          <div>
-            <span class="text-xs font-bold text-[var(--erp-login-text-primary)]">Jornada completa</span>
-            <p class="mt-0.5 text-[10px] text-[var(--erp-login-muted)]">Día completo o media jornada.</p>
-          </div>
-          <button
-            type="button"
-            class="erp-permisos-toggle"
-            [class.erp-permisos-toggle--on]="fullDay()"
-            (click)="toggleFullDay()"
-            role="switch"
-            [attr.aria-checked]="fullDay()"
-          >
-            <span class="erp-permisos-toggle__knob" aria-hidden="true"></span>
-          </button>
-        </div>
 
-        @if (requestType() !== 'VACATION') {
-          <div class="mt-5 border-t border-[var(--erp-login-input-border)] pt-5 dark:border-[rgb(255_255_255/0.08)]">
-            <label class="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--erp-login-text-primary)]">
-              Motivo de la justificación
+        @if (requestNature() === 'ABSENCE') {
+        <div class="mt-5 border-t border-[var(--erp-login-input-border)] pt-5 dark:border-[rgb(255_255_255/0.08)]">
+          <label class="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--erp-login-text-primary)]">
+            Motivo de la justificación
+          </label>
+          <textarea
+            class="w-full rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-bg)] p-3 text-sm text-[var(--erp-login-text-primary)] focus:border-[#47607e] focus:outline-none dark:border-[rgb(255_255_255/0.1)] dark:bg-[rgb(0_0_0/0.2)]"
+            rows="3" placeholder="Explica brevemente la razón de la ausencia o retardo..." [value]="reason()"
+            (input)="updateReason($event)"></textarea>
+
+          <label
+            class="mt-4 mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--erp-login-text-primary)]">
+            Evidencia (Archivo PDF, máximo 30MB)
+          </label>
+          <div class="flex items-center gap-3">
+            <label
+              class="cursor-pointer rounded-lg bg-[color-mix(in_srgb,var(--erp-login-muted)_10%,transparent)] px-4 py-2 text-xs font-bold uppercase tracking-wide text-[var(--erp-login-text-primary)] transition-colors hover:bg-[color-mix(in_srgb,var(--erp-login-muted)_15%,transparent)]">
+              Seleccionar Archivo
+              <input type="file" class="hidden" accept="application/pdf" (change)="onFileSelected($event)" />
             </label>
-            <textarea
-              class="w-full rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-bg)] p-3 text-sm text-[var(--erp-login-text-primary)] focus:border-[#47607e] focus:outline-none dark:border-[rgb(255_255_255/0.1)] dark:bg-[rgb(0_0_0/0.2)]"
-              rows="3"
-              placeholder="Explica brevemente la razón de la ausencia o retardo..."
-              [value]="reason()"
-              (input)="updateReason($event)"
-            ></textarea>
-            
-            <label class="mt-4 mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--erp-login-text-primary)]">
-              Evidencia (Archivo PDF, máximo 30MB)
-            </label>
-            <div class="flex items-center gap-3">
-              <label class="cursor-pointer rounded-lg bg-[color-mix(in_srgb,var(--erp-login-muted)_10%,transparent)] px-4 py-2 text-xs font-bold uppercase tracking-wide text-[var(--erp-login-text-primary)] transition-colors hover:bg-[color-mix(in_srgb,var(--erp-login-muted)_15%,transparent)]">
-                Seleccionar Archivo
-                <input type="file" class="hidden" accept="application/pdf" (change)="onFileSelected($event)" />
-              </label>
-              @if (evidenceFile()) {
-                <span class="text-xs text-[#47607e] font-semibold truncate flex-1">
-                  📄 {{ evidenceFile()?.name }}
-                </span>
-              } @else {
-                <span class="text-xs text-[var(--erp-login-muted)] italic">
-                  Ningún archivo seleccionado
-                </span>
-              }
-            </div>
+            @if (evidenceFile()) {
+            <span class="text-xs text-[#47607e] font-semibold truncate flex-1">
+              📄 {{ evidenceFile()?.name }}
+            </span>
+            } @else {
+            <span class="text-xs text-[var(--erp-login-muted)] italic">
+              Ningún archivo seleccionado
+            </span>
+            }
           </div>
+        </div>
         }
 
-        <button
-          type="button"
-          class="erp-mailbox-compose-btn-primary mt-6 w-full justify-center !shadow-none"
-          [disabled]="!selectionStartMs()"
-          [class.opacity-50]="!selectionStartMs()"
-          (click)="onSendRequest()"
-        >
+        <button type="button" class="erp-mailbox-compose-btn-primary mt-6 w-full justify-center !shadow-none"
+          [disabled]="!selectionStartMs()" [class.opacity-50]="!selectionStartMs()" (click)="onSendRequest()">
           Enviar solicitud
         </button>
       </section>
     </div>
 
     <section aria-labelledby="worker-historial-heading">
-      <h2 id="worker-historial-heading" class="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--erp-login-label)]">
+      <h2 id="worker-historial-heading"
+        class="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--erp-login-label)]">
         Historial de solicitudes
       </h2>
       <div class="flex flex-col gap-3">
         @if (history().length === 0) {
-          <p class="rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] px-4 py-8 text-center text-sm text-[var(--erp-login-muted)]">
-            No hay solicitudes en el historial.
-          </p>
+        <p
+          class="rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] px-4 py-8 text-center text-sm text-[var(--erp-login-muted)]">
+          No hay solicitudes en el historial.
+        </p>
         }
         @for (item of history(); track item.id) {
-          <article
-            class="erp-permisos-worker-history-card"
-            [class.erp-permisos-worker-history-card--highlight]="item.status === 'propuesta_admin'"
-          >
-            <div class="flex flex-wrap items-start justify-between gap-2">
-              <div class="min-w-0">
-                <p class="font-bold text-[var(--erp-login-text-primary)]">{{ item.title }}</p>
-                <p class="mt-0.5 text-xs text-[var(--erp-login-muted)]">{{ item.dateRange }} · {{ item.daysLabel }}</p>
-              </div>
-              <span [class]="statusBadgeClass(item.status)">{{ statusLabel(item.status) }}</span>
+        <article class="erp-permisos-worker-history-card"
+          [class.erp-permisos-worker-history-card--highlight]="item.status === 'propuesta_admin'">
+          <div class="flex flex-wrap items-start justify-between gap-2">
+            <div class="min-w-0">
+              <p class="font-bold text-[var(--erp-login-text-primary)]">{{ item.title }}</p>
+              <p class="mt-0.5 text-xs text-[var(--erp-login-muted)]">{{ item.dateRange }} · {{ item.daysLabel }}</p>
             </div>
-            @if (item.negotiation) {
-              <div class="mt-4 rounded-lg border border-[var(--erp-login-input-border)] bg-[color-mix(in_srgb,var(--erp-login-muted)_6%,transparent)] p-3 dark:border-[rgb(255_255_255/0.08)]">
-                <p class="text-[10px] font-black uppercase tracking-wider text-[var(--erp-login-muted)]">
-                  {{ item.negotiation.from }}
-                </p>
-                <p class="mt-2 text-sm italic leading-relaxed text-[var(--erp-login-text-primary)]">
-                  «{{ item.negotiation.message }}»
-                </p>
-                <div class="mt-3 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    class="min-h-10 flex-1 rounded-lg border-2 border-[#e63946] px-3 text-xs font-bold uppercase tracking-wide text-[#e63946] transition-colors hover:bg-[color-mix(in_srgb,#e63946_8%,transparent)] sm:flex-none sm:px-4"
-                    (click)="onRejectProposal(item)"
-                  >
-                    Rechazar
-                  </button>
-                  <button
-                    type="button"
-                    class="min-h-10 flex-1 rounded-lg bg-[#47607e] px-3 text-xs font-bold uppercase tracking-wide text-white transition-opacity hover:opacity-90 sm:flex-none sm:px-4"
-                    (click)="onAcceptProposal(item)"
-                  >
-                    Aceptar cambio
-                  </button>
-                </div>
-              </div>
-            }
-          </article>
+            <span [class]="statusBadgeClass(item.status)">{{ statusLabel(item.status) }}</span>
+          </div>
+          @if (item.negotiation) {
+          <div
+            class="mt-4 rounded-lg border border-[var(--erp-login-input-border)] bg-[color-mix(in_srgb,var(--erp-login-muted)_6%,transparent)] p-3 dark:border-[rgb(255_255_255/0.08)]">
+            <p class="text-[10px] font-black uppercase tracking-wider text-[var(--erp-login-muted)]">
+              {{ item.negotiation.from }}
+            </p>
+            <p class="mt-2 text-sm italic leading-relaxed text-[var(--erp-login-text-primary)]">
+              «{{ item.negotiation.message }}»
+            </p>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <button type="button"
+                class="min-h-10 flex-1 rounded-lg border-2 border-[#e63946] px-3 text-xs font-bold uppercase tracking-wide text-[#e63946] transition-colors hover:bg-[color-mix(in_srgb,#e63946_8%,transparent)] sm:flex-none sm:px-4"
+                (click)="onRejectProposal(item)">
+                Rechazar
+              </button>
+              <button type="button"
+                class="min-h-10 flex-1 rounded-lg bg-[#47607e] px-3 text-xs font-bold uppercase tracking-wide text-white transition-opacity hover:opacity-90 sm:flex-none sm:px-4"
+                (click)="onAcceptProposal(item)">
+                Aceptar cambio
+              </button>
+            </div>
+          </div>
+          }
+        </article>
         }
       </div>
     </section>
