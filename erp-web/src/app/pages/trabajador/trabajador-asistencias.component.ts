@@ -9,31 +9,10 @@ export interface TrabajadorAsistenciaCalDay {
   readonly estado: TrabajadorAsistenciaDiaEstado;
 }
 
-export interface TrabajadorJustificacionHistorialRow {
-  readonly id: string;
-  readonly status: 'pending' | 'approved' | 'rejected';
-  readonly type: string;
-  readonly date: string;
-  readonly description: string;
-}
-
-const JUST_TYPES = [
-  { id: 'med', label: 'Baja médica' },
-  { id: 'delay', label: 'Justificación de retraso' },
-  { id: 'abs', label: 'Ausencia' },
-  { id: 'pers', label: 'Asunto personal' },
-] as const;
-
-const SHIFTS = [
-  { id: 'morning', label: 'Mañana' },
-  { id: 'afternoon', label: 'Tarde' },
-  { id: 'night', label: 'Noche' },
-] as const;
 
 @Component({
   selector: 'app-trabajador-asistencias',
   standalone: true,
-  imports: [NgClass],
   templateUrl: './trabajador-asistencias.component.html',
 })
 export class TrabajadorAsistenciasComponent {
@@ -108,88 +87,33 @@ export class TrabajadorAsistenciasComponent {
     };
   });
 
-  protected readonly justTypes = JUST_TYPES;
-
-  protected readonly shifts = SHIFTS;
-
-  protected readonly historial: readonly TrabajadorJustificacionHistorialRow[] = [];
-
-  protected readonly selectedDay = signal<number | null>(null);
-
-  protected readonly justTypeId = signal<string>(JUST_TYPES[0].id);
-
-  protected readonly shiftId = signal<string>(SHIFTS[0].id);
-
-  protected readonly reasonText = signal<string>('');
+  protected readonly selectedDate = signal<string | null>(null);
 
   protected prevMonth(): void {
     const d = new Date(this.viewMonth());
     d.setMonth(d.getMonth() - 1);
     this.viewMonth.set(d);
-    this.selectedDay.set(null);
+    this.selectedDate.set(null);
   }
 
   protected nextMonth(): void {
     const d = new Date(this.viewMonth());
     d.setMonth(d.getMonth() + 1);
     this.viewMonth.set(d);
-    this.selectedDay.set(null);
+    this.selectedDate.set(null);
   }
 
   protected pickDay(cell: TrabajadorAsistenciaCalDay): void {
-    if (cell.d === null) {
-      return;
-    }
-    this.selectedDay.set(cell.d);
+    if (cell.d === null) return;
+    const v = this.viewMonth();
+    const iso = `${v.getFullYear()}-${String(v.getMonth() + 1).padStart(2, '0')}-${String(cell.d).padStart(2, '0')}`;
+    this.selectedDate.set(iso);
   }
 
   protected isDaySelected(cell: TrabajadorAsistenciaCalDay): boolean {
-    return cell.d !== null && this.selectedDay() === cell.d;
-  }
-
-  protected onJustTypeChange(value: string): void {
-    this.justTypeId.set(value);
-  }
-
-  protected onShiftChange(value: string): void {
-    this.shiftId.set(value);
-  }
-
-  protected onReasonInput(value: string): void {
-    this.reasonText.set(value);
-  }
-
-  protected onCancelForm(): void {
-    this.reasonText.set('');
-  }
-
-  protected onSubmitForm(): void {
-    return;
-  }
-
-  protected onUploadClick(): void {
-    return;
-  }
-
-  protected statusBadgeClass(row: TrabajadorJustificacionHistorialRow): string {
-    switch (row.status) {
-      case 'pending':
-        return 'bg-amber-500/15 text-amber-800 dark:text-amber-300';
-      case 'approved':
-        return 'bg-[#c2dcff] text-[#48617e] dark:bg-[#1b263b] dark:text-[#c2dcff]';
-      default:
-        return 'bg-red-500/15 text-red-800 dark:text-red-300';
-    }
-  }
-
-  protected statusLabel(row: TrabajadorJustificacionHistorialRow): string {
-    switch (row.status) {
-      case 'pending':
-        return 'Pendiente';
-      case 'approved':
-        return 'Aprobada';
-      default:
-        return 'Rechazada';
-    }
+    if (cell.d === null || !this.selectedDate()) return false;
+    const v = this.viewMonth();
+    const iso = `${v.getFullYear()}-${String(v.getMonth() + 1).padStart(2, '0')}-${String(cell.d).padStart(2, '0')}`;
+    return this.selectedDate() === iso;
   }
 }

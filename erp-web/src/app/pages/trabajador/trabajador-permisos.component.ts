@@ -1,8 +1,11 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { SystemParametersApiService } from '../../core/system-parameters/system-parameters-api.service';
 import type { HolidayRowDto } from '../../core/system-parameters/system-parameters-api.types';
+import { LeaveRequestsService } from '../../core/services/leave-requests.service';
 
 export type WorkerPermisoHistoryStatus = 'propuesta_admin' | 'aprobado' | 'revision';
+
+export type LeaveRequestType = 'VACATION' | 'LATENESS' | 'ABSENCE' | 'PERSONAL' | 'MEDICAL';
 
 export interface WorkerPermisoHistoryItem {
   readonly id: string;
@@ -23,15 +26,16 @@ export interface WorkerPermisoHistoryItem {
 })
 export class TrabajadorPermisosComponent implements OnInit {
   private readonly sysParams = inject(SystemParametersApiService);
+  private readonly leaveService = inject(LeaveRequestsService);
 
-  protected readonly balance = {
-    availableDays: '—' as const,
-    periodLabel: 'Sin datos de periodo',
+  protected readonly balance = signal({
+    availableDays: '—' as string | number,
+    periodLabel: 'Cargando...',
     requested: 0,
     approved: 0,
-  };
+  });
 
-  protected readonly history: readonly WorkerPermisoHistoryItem[] = [];
+  protected readonly history = signal<WorkerPermisoHistoryItem[]>([]);
 
   protected readonly viewDate = signal(new Date());
 
@@ -42,6 +46,10 @@ export class TrabajadorPermisosComponent implements OnInit {
   protected readonly selectionEndMs = signal<number | null>(null);
 
   protected readonly holidays = signal<HolidayRowDto[]>([]);
+
+  protected readonly requestType = signal<LeaveRequestType>('VACATION');
+  protected readonly reason = signal<string>('');
+  protected readonly evidenceFile = signal<File | null>(null);
 
   protected readonly monthTitle = computed(() => {
     const d = this.viewDate();
@@ -67,20 +75,35 @@ export class TrabajadorPermisosComponent implements OnInit {
   });
 
   protected readonly selectionSummary = computed(() => {
-    if (!this.selectionReady()) {
+    if (!this.selectionReady() && this.requestType() === 'VACATION') {
       return '';
     }
-    const lo = Math.min(this.selectionStartMs()!, this.selectionEndMs()!);
-    const hi = Math.max(this.selectionStartMs()!, this.selectionEndMs()!);
+    const s = this.selectionStartMs();
+    if (s === null) return '';
+    const e = this.selectionEndMs() ?? s;
+
+    const lo = Math.min(s as number, e as number);
+    const hi = Math.max(s as number, e as number);
     const a = new Date(lo);
     const b = new Date(hi);
     const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
     const na = a.toLocaleDateString('es-MX', opts);
     const nb = b.toLocaleDateString('es-MX', opts);
-    const days = Math.round((hi - lo) / 86400000) + 1;
-    const dayWord = days === 1 ? '1 día' : `${days} días`;
+    
+    // Calcula días laborables (lun-sáb) entre `a` y `b`
+    let workingDaysCount = 0;
+    let currentDate = new Date(a);
+    while (currentDate <= b) {
+      if (currentDate.getDay() !== 0) { // No es Domingo
+        workingDaysCount++;
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    const dayWord = workingDaysCount === 1 ? '1 día laborable' : `${workingDaysCount} días laborables`;
     return na === nb ? `${na} · ${dayWord}` : `${na} — ${nb} · ${dayWord}`;
   });
+
 
   protected readonly calendarCells = computed(() => {
     const d = this.viewDate();
@@ -183,6 +206,39 @@ export class TrabajadorPermisosComponent implements OnInit {
       },
       error: (err) => console.error('Error al cargar parámetros del sistema', err),
     });
+
+    this.loadData();
+  }
+
+  private loadData(): void {
+    this.leaveService.getBalance().subscribe((res) => {
+      this.balance.set({
+        availableDays: res.availableDays,
+        periodLabel: `Ingreso: ${new Date(res.fechaIngreso).toLocaleDateString()}`,
+        requested: 0, // Podrías sumar los PENDING
+        approved: res.usedDays,
+      });
+    });
+
+    this.leaveService.getMyRequests().subscribe((reqs) => {
+      const mapped = reqs.map((r) => {
+        const lo = new Date(r.startDate).toLocaleDateString();
+        const hi = new Date(r.endDate).toLocaleDateString();
+        
+        let status: WorkerPermisoHistoryStatus = 'revision';
+        if (r.status === 'APPROVED') status = 'aprobado';
+        else if (r.status === 'ADMIN_PROPOSAL') status = 'propuesta_admin';
+        
+        return {
+          id: r.id,
+          title: r.type === 'VACATION' ? 'Vacaciones' : 'Justificante',
+          dateRange: r.startDate === r.endDate ? lo : `${lo} - ${hi}`,
+          daysLabel: `${r.totalDays} día(s)`,
+          status,
+        };
+      });
+      this.history.set(mapped);
+    });
   }
 
   protected prevMonth(): void {
@@ -212,6 +268,13 @@ export class TrabajadorPermisosComponent implements OnInit {
     const m = v.getMonth();
     const t = new Date(y, m, day).getTime();
 
+    // Si no es vacaciones, solo se permite elegir un día.
+    if (this.requestType() !== 'VACATION') {
+      this.selectionStartMs.set(t);
+      this.selectionEndMs.set(null); // O set(t) si preferimos igualarlo, lo dejas null para que el compute lo entienda como mismo día
+      return;
+    }
+
     const s = this.selectionStartMs();
     const e = this.selectionEndMs();
 
@@ -239,6 +302,7 @@ export class TrabajadorPermisosComponent implements OnInit {
       this.selectionEndMs.set(t);
     }
   }
+
 
   protected cellAriaLabel(c: {
     label: number | null;
@@ -268,8 +332,83 @@ export class TrabajadorPermisosComponent implements OnInit {
   }
 
   protected onSendRequest(): void {
-    return;
+    if (!this.selectionStartMs()) {
+      window.alert('Debes seleccionar al menos un día en el calendario.');
+      return;
+    }
+
+    if (this.requestType() !== 'VACATION' && !this.reason()) {
+      window.alert('Debes proporcionar un motivo para el justificante.');
+      return;
+    }
+
+    if (window.confirm('¿Confirmas el envío de esta solicitud?')) {
+      const s = this.selectionStartMs();
+      const e = this.selectionEndMs() ?? s;
+      
+      const lo = new Date(Math.min(s!, e!)).toISOString().slice(0, 10);
+      const hi = new Date(Math.max(s!, e!)).toISOString().slice(0, 10);
+
+      this.leaveService.createRequest({
+        type: this.requestType(),
+        startDate: lo,
+        endDate: hi,
+        reason: this.reason(),
+        evidenceUrl: this.evidenceFile()?.name // Mocked por ahora hasta tener S3
+      }).subscribe({
+        next: () => {
+          window.alert('Solicitud enviada correctamente');
+          this.clearSelection();
+          this.reason.set('');
+          this.evidenceFile.set(null);
+          this.loadData();
+        },
+        error: (err) => {
+          window.alert(err?.error?.message || 'Hubo un error al enviar la solicitud');
+        }
+      });
+    }
   }
+
+  protected setRequestType(type: LeaveRequestType): void {
+    this.requestType.set(type);
+    this.clearSelection(); // Limpiar el calendario al cambiar de tipo
+  }
+
+  protected updateReason(event: Event): void {
+    const target = event.target as HTMLTextAreaElement;
+    this.reason.set(target.value);
+  }
+
+  protected onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) {
+      this.evidenceFile.set(null);
+      return;
+    }
+    
+    const file = input.files[0];
+    
+    // Validar tipo de archivo (solo PDF)
+    if (file.type !== 'application/pdf') {
+      window.alert('Solo se permiten archivos en formato PDF.');
+      input.value = ''; // clean up
+      this.evidenceFile.set(null);
+      return;
+    }
+
+    // Validar tamaño de archivo (máximo 30MB)
+    const MAX_MB = 30;
+    if (file.size > MAX_MB * 1024 * 1024) {
+      window.alert(`El archivo excede el tamaño máximo permitido de ${MAX_MB}MB.`);
+      input.value = ''; // clean up
+      this.evidenceFile.set(null);
+      return;
+    }
+
+    this.evidenceFile.set(file);
+  }
+
 
   protected onAcceptProposal(_item: WorkerPermisoHistoryItem): void {
     return;

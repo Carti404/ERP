@@ -3,28 +3,15 @@
     <div>
       <h1
         class="text-balance text-lg font-black uppercase tracking-wide text-[var(--erp-login-text-primary)] sm:text-xl">
-        Gestión de permisos solicitados por trabajadores
+        Gestión de permisos y justificaciones
       </h1>
-    </div>
-    <div class="flex rounded-lg bg-[color-mix(in_srgb,var(--erp-login-muted)_8%,var(--erp-login-card))] p-1">
-      <button type="button"
-        class="erp-permisos-admin-view-tab rounded-md px-4 py-2 text-xs font-bold uppercase transition-colors"
-        [class.erp-permisos-admin-view-tab--active]="viewMode() === 'gantt'" (click)="setViewMode('gantt')">
-        Gantt
-      </button>
-      <button type="button"
-        class="erp-permisos-admin-view-tab rounded-md px-4 py-2 text-xs font-bold uppercase transition-colors"
-        [class.erp-permisos-admin-view-tab--active]="viewMode() === 'list'" (click)="setViewMode('list')">
-        Lista
-      </button>
     </div>
   </header>
 
   <div class="flex flex-col gap-6 xl:flex-row xl:items-start">
     <div class="min-w-0 flex-1 space-y-6">
-      @if (viewMode() === 'gantt') {
       <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        @for (k of kpis; track k.id) {
+        @for (k of kpis(); track k.id) {
         <article
           class="relative overflow-hidden rounded-xl border border-[var(--erp-login-input-border)] bg-[color-mix(in_srgb,var(--erp-login-muted)_6%,var(--erp-login-card))] p-5 dark:border-[rgb(255_255_255/0.08)]"
           [class.md:col-span-2]="k.tone === 'wide'" [class.xl:col-span-2]="k.tone === 'wide'"
@@ -53,7 +40,7 @@
           </div>
           <div class="lg:hidden text-[10px] opacity-80">Octubre 2023 · desliza en escritorio para ver fechas</div>
         </div>
-        @for (row of ganttRows; track row.id) {
+        @for (row of ganttRows(); track row.id) {
         <div class="erp-permisos-admin-gantt__row" role="button" tabindex="0"
           [class.erp-permisos-admin-gantt__row--alert]="row.highlight"
           [class.erp-permisos-admin-gantt__row--selected]="selectedRowId() === row.id" (click)="selectRow(row.id)"
@@ -81,15 +68,7 @@
         </div>
         }
       </div>
-      } @else {
-        <div
-          class="rounded-xl border border-dashed border-[var(--erp-login-input-border)] bg-[color-mix(in_srgb,var(--erp-login-muted)_5%,var(--erp-login-card))] px-6 py-16 text-center dark:border-[rgb(255_255_255/0.1)]">
-          <p class="text-sm font-semibold text-[var(--erp-login-text-primary)]">Vista lista</p>
-          <p class="mt-1 text-xs text-[var(--erp-login-muted)]">Próximamente: tabla filtrable y exportación (demo).</p>
-        </div>
-        }
-      </div>
-
+      
       <aside class="w-full shrink-0 xl:w-[400px] xl:max-w-[400px]">
         @if (panelDetail(); as detail) {
         <div class="erp-permisos-admin-detail">
@@ -198,3 +177,39 @@
       </aside>
     </div>
   </div>
+
+  @if (showAltModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div class="w-full max-w-sm rounded-2xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] p-6 shadow-xl">
+        <h3 class="mb-4 text-lg font-bold text-[var(--erp-login-text-primary)]">Proponer Alternativa</h3>
+        <p class="mb-4 text-xs text-[var(--erp-login-muted)]">
+          Selecciona las nuevas fechas a proponer al trabajador. Estas sustituirán a las orginales si el trabajador las acepta.
+        </p>
+
+        <div class="mb-4 space-y-3">
+          <div>
+            <label class="mb-1 block text-xs font-bold uppercase text-[var(--erp-login-muted)]" for="alt-start-date">Fecha Inicio</label>
+            <input type="date" id="alt-start-date" class="w-full rounded-lg border border-[var(--erp-login-input-border)] bg-[var(--erp-login-input-bg)] p-2 text-sm text-[var(--erp-login-text-primary)]"
+              [value]="altStartDate()" (change)="altStartDate.set($any($event.target).value)" />
+          </div>
+          <div>
+            <label class="mb-1 block text-xs font-bold uppercase text-[var(--erp-login-muted)]" for="alt-end-date">Fecha Fin</label>
+            <input type="date" id="alt-end-date" class="w-full rounded-lg border border-[var(--erp-login-input-border)] bg-[var(--erp-login-input-bg)] p-2 text-sm text-[var(--erp-login-text-primary)]"
+              [value]="altEndDate()" (change)="altEndDate.set($any($event.target).value)" />
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-6">
+          <button type="button" class="rounded-lg px-4 py-2 text-xs font-bold uppercase text-[var(--erp-login-muted)] hover:bg-[color-mix(in_srgb,var(--erp-login-muted)_10%,transparent)]"
+            (click)="cancelAltProposal()">
+            Cancelar
+          </button>
+          <button type="button" class="rounded-lg bg-[#47607e] px-4 py-2 text-xs font-bold uppercase text-white hover:bg-[#32455c]"
+            (click)="sendAltProposal()">
+            Proponer
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

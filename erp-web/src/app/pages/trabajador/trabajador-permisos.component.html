@@ -17,21 +17,21 @@
           </p>
           <span class="erp-permisos-badge erp-permisos-badge--activo">Activo</span>
         </div>
-        <p class="erp-permisos-worker-balance__value mt-3 text-white">{{ balance.availableDays }}</p>
-        <p class="mt-1 text-xs font-medium text-slate-400">{{ balance.periodLabel }}</p>
+        <p class="erp-permisos-worker-balance__value mt-3 text-white">{{ balance().availableDays }}</p>
+        <p class="mt-1 text-xs font-medium text-slate-400">{{ balance().periodLabel }}</p>
       </section>
 
       <div class="grid grid-cols-2 gap-3">
         <div class="erp-permisos-worker-mini-stat">
           <p class="text-[9px] font-black uppercase tracking-widest text-[var(--erp-login-label)]">Solicitados</p>
           <p class="mt-2 text-3xl font-black tabular-nums text-[var(--erp-login-text-primary)]">
-            {{ balance.requested.toString().padStart(2, '0') }}
+            {{ balance().requested.toString().padStart(2, '0') }}
           </p>
         </div>
         <div class="erp-permisos-worker-mini-stat">
           <p class="text-[9px] font-black uppercase tracking-widest text-[var(--erp-login-label)]">Aprobados</p>
           <p class="mt-2 text-3xl font-black tabular-nums text-[var(--erp-login-text-primary)]">
-            {{ balance.approved.toString().padStart(2, '0') }}
+            {{ balance().approved.toString().padStart(2, '0') }}
           </p>
         </div>
       </div>
@@ -60,6 +60,26 @@
             </button>
           </div>
         </div>
+
+        <!-- Tipo de Solicitud -->
+        <div class="mb-5 flex flex-wrap gap-2">
+          <button type="button" class="erp-permisos-chip" [class.erp-permisos-chip--active]="requestType() === 'VACATION'" (click)="setRequestType('VACATION')">
+            Vacaciones
+          </button>
+          <button type="button" class="erp-permisos-chip" [class.erp-permisos-chip--active]="requestType() === 'LATENESS'" (click)="setRequestType('LATENESS')">
+            Retardo
+          </button>
+          <button type="button" class="erp-permisos-chip" [class.erp-permisos-chip--active]="requestType() === 'ABSENCE'" (click)="setRequestType('ABSENCE')">
+            Falta
+          </button>
+          <button type="button" class="erp-permisos-chip" [class.erp-permisos-chip--active]="requestType() === 'MEDICAL'" (click)="setRequestType('MEDICAL')">
+            Baja médica
+          </button>
+          <button type="button" class="erp-permisos-chip" [class.erp-permisos-chip--active]="requestType() === 'PERSONAL'" (click)="setRequestType('PERSONAL')">
+            Asunto personal
+          </button>
+        </div>
+
         <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold uppercase tracking-wide text-[var(--erp-login-muted)]">
           @for (w of weekdayLabels; track w) {
             <span class="py-1">{{ w }}</span>
@@ -117,11 +137,46 @@
             <span class="erp-permisos-toggle__knob" aria-hidden="true"></span>
           </button>
         </div>
+
+        @if (requestType() !== 'VACATION') {
+          <div class="mt-5 border-t border-[var(--erp-login-input-border)] pt-5 dark:border-[rgb(255_255_255/0.08)]">
+            <label class="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--erp-login-text-primary)]">
+              Motivo de la justificación
+            </label>
+            <textarea
+              class="w-full rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-bg)] p-3 text-sm text-[var(--erp-login-text-primary)] focus:border-[#47607e] focus:outline-none dark:border-[rgb(255_255_255/0.1)] dark:bg-[rgb(0_0_0/0.2)]"
+              rows="3"
+              placeholder="Explica brevemente la razón de la ausencia o retardo..."
+              [value]="reason()"
+              (input)="updateReason($event)"
+            ></textarea>
+            
+            <label class="mt-4 mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--erp-login-text-primary)]">
+              Evidencia (Archivo PDF, máximo 30MB)
+            </label>
+            <div class="flex items-center gap-3">
+              <label class="cursor-pointer rounded-lg bg-[color-mix(in_srgb,var(--erp-login-muted)_10%,transparent)] px-4 py-2 text-xs font-bold uppercase tracking-wide text-[var(--erp-login-text-primary)] transition-colors hover:bg-[color-mix(in_srgb,var(--erp-login-muted)_15%,transparent)]">
+                Seleccionar Archivo
+                <input type="file" class="hidden" accept="application/pdf" (change)="onFileSelected($event)" />
+              </label>
+              @if (evidenceFile()) {
+                <span class="text-xs text-[#47607e] font-semibold truncate flex-1">
+                  📄 {{ evidenceFile()?.name }}
+                </span>
+              } @else {
+                <span class="text-xs text-[var(--erp-login-muted)] italic">
+                  Ningún archivo seleccionado
+                </span>
+              }
+            </div>
+          </div>
+        }
+
         <button
           type="button"
-          class="erp-mailbox-compose-btn-primary mt-4 w-full justify-center !shadow-none"
-          [disabled]="!selectionReady()"
-          [class.opacity-50]="!selectionReady()"
+          class="erp-mailbox-compose-btn-primary mt-6 w-full justify-center !shadow-none"
+          [disabled]="!selectionStartMs()"
+          [class.opacity-50]="!selectionStartMs()"
           (click)="onSendRequest()"
         >
           Enviar solicitud
@@ -134,12 +189,12 @@
         Historial de solicitudes
       </h2>
       <div class="flex flex-col gap-3">
-        @if (history.length === 0) {
+        @if (history().length === 0) {
           <p class="rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] px-4 py-8 text-center text-sm text-[var(--erp-login-muted)]">
             No hay solicitudes en el historial.
           </p>
         }
-        @for (item of history; track item.id) {
+        @for (item of history(); track item.id) {
           <article
             class="erp-permisos-worker-history-card"
             [class.erp-permisos-worker-history-card--highlight]="item.status === 'propuesta_admin'"

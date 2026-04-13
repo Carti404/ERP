@@ -34,6 +34,9 @@ export class User {
   @Column({ default: true })
   activo: boolean;
 
+  @Column({ name: 'fecha_ingreso', type: 'date', nullable: true })
+  fechaIngreso: Date | null;
+
   @Column({ name: 'inactivo_desde', type: 'timestamptz', nullable: true })
   inactivoDesde: Date | null;
 

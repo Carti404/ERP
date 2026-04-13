@@ -94,7 +94,7 @@ export class AttendanceService {
       }
 
       record = this.recordRepository.create({
-        userId: userId,
+        user: { id: userId } as any,
         workDate: today,
         status: calculatedStatus,
       });

@@ -10,6 +10,8 @@ import { PlantRestSettings } from './system-parameters/entities/plant-rest-setti
 import { WorkScheduleBlock } from './system-parameters/entities/work-schedule-block.entity';
 import { SystemParametersModule } from './system-parameters/system-parameters.module';
 import { InternalMessage } from './messages/entities/internal-message.entity';
+import { LeaveRequest } from './messages/entities/leave-request.entity';
+import { LeaveRequestHistory } from './messages/entities/leave-request-history.entity';
 import { MessagesModule } from './messages/messages.module';
 import { User } from './users/entities/user.entity';
 import { UsersModule } from './users/users.module';
@@ -44,6 +46,8 @@ import { AppNotification } from './notifications/entities/notification.entity';
           PlantRestSettings,
           Holiday,
           InternalMessage,
+          LeaveRequest,
+          LeaveRequestHistory,
           AttendanceRecord,
           AttendanceLog,
           ProductionTask,
