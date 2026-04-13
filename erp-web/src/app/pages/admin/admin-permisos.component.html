@@ -8,29 +8,30 @@
     </div>
   </header>
 
-  <div class="flex flex-col gap-6 xl:flex-row xl:items-start">
-    <div class="min-w-0 flex-1 space-y-6">
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        @for (k of kpis(); track k.id) {
-        <article
-          class="relative overflow-hidden rounded-xl border border-[var(--erp-login-input-border)] bg-[color-mix(in_srgb,var(--erp-login-muted)_6%,var(--erp-login-card))] p-5 dark:border-[rgb(255_255_255/0.08)]"
-          [class.md:col-span-2]="k.tone === 'wide'" [class.xl:col-span-2]="k.tone === 'wide'"
-          [class.border-l-4]="k.tone === 'wide'" [class.border-l-[#47607e]]="k.tone === 'wide'">
-          <div class="pointer-events-none absolute right-3 top-3 opacity-10"
-            [class.text-[#e63946]]="k.tone === 'alert'">
-            <span class="material-symbols-outlined text-5xl" aria-hidden="true">{{ k.icon }}</span>
-          </div>
-          <p class="text-[10px] font-black uppercase tracking-widest text-[var(--erp-login-muted)]">{{ k.label }}</p>
-          <p class="mt-1 text-3xl font-black leading-none text-[#051125] dark:text-[var(--erp-login-text-primary)]"
-            [class.text-[#e63946]]="k.tone === 'alert'">
-            {{ k.value }}
-          </p>
-          <p class="mt-2 text-xs font-bold text-[#47607e]" [class.text-[#e63946]]="k.tone === 'alert'">{{ k.sub }}</p>
-        </article>
-        }
-      </div>
+  <div class="space-y-6">
+    <!-- Fila de KPIs (Ancho completo) -->
+    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      @for (k of kpis(); track k.id) {
+      <article
+        class="relative overflow-hidden rounded-xl border border-[var(--erp-login-input-border)] bg-[color-mix(in_srgb,var(--erp-login-muted)_6%,var(--erp-login-card))] p-5 dark:border-[rgb(255_255_255/0.08)]"
+        [class.md:col-span-2]="k.tone === 'wide'" [class.lg:col-span-2]="k.tone === 'wide'"
+        [class.border-l-4]="k.tone === 'wide'" [class.border-l-[#47607e]]="k.tone === 'wide'">
+        <div class="pointer-events-none absolute right-3 top-3 opacity-10" [class.text-[#e63946]]="k.tone === 'alert'">
+          <span class="material-symbols-outlined text-5xl" aria-hidden="true">{{ k.icon }}</span>
+        </div>
+        <p class="text-[10px] font-black uppercase tracking-widest text-[var(--erp-login-muted)]">{{ k.label }}</p>
+        <p class="mt-1 text-3xl font-black leading-none text-[#051125] dark:text-[var(--erp-login-text-primary)]"
+          [class.text-[#e63946]]="k.tone === 'alert'">
+          {{ k.value }}
+        </p>
+        <p class="mt-2 text-xs font-bold text-[#47607e]" [class.text-[#e63946]]="k.tone === 'alert'">{{ k.sub }}</p>
+      </article>
+      }
+    </div>
 
-      <div class="erp-permisos-admin-gantt">
+    <!-- Fila Inferior: Gantt (Izquierda) + Detalles (Derecha) -->
+    <div class="flex flex-col gap-6 lg:flex-row lg:items-start">
+      <div class="erp-permisos-admin-gantt flex-1 min-w-0">
         <div class="erp-permisos-admin-gantt__head">
           <div>Personal / planta</div>
           <div class="erp-permisos-admin-gantt__dates hidden lg:flex">
@@ -38,7 +39,7 @@
             <span>{{ m }}</span>
             }
           </div>
-          <div class="lg:hidden text-[10px] opacity-80">Octubre 2023 · desliza en escritorio para ver fechas</div>
+          <div class="lg:hidden text-[10px] opacity-80">Abril 2026 · desliza en escritorio para ver fechas</div>
         </div>
         @for (row of ganttRows(); track row.id) {
         <div class="erp-permisos-admin-gantt__row" role="button" tabindex="0"
@@ -68,8 +69,8 @@
         </div>
         }
       </div>
-      
-      <aside class="w-full shrink-0 xl:w-[400px] xl:max-w-[400px]">
+
+      <aside class="w-full shrink-0 lg:w-[400px] lg:max-w-[400px]">
         @if (panelDetail(); as detail) {
         <div class="erp-permisos-admin-detail">
           <div
@@ -99,22 +100,31 @@
               <div class="rounded-lg bg-[color-mix(in_srgb,var(--erp-login-muted)_8%,var(--erp-login-card))] p-4">
                 <p class="text-[10px] font-black uppercase tracking-widest text-[var(--erp-login-muted)]">Periodo
                   solicitado</p>
-                <div class="mt-3 flex items-center justify-between gap-2">
-                  <div class="text-center">
-                    <p class="text-xl font-black text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{
-                      detail.periodFrom.day }}</p>
-                    <p class="text-[10px] font-medium text-[var(--erp-login-muted)]">{{ detail.periodFrom.dow }}
-                    </p>
+              <div>
+                <p class="text-[10px] font-black uppercase tracking-widest text-[var(--erp-login-muted)]">Resumen de solicitud</p>
+                <div class="mt-3 flex flex-col gap-2">
+                  @for (seg of detail.segments; track $index) {
+                  <div class="flex items-center justify-between rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] p-3 shadow-sm dark:border-[rgb(255_255_255/0.05)]">
+                    <div class="flex items-center gap-3">
+                      <div class="h-2 w-2 rounded-full" [class.bg-indigo-500]="detail.type === 'VACATION'" [class.bg-amber-500]="detail.type !== 'VACATION'"></div>
+                      <div class="text-xs">
+                        <p class="font-bold text-[var(--erp-login-text-primary)]">
+                          {{ seg.start | date:'dd MMM' }} - {{ seg.end | date:'dd MMM, yyyy' }}
+                        </p>
+                      </div>
+                    </div>
+                    <span class="rounded-lg bg-[color-mix(in_srgb,var(--erp-login-muted)_10%,transparent)] px-2 py-1 text-[10px] font-bold text-[var(--erp-login-text-primary)]">
+                      {{ seg.count }} {{ seg.count === 1 ? 'DÍA' : 'DÍAS' }}
+                    </span>
                   </div>
-                  <span class="material-symbols-outlined text-[var(--erp-login-muted)]"
-                    aria-hidden="true">arrow_forward</span>
-                  <div class="text-center">
-                    <p class="text-xl font-black text-[#051125] dark:text-[var(--erp-login-text-primary)]">{{
-                      detail.periodTo.day }}</p>
-                    <p class="text-[10px] font-medium text-[var(--erp-login-muted)]">{{ detail.periodTo.dow }}
-                    </p>
-                  </div>
+                  }
                 </div>
+                <!-- Total -->
+                <div class="mt-3 flex items-center justify-between px-2">
+                   <span class="text-[10px] font-black uppercase tracking-widest text-[var(--erp-login-muted)]">Total a descontar</span>
+                   <span class="text-xl font-black text-[#47607e] tabular-nums">{{ detail.totalDays }} DÍAS</span>
+                </div>
+              </div>
               </div>
               <div>
                 <p class="text-[10px] font-black uppercase tracking-widest text-[var(--erp-login-muted)]">Motivo</p>
@@ -135,8 +145,18 @@
                       class="absolute -left-[1.4rem] top-1 h-3 w-3 rounded-full border-2 border-[var(--erp-login-card)]"
                       [class.bg-[#47607e]]="ev.dot === 'secondary'" [class.bg-[#e63946]]="ev.dot === 'urgent'"
                       aria-hidden="true"></span>
-                     <p class="text-xs font-bold text-[var(--erp-login-text-primary)]">{{ ev.title }}</p>
-                    <p class="text-[10px] text-[var(--erp-login-muted)]">{{ ev.meta }}</p>
+                    <div class="flex items-center justify-between gap-2">
+                      <p class="text-xs font-bold text-[var(--erp-login-text-primary)]">{{ ev.title }}</p>
+                      <span class="text-[8px] font-medium uppercase text-[var(--erp-login-muted)]">{{ ev.date }}</span>
+                    </div>
+                    <p class="text-[10px] font-medium text-[#47607e]">{{ ev.by }}</p>
+                    <p class="mt-0.5 text-[10px] text-[var(--erp-login-muted)]">{{ ev.meta }}</p>
+                    @if (ev.proposal) {
+                    <div
+                      class="mt-1 rounded bg-slate-100 p-1.5 text-[9px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                      Propuesta: {{ ev.proposal }}
+                    </div>
+                    }
                   </div>
                   }
                 </div>
@@ -171,7 +191,8 @@
           <span class="material-symbols-outlined mb-2 text-4xl text-[var(--erp-login-muted)]"
             aria-hidden="true">info</span>
           <p class="text-xs font-bold uppercase tracking-widest text-[var(--erp-login-muted)]">Sin selección</p>
-          <p class="mt-1 text-[10px] text-[var(--erp-login-muted)]">Selecciona una barra en el Gantt para ver el detalle de la solicitud.</p>
+          <p class="mt-1 text-[10px] text-[var(--erp-login-muted)]">Selecciona una barra en el Gantt para ver el detalle de la solicitud.
+          </p>
         </div>
         }
       </aside>

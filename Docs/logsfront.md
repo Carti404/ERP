@@ -1,29 +1,36 @@
+PS H:\dev\ERP\erp-web> npm start
 
-Application bundle generation complete. [0.291 seconds] - 2026-04-13T19:44:26.312Z
+> erp-web@0.0.0 start
+> ng serve
 
-Stylesheet update sent to client(s).
-Component update sent to client(s).
-Initial chunk files | Names             |  Raw size
-main.js             | main              |  39.89 kB |
+Application bundle generation failed. [2.696 seconds] - 2026-04-13T21:13:15.168Z
 
-Lazy chunk files    | Names             |  Raw size
-chunk-2LAQZM4D.js   | trabajador-routes | 258.18 kB |
+X [ERROR] NG8004: No pipe found with name 'date'.
+To fix this, import the "DatePipe" class from "@angular/common" and add it to the "imports" array of the component. [plugin angular-compiler]  
 
-Application bundle generation complete. [0.338 seconds] - 2026-04-13T19:46:10.399Z
-
-Component update sent to client(s).
-Application bundle generation failed. [0.280 seconds] - 2026-04-13T19:50:10.082Z
-
-X [ERROR] NG5002: Unexpected closing tag "section". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags [plugin angular-compiler]
-
-    src/app/pages/trabajador/trabajador-permisos.component.html:235:6:
-      235 │       </section>
-          ╵       ~~~~~~~~~~
+    src/app/pages/trabajador/trabajador-permisos.component.html:331:35:
+      331 │ ...              {{ seg.start | date:'dd MMM' }} - {{ seg.end | d...
+          ╵                                 ~~~~
 
   Error occurs in the template of component TrabajadorPermisosComponent.
 
-    src/app/pages/trabajador/trabajador-permisos.component.ts:27:15:
-      27 │   templateUrl: './trabajador-permisos.component.html',
+    src/app/pages/trabajador/trabajador-permisos.component.ts:28:15:
+      28 │   templateUrl: './trabajador-permisos.component.html',
          ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
+X [ERROR] NG8004: No pipe found with name 'date'.
+To fix this, import the "DatePipe" class from "@angular/common" and add it to the "imports" array of the component. [plugin angular-compiler]  
+
+    src/app/pages/trabajador/trabajador-permisos.component.html:331:67:
+      331 │ ...eg.start | date:'dd MMM' }} - {{ seg.end | date:'dd MMM, yyyy' }}
+          ╵                                               ~~~~
+
+  Error occurs in the template of component TrabajadorPermisosComponent.
+
+    src/app/pages/trabajador/trabajador-permisos.component.ts:28:15:
+      28 │   templateUrl: './trabajador-permisos.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Watch mode enabled. Watching for file changes...

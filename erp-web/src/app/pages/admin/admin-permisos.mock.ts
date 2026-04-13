@@ -80,7 +80,7 @@ export const ADMIN_PERMISOS_GANTT_ROWS: AdminPermisoGanttRow[] = [
   },
 ];
 
-export const ADMIN_PERMISOS_TIMELINE_MARKERS = ['01 Oct', '05 Oct', '10 Oct', '15 Oct', '20 Oct', '25 Oct', '30 Oct'] as const;
+export const ADMIN_PERMISOS_TIMELINE_MARKERS = ['01 Abr', '05 Abr', '10 Abr', '15 Abr', '20 Abr', '25 Abr', '30 Abr'] as const;
 
 export interface AdminPermisoPanelDetail {
   readonly id: string;

@@ -8,6 +8,11 @@ import { LeaveRequestType, LeaveRequestStatus } from './entities/leave-request.e
 @UseGuards(JwtAuthGuard)
 export class LeaveRequestsController {
   constructor(private readonly leaveService: LeaveRequestsService) {}
+  
+  @Get('admin/stats')
+  getAdminStats() {
+    return this.leaveService.getAdminStats();
+  }
 
   @Get('balance')
   getBalance(@Req() req: { user: JwtValidatedUser }) {
@@ -28,7 +33,7 @@ export class LeaveRequestsController {
   @Post()
   createRequest(
     @Req() req: { user: JwtValidatedUser },
-    @Body() body: { type: LeaveRequestType; startDate: string; endDate: string; reason: string; evidenceUrl?: string },
+    @Body() body: { type: LeaveRequestType; startDate: string; endDate: string; totalDays?: number; reason: string; evidenceUrl?: string },
   ) {
     return this.leaveService.createRequest(req.user.userId, body);
   }

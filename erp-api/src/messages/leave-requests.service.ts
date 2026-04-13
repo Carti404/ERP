@@ -43,20 +43,20 @@ export class LeaveRequestsService {
   async myRequests(userId: string) {
     return this.requestRepo.find({
       where: { userId },
-      relations: ['user'], // Si no usas history de momento para el listado simple
-      order: { createdAt: 'DESC' },
+      relations: ['user', 'history', 'history.author'],
+      order: { createdAt: 'DESC', history: { createdAt: 'ASC' } },
     });
   }
 
   async listAll() {
     return this.requestRepo.find({
-      relations: ['user'],
-      order: { createdAt: 'DESC' },
+      relations: ['user', 'history', 'history.author'],
+      order: { createdAt: 'DESC', history: { createdAt: 'ASC' } },
     });
   }
 
-  async createRequest(userId: string, data: { type: LeaveRequestType; startDate: string; endDate: string; reason: string; evidenceUrl?: string }) {
-    const totalDays = countWorkingDays(data.startDate, data.endDate);
+  async createRequest(userId: string, data: { type: LeaveRequestType; startDate: string; endDate: string; totalDays?: number; reason: string; evidenceUrl?: string; segments?: { start: string, end: string, count: number }[] }) {
+    const totalDays = data.totalDays ?? countWorkingDays(data.startDate, data.endDate);
 
     if (data.type === LeaveRequestType.VACATION) {
       const balance = await this.getWorkerBalance(userId);
@@ -113,5 +113,17 @@ export class LeaveRequestsService {
     await this.historyRepo.save(history);
 
     return req;
+  }
+
+  async getAdminStats() {
+    const activeWorkers = await this.usersService.listActives();
+    const pendingRequests = await this.requestRepo.find({
+      where: { status: LeaveRequestStatus.PENDING },
+    });
+
+    return {
+      totalActiveWorkers: activeWorkers.length,
+      pendingRequests: pendingRequests.length,
+    };
   }
 }

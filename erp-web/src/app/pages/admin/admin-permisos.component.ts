@@ -1,4 +1,5 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 import {
   ADMIN_PERMISOS_GANTT_ROWS,
@@ -14,12 +15,16 @@ import { LeaveRequestsService, LeaveRequest } from '../../core/services/leave-re
 @Component({
   selector: 'app-admin-permisos',
   standalone: true,
+  imports: [CommonModule],
   templateUrl: './admin-permisos.component.html',
 })
 export class AdminPermisosComponent implements OnInit {
   private readonly leaveService = inject(LeaveRequestsService);
 
-  protected readonly kpis = signal(ADMIN_PERMISOS_KPIS);
+  protected readonly kpis = signal([
+    { id: 'ops', label: 'Total operarios (planta)', value: '0', sub: 'Cargando...', icon: 'group' },
+    { id: 'pend', label: 'Pendientes', value: '0', sub: 'Acción requerida', icon: 'priority_high', tone: 'alert' },
+  ]);
   protected readonly timelineMarkers = ADMIN_PERMISOS_TIMELINE_MARKERS;
   protected readonly ganttRows = signal<AdminPermisoGanttRow[]>([]);
   protected readonly requests = signal<LeaveRequest[]>([]);
@@ -40,48 +45,65 @@ export class AdminPermisosComponent implements OnInit {
 
     return {
       id: req.id,
-      initials: req.user?.fullName?.substring(0, 2).toUpperCase() || 'XX',
+      initials: req.user?.fullName?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'XX',
       name: req.user?.fullName || 'Desconocido',
       role: req.type,
       periodFrom: { day: start.getDate().toString(), dow: dowMap[start.getDay()] },
       periodTo: { day: end.getDate().toString(), dow: dowMap[end.getDay()] },
+      fullPeriod: `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`,
+      totalDays: req.totalDays,
       reason: req.reason,
       evidenceUrl: req.evidenceUrl,
       status: req.status,
-      timeline: [
-        { title: 'Solicitud Creada', meta: req.status, dot: req.status === 'PENDING' ? 'urgent' : 'secondary' }
-      ]
+      segments: req.segments && req.segments.length > 0 
+        ? req.segments.map(s => ({ start: s.start, end: s.end, count: s.count }))
+        : [{ start: req.startDate, end: req.endDate, count: req.totalDays }],
+      type: req.type,
+      timeline: (req.history || []).map(h => ({
+        title: this.mapActionTitle(h.actionType),
+        meta: h.message || 'Sin mensaje adicional',
+        date: new Date(h.createdAt).toLocaleString(),
+        by: h.author?.fullName || 'Sistema',
+        dot: this.mapActionDot(h.actionType),
+        proposal: h.proposedStartDate ? `${new Date(h.proposedStartDate).toLocaleDateString()} al ${new Date(h.proposedEndDate!).toLocaleDateString()}` : null
+      }))
     };
   });
+
+  private mapActionTitle(type: string): string {
+    const map: any = {
+      'CREATED': 'Solicitud Creada',
+      'APPROVED': 'Solicitud Aprobada',
+      'REJECTED': 'Solicitud Rechazada',
+      'ADMIN_PROPOSAL': 'Nueva Propuesta de Admin',
+      'WORKER_APPEAL': 'Apelación de Trabajador'
+    };
+    return map[type] || type;
+  }
+
+  private mapActionDot(type: string): string {
+    if (type === 'REJECTED') return 'urgent';
+    if (type === 'APPROVED') return 'secondary';
+    return 'secondary';
+  }
 
   ngOnInit() {
     this.loadData();
   }
 
   private loadData() {
+    this.leaveService.getAdminStats().subscribe(stats => {
+       this.kpis.update(current => {
+         current[0].value = stats.totalActiveWorkers.toString();
+         current[0].sub = 'Trabajadores activos';
+         current[1].value = stats.pendingRequests.toString();
+         current[1].sub = stats.pendingRequests === 1 ? '1 solicitud' : `${stats.pendingRequests} solicitudes`;
+         return [...current];
+       });
+    });
+
     this.leaveService.getAllRequests().subscribe(reqs => {
       this.requests.set(reqs);
-
-      // Calcular KPIs
-      const pendingCount = reqs.filter(r => r.status === 'PENDING').length;
-      
-      this.kpis.set([
-        {
-          id: 'ops',
-          label: 'Total operarios (con solicitudes)',
-          value: new Set(reqs.map(r => r.user?.id)).size.toString(),
-          sub: 'Actualizado',
-          icon: 'group',
-        },
-        {
-          id: 'pend',
-          label: 'Pendientes',
-          value: pendingCount.toString(),
-          sub: 'Acción requerida',
-          icon: 'priority_high',
-          tone: 'alert',
-        },
-      ]);
 
       // Simple mock gantt row calculation for demo purposes:
       // We will map each request as an individual row exactly
@@ -91,12 +113,23 @@ export class AdminPermisosComponent implements OnInit {
         else if (r.type === 'MEDICAL') variant = 'medico';
         else if (r.type === 'PERSONAL') variant = 'personal';
 
+        const reqSegments = r.segments && r.segments.length > 0
+          ? r.segments
+          : [{ start: r.startDate, end: r.endDate, count: r.totalDays }];
+
+        const bars = reqSegments.map((seg, idx) => ({
+          label: r.status,
+          leftPct: Math.min((i * 10) + (idx * 12), 85),
+          widthPct: Math.max(5, seg.count * 5),
+          variant
+        }));
+
         return {
           id: r.id,
           initials: r.user?.fullName?.substring(0, 2).toUpperCase() || '--',
           name: r.user?.fullName || 'Sin Nombre',
           area: 'Solicitud: ' + r.type,
-          bars: [{ label: r.status, leftPct: Math.min((i * 10), 80), widthPct: Math.max(10, r.totalDays * 5), variant }]
+          bars
         };
       });
       this.ganttRows.set(mapping);

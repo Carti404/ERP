@@ -1,4 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { forkJoin, Observable } from 'rxjs';
 import { SystemParametersApiService } from '../../core/system-parameters/system-parameters-api.service';
 import type { HolidayRowDto } from '../../core/system-parameters/system-parameters-api.types';
 import { LeaveRequestsService } from '../../core/services/leave-requests.service';
@@ -15,15 +17,20 @@ export interface WorkerPermisoHistoryItem {
   readonly dateRange: string;
   readonly daysLabel: string;
   readonly status: WorkerPermisoHistoryStatus;
+  readonly periodLabel: string;
+  readonly segments: Array<{ start: string; end: string; count: number }>;
   readonly negotiation?: {
     readonly from: string;
     readonly message: string;
+    readonly proposedStartDate?: string;
+    readonly proposedEndDate?: string;
   };
 }
 
 @Component({
   selector: 'app-trabajador-permisos',
   standalone: true,
+  imports: [CommonModule],
   templateUrl: './trabajador-permisos.component.html',
 })
 export class TrabajadorPermisosComponent implements OnInit {
@@ -43,9 +50,9 @@ export class TrabajadorPermisosComponent implements OnInit {
 
   protected readonly fullDay = signal(true);
 
-  protected readonly selectionStartMs = signal<number | null>(null);
-
-  protected readonly selectionEndMs = signal<number | null>(null);
+  protected readonly selectedDatesMs = signal<Set<number>>(new Set());
+  protected readonly showConfirmModal = signal(false);
+  protected readonly isSending = signal(false);
 
   protected readonly holidays = signal<HolidayRowDto[]>([]);
 
@@ -62,56 +69,77 @@ export class TrabajadorPermisosComponent implements OnInit {
   });
 
   protected readonly selectionReady = computed(() => {
-    const a = this.selectionStartMs();
-    const b = this.selectionEndMs();
-    return a !== null && b !== null;
+    return this.selectedDatesMs().size > 0;
   });
 
   protected readonly selectionHint = computed(() => {
     if (this.selectionReady()) return '';
     const nature = this.requestNature();
-    const s = this.selectionStartMs();
+    return nature === 'VACATION' 
+      ? 'Selecciona los días para tus vacaciones (pueden ser varios periodos).' 
+      : 'Selecciona el día de tu inasistencia en el calendario.';
+  });
 
-    if (nature === 'VACATION') {
-      if (s === null) return 'Selecciona el primer día de tus vacaciones.';
-      return 'Ahora selecciona el último día de tu periodo vacacional.';
-    } else {
-      return 'Selecciona el día de tu inasistencia en el calendario.';
+  /** Agrupa las fechas seleccionadas en bloques continuos de días. */
+  protected readonly selectedSegments = computed(() => {
+    const sorted = [...this.selectedDatesMs()].sort((a, b) => a - b);
+    if (sorted.length === 0) return [];
+    
+    const segments: Array<{ start: number; end: number; count: number }> = [];
+    let currentStart = sorted[0];
+    let currentEnd = sorted[0];
+    
+    for (let i = 1; i < sorted.length; i++) {
+      const dayMs = 24 * 60 * 60 * 1000;
+      const diff = sorted[i] - currentEnd;
+      const currEndDate = new Date(currentEnd);
+      
+      // Permitir salto de domingos (diferencia de 2 días si brinca de sábado a lunes, o 3 si de viernes a lunes y sábado es inactivo)
+      const isContiguous = 
+        diff <= dayMs + 1000 || 
+        (currEndDate.getDay() === 6 && diff <= 2 * dayMs + 1000) || 
+        (currEndDate.getDay() === 5 && diff <= 3 * dayMs + 1000);
+
+      if (isContiguous) {
+        currentEnd = sorted[i];
+      } else {
+        segments.push({ start: currentStart, end: currentEnd, count: this.countWorkingDays(currentStart, currentEnd) });
+        currentStart = sorted[i];
+        currentEnd = sorted[i];
+      }
     }
+    segments.push({ start: currentStart, end: currentEnd, count: this.countWorkingDays(currentStart, currentEnd) });
+    return segments;
   });
 
   protected readonly selectionSummary = computed(() => {
-    const s = this.selectionStartMs();
-    if (s === null) return '';
+    const segments = this.selectedSegments();
+    if (segments.length === 0) return '';
+    
+    const totalDays = segments.reduce((sum, s) => sum + s.count, 0);
     const nature = this.requestNature();
-    
-    // Si es vacación pero no está listo el rango, no mostramos resumen aún
-    if (nature === 'VACATION' && !this.selectionReady()) return '';
-
-    const e = this.selectionEndMs() ?? s;
-    const lo = Math.min(s, e);
-    const hi = Math.max(s, e);
-    const a = new Date(lo);
-    const b = new Date(hi);
-    const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
-    const na = a.toLocaleDateString('es-MX', opts);
-    const nb = b.toLocaleDateString('es-MX', opts);
-    
-    // Calcula días laborables (lun-sáb)
-    let workingDaysCount = 0;
-    let currentDate = new Date(a);
-    while (currentDate <= b) {
-      if (currentDate.getDay() !== 0) workingDaysCount++;
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-
-    const dayWord = workingDaysCount === 1 ? '1 día laborable' : `${workingDaysCount} días laborables`;
     const prefix = nature === 'VACATION' ? 'Vacaciones:' : 'Justificante:';
     
-    return na === nb 
-      ? `${prefix} ${na} · ${dayWord}` 
-      : `${prefix} ${na} al ${nb} · ${dayWord}`;
+    if (segments.length === 1) {
+      const s = segments[0];
+      const na = new Date(s.start).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+      const nb = new Date(s.end).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+      return `${prefix} ${na === nb ? na : na + ' al ' + nb} · ${totalDays} día(s)`;
+    }
+    
+    return `${prefix} ${segments.length} periodo(s) · Total ${totalDays} día(s)`;
   });
+
+  private countWorkingDays(startMs: number, endMs: number): number {
+    let count = 0;
+    const current = new Date(startMs);
+    const end = new Date(endMs);
+    while (current <= end) {
+      if (current.getDay() !== 0) count++; // Excluye domingos
+      current.setDate(current.getDate() + 1);
+    }
+    return count;
+  }
 
 
   protected readonly calendarCells = computed(() => {
@@ -122,20 +150,9 @@ export class TrabajadorPermisosComponent implements OnInit {
     const startPad = first.getDay();
     const daysInMonth = new Date(y, m + 1, 0).getDate();
 
-    const s = this.selectionStartMs();
-    const e = this.selectionEndMs();
-    let lo: number | null = null;
-    let hi: number | null = null;
-    if (s !== null && e !== null) {
-      lo = Math.min(s, e);
-      hi = Math.max(s, e);
-    } else if (s !== null) {
-      lo = s;
-      hi = s;
-    }
-
+    const selected = this.selectedDatesMs();
+    
     const currentHolidays = this.holidays();
-    // Solo comparar por fecha exacta YYYY-MM-DD para evitar marcas cruzadas entre años.
     const holidayExact = new Set(
       currentHolidays.map((h) => h.date.slice(0, 10)),
     );
@@ -171,16 +188,9 @@ export class TrabajadorPermisosComponent implements OnInit {
       const hInfo = currentHolidays.find(h => h.date.slice(0, 10) === iso);
       const isHoliday = !!hInfo;
 
-      let inRange = false;
-      let isStart = false;
-      let isEnd = false;
-      if (lo !== null && hi !== null) {
-        isStart = timeMs === lo;
-        isEnd = timeMs === hi;
-        if (lo < hi) {
-          inRange = timeMs > lo && timeMs < hi;
-        }
-      }
+      const isStart = selected.has(timeMs);
+      const isEnd = false; // No usamos rango visual
+      const inRange = false;
       cells.push({
         label: day,
         timeMs,
@@ -221,29 +231,56 @@ export class TrabajadorPermisosComponent implements OnInit {
 
   private loadData(): void {
     this.leaveService.getBalance().subscribe((res) => {
-      this.balance.set({
+      this.balance.update(b => ({
+        ...b,
         availableDays: res.availableDays,
         periodLabel: `Ingreso: ${new Date(res.fechaIngreso).toLocaleDateString()}`,
-        requested: 0, // Podrías sumar los PENDING
-        approved: res.usedDays,
-      });
+        approved: res.usedDays
+      }));
     });
 
     this.leaveService.getMyRequests().subscribe((reqs) => {
+      // Calcular KPI de solicitados (PENDING o ADMIN_PROPOSAL)
+      const requestedSum = reqs
+        .filter(r => r.status === 'PENDING' || r.status === 'ADMIN_PROPOSAL')
+        .reduce((acc, curr) => acc + curr.totalDays, 0);
+      
+      this.balance.update(b => ({ ...b, requested: requestedSum }));
+
       const mapped = reqs.map((r) => {
         const lo = new Date(r.startDate).toLocaleDateString();
         const hi = new Date(r.endDate).toLocaleDateString();
         
         let status: WorkerPermisoHistoryStatus = 'revision';
         if (r.status === 'APPROVED') status = 'aprobado';
+        else if (r.status === 'REJECTED') status = 'revision'; 
         else if (r.status === 'ADMIN_PROPOSAL') status = 'propuesta_admin';
         
+        // Buscar el último mensaje de negociación si hay propuesta del admin
+        let negotiation = undefined;
+        if (r.status === 'ADMIN_PROPOSAL' && r.history && r.history.length > 0) {
+          const lastH = [...r.history].reverse().find(h => h.actionType === 'ADMIN_PROPOSAL');
+          if (lastH) {
+            negotiation = {
+              from: lastH.author?.fullName || 'Administrador',
+              message: lastH.message,
+              proposedStartDate: lastH.proposedStartDate,
+              proposedEndDate: lastH.proposedEndDate
+            };
+          }
+        }
+
         return {
           id: r.id,
           title: r.type === 'VACATION' ? 'Vacaciones' : 'Justificante',
           dateRange: r.startDate === r.endDate ? lo : `${lo} - ${hi}`,
           daysLabel: `${r.totalDays} día(s)`,
+          periodLabel: `${r.startDate} al ${r.endDate}`,
+          segments: r.segments && r.segments.length > 0
+            ? r.segments.map(s => ({ start: s.start, end: s.end, count: s.count }))
+            : [{ start: r.startDate, end: r.endDate, count: r.totalDays }],
           status,
+          negotiation
         };
       });
       this.history.set(mapped);
@@ -267,8 +304,10 @@ export class TrabajadorPermisosComponent implements OnInit {
   }
 
   protected clearSelection(): void {
-    this.selectionStartMs.set(null);
-    this.selectionEndMs.set(null);
+    this.selectedDatesMs.update(s => {
+      s.clear();
+      return new Set(s);
+    });
   }
 
   protected onDayClick(day: number): void {
@@ -277,39 +316,18 @@ export class TrabajadorPermisosComponent implements OnInit {
     const m = v.getMonth();
     const t = new Date(y, m, day).getTime();
 
-    // Si no es vacaciones, solo se permite elegir un día.
-    if (this.requestNature() !== 'VACATION') {
-      this.selectionStartMs.set(t);
-      this.selectionEndMs.set(null);
-      return;
-    }
-
-    const s = this.selectionStartMs();
-    const e = this.selectionEndMs();
-
-    if (s !== null && e !== null) {
-      this.selectionStartMs.set(t);
-      this.selectionEndMs.set(null);
-      return;
-    }
-
-    if (s === null) {
-      this.selectionStartMs.set(t);
-      this.selectionEndMs.set(null);
-      return;
-    }
-
-    if (t === s) {
-      this.selectionEndMs.set(t);
-      return;
-    }
-
-    if (t < s) {
-      this.selectionEndMs.set(s);
-      this.selectionStartMs.set(t);
-    } else {
-      this.selectionEndMs.set(t);
-    }
+    this.selectedDatesMs.update(s => {
+      if (s.has(t)) {
+        s.delete(t);
+      } else {
+        // Si no es vacaciones, limpiamos el resto para permitir solo uno
+        if (this.requestNature() !== 'VACATION') {
+          s.clear();
+        }
+        s.add(t);
+      }
+      return new Set(s);
+    });
   }
 
 
@@ -341,7 +359,7 @@ export class TrabajadorPermisosComponent implements OnInit {
   }
 
   protected onSendRequest(): void {
-    if (!this.selectionStartMs()) {
+    if (this.selectedDatesMs().size === 0) {
       window.alert('Debes seleccionar al menos un día en el calendario.');
       return;
     }
@@ -351,39 +369,57 @@ export class TrabajadorPermisosComponent implements OnInit {
       return;
     }
 
-    if (window.confirm('¿Confirmas el envío de esta solicitud?')) {
-      const s = this.selectionStartMs();
-      const e = this.selectionEndMs() ?? s;
-      
-      const lo = new Date(Math.min(s!, e!)).toISOString().slice(0, 10);
-      const hi = new Date(Math.max(s!, e!)).toISOString().slice(0, 10);
+    this.showConfirmModal.set(true);
+  }
 
-      // Manejar subtipo como "metadato" en el motivo
-      let finalReason = this.reason();
-      if (this.requestNature() === 'ABSENCE') {
-        const subtypeLabel = this.absenceSubtype() === 'PROGRAMMED' ? '[FALTA PROGRAMADA]' : '[MOTIVO URGENTE]';
-        finalReason = `${subtypeLabel} ${finalReason}`;
-      }
+  protected confirmSend(): void {
+    this.isSending.set(true);
+    
+    const segments = this.selectedSegments();
+    if (segments.length === 0) return;
 
-      this.leaveService.createRequest({
-        type: this.requestNature() === 'VACATION' ? 'VACATION' : 'ABSENCE',
-        startDate: lo,
-        endDate: hi,
-        reason: finalReason,
-        evidenceUrl: this.evidenceFile()?.name // Mocked por ahora hasta tener S3
-      }).subscribe({
-        next: () => {
-          window.alert('Solicitud enviada correctamente');
-          this.clearSelection();
-          this.reason.set('');
-          this.evidenceFile.set(null);
-          this.loadData();
-        },
-        error: (err) => {
-          window.alert(err?.error?.message || 'Hubo un error al enviar la solicitud');
-        }
-      });
+    const minDate = new Date(segments[0].start).toISOString().slice(0, 10);
+    const maxDate = new Date(segments[segments.length - 1].end).toISOString().slice(0, 10);
+    const totalCount = segments.reduce((acc, seg) => acc + seg.count, 0);
+    
+    // Alistamos los segmentos para el backend (convertir números MS a fechas string)
+    const backendSegments = segments.map(seg => ({
+      start: new Date(seg.start).toISOString().slice(0, 10),
+      end: new Date(seg.end).toISOString().slice(0, 10),
+      count: seg.count
+    }));
+
+    let finalReason = this.reason();
+    if (this.requestNature() === 'ABSENCE') {
+      const subtypeLabel = this.absenceSubtype() === 'PROGRAMMED' ? '[FALTA PROGRAMADA]' : '[MOTIVO URGENTE]';
+      finalReason = `${subtypeLabel} ${finalReason}`;
     }
+
+    const payload = {
+      type: this.requestNature() === 'VACATION' ? 'VACATION' : 'ABSENCE' as 'VACATION' | 'ABSENCE',
+      startDate: minDate,
+      endDate: maxDate,
+      totalDays: totalCount,
+      reason: finalReason || (this.requestNature() === 'VACATION' ? 'Vacaciones solicitadas' : 'Justificante de falta'),
+      evidenceUrl: this.evidenceFile()?.name || '',
+      segments: backendSegments
+    };
+
+    this.leaveService.createRequest(payload).subscribe({
+      next: () => {
+        this.isSending.set(false);
+        this.showConfirmModal.set(false);
+        window.alert('Solicitud enviada correctamente');
+        this.clearSelection();
+        this.reason.set('');
+        this.evidenceFile.set(null);
+        this.loadData();
+      },
+      error: (err) => {
+        this.isSending.set(false);
+        window.alert(err?.error?.message || 'Hubo un error al enviar la solicitud');
+      }
+    });
   }
 
   protected setRequestNature(nature: LeaveRequestNature): void {
@@ -426,12 +462,33 @@ export class TrabajadorPermisosComponent implements OnInit {
   }
 
 
-  protected onAcceptProposal(_item: WorkerPermisoHistoryItem): void {
-    return;
+  protected onAcceptProposal(item: WorkerPermisoHistoryItem): void {
+    if (!item.negotiation?.proposedStartDate) return;
+    
+    if (confirm('¿Deseas aceptar las fechas propuestas por el administrador? Se actualizará tu solicitud.')) {
+      this.leaveService.updateStatus(item.id, {
+        status: 'APPROVED',
+        message: 'Aceptado por el trabajador',
+        proposedStartDate: item.negotiation.proposedStartDate,
+        proposedEndDate: item.negotiation.proposedEndDate
+      }).subscribe(() => {
+        alert('Solicitud actualizada y aprobada');
+        this.loadData();
+      });
+    }
   }
 
-  protected onRejectProposal(_item: WorkerPermisoHistoryItem): void {
-    return;
+  protected onRejectProposal(item: WorkerPermisoHistoryItem): void {
+    const reason = prompt('Indica por qué rechazas la propuesta del administrador:');
+    if (reason === null) return;
+    
+    this.leaveService.updateStatus(item.id, {
+      status: 'PENDING',
+      message: `El trabajador rechazó la propuesta: ${reason}`
+    }).subscribe(() => {
+      alert('Propuesta rechazada. El administrador revisará tu respuesta.');
+      this.loadData();
+    });
   }
 
   protected statusBadgeClass(status: WorkerPermisoHistoryStatus): string {

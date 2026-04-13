@@ -6,6 +6,19 @@ import { apiBaseUrl } from '../environment';
 export type LeaveRequestType = 'VACATION' | 'LATENESS' | 'ABSENCE' | 'PERSONAL' | 'MEDICAL';
 export type LeaveRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'ADMIN_PROPOSAL';
 
+export interface LeaveRequestHistory {
+  id: string;
+  actionType: string;
+  message: string;
+  proposedStartDate?: string;
+  proposedEndDate?: string;
+  createdAt: string;
+  author?: {
+    id: string;
+    fullName: string;
+  };
+}
+
 export interface LeaveRequest {
   id: string;
   type: LeaveRequestType;
@@ -14,11 +27,20 @@ export interface LeaveRequest {
   endDate: string;
   totalDays: number;
   reason: string;
-  evidenceUrl?: string;
+  evidenceUrl: string | null;
+  createdAt: string;
+  updatedAt: string;
   user?: {
     id: string;
     fullName: string;
   };
+  history?: LeaveRequestHistory[];
+  segments?: Array<{ start: string, end: string, count: number }>;
+}
+
+export interface AdminLeaveStats {
+  totalActiveWorkers: number;
+  pendingRequests: number;
 }
 
 export interface LeaveBalance {
@@ -47,13 +69,19 @@ export class LeaveRequestsService {
   }
 
   createRequest(payload: {
-    type: LeaveRequestType;
+    type: 'VACATION' | 'ABSENCE';
     startDate: string;
     endDate: string;
+    totalDays: number;
     reason: string;
     evidenceUrl?: string;
+    segments?: Array<{ start: string, end: string, count: number }>;
   }): Observable<LeaveRequest> {
     return this.http.post<LeaveRequest>(this.url, payload);
+  }
+
+  getAdminStats(): Observable<AdminLeaveStats> {
+    return this.http.get<AdminLeaveStats>(`${this.url}/admin/stats`);
   }
 
   updateStatus(

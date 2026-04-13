@@ -1,5 +1,6 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
+import { LeaveRequestHistory } from './leave-request-history.entity';
 
 export enum LeaveRequestType {
   VACATION = 'VACATION',
@@ -43,6 +44,9 @@ export class LeaveRequest {
   @Column({ name: 'total_days', type: 'int' })
   totalDays: number;
 
+  @Column({ type: 'jsonb', nullable: true })
+  segments: { start: string, end: string, count: number }[];
+
   @Column({ type: 'text' })
   reason: string;
 
@@ -54,4 +58,7 @@ export class LeaveRequest {
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
   updatedAt: Date;
+
+  @OneToMany(() => LeaveRequestHistory, (h) => h.leaveRequest)
+  history: LeaveRequestHistory[];
 }
