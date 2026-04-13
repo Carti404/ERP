@@ -2401,6 +2401,15 @@ html.dark .erp-worker-events-panel .erp-worker-events-table-wrap {
   color: #6ee7b7;
 }
 
+.erp-permisos-badge--rechazado {
+  background: color-mix(in srgb, #ef4444 14%, transparent);
+  color: #b91c1c;
+}
+
+.dark .erp-permisos-badge--rechazado {
+  color: #fca5a5;
+}
+
 .erp-permisos-badge--revision {
   background: color-mix(in srgb, #f59e0b 22%, transparent);
   color: #b45309;
@@ -2528,33 +2537,50 @@ html.dark .erp-worker-events-panel .erp-worker-events-table-wrap {
   transform: translateY(-50%);
   display: flex;
   align-items: center;
-  padding: 0 0.5rem;
-  border-radius: 0.25rem;
+  justify-content: center;
+  padding: 0 0.25rem;
+  border-radius: 0.375rem;
   font-size: 0.5625rem;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   cursor: default;
   border-left: 4px solid #47607e;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: normal;
 }
 
 .erp-permisos-admin-bar--vacaciones {
-  background: color-mix(in srgb, #c2dcff 55%, var(--erp-login-card));
+  background: color-mix(in srgb, #47607e 15%, #fff);
   color: #1b263b;
+  border-left-color: #47607e;
 }
 
 .erp-permisos-admin-bar--pendiente {
-  border: 2px dashed #e63946;
-  border-left-width: 2px;
-  background: color-mix(in srgb, #e63946 8%, transparent);
-  color: #b91c1c;
+  background: #ef4444; /* Rojo */
+  color: #fff;
+  border-left-color: #dc2626;
+}
+
+.erp-permisos-admin-bar--aprobado {
+  background: #22c55e; /* Verde */
+  color: #fff;
+  border-left-color: #16a34a;
+}
+
+.erp-permisos-admin-bar--rechazado {
+  background: #f97316; /* Naranja */
+  color: #fff;
+  border-left-color: #ea580c;
 }
 
 .erp-permisos-admin-bar--medico,
 .erp-permisos-admin-bar--personal {
-  background: color-mix(in srgb, var(--erp-login-muted) 14%, var(--erp-login-card));
-  color: var(--erp-login-text-primary);
-  border-left-color: #94a3b8;
+  background: #94a3b8;
+  color: #fff;
+  border-left-color: #64748b;
 }
 
 .erp-permisos-admin-detail {

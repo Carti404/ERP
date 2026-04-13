@@ -41,6 +41,9 @@ export class LeaveRequestHistory {
   @Column({ name: 'proposed_end_date', type: 'date', nullable: true })
   proposedEndDate: Date | null;
 
+  @Column({ name: 'proposed_segments', type: 'jsonb', nullable: true })
+  proposedSegments: { start: string, end: string, count: number }[] | null;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
 }

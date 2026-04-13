@@ -226,24 +226,34 @@
           </tr>
         </thead>
         <tbody>
-          @if (events.length === 0) {
+          @if (events().length === 0) {
           <tr>
             <td colspan="4" class="py-8 text-center text-sm text-[var(--erp-login-muted)]">
               Sin eventos recientes. El historial se mostrará cuando exista registro en el sistema.
             </td>
           </tr>
           } @else {
-          @for (e of events; track e.id) {
+          @for (e of events(); track e.id) {
           <tr>
             <td>
               <div class="erp-worker-events-type">
-                <span class="erp-worker-events-type__icon material-symbols-outlined" aria-hidden="true">{{
+                <span class="erp-worker-events-type__icon material-symbols-outlined" aria-hidden="true" [class.text-[#47607e]]="e.isVacation">{{
                   e.typeIcon
                   }}</span>
                 <span class="erp-worker-events-type__label">{{ e.type }}</span>
               </div>
             </td>
-            <td class="erp-worker-events-table__desc">{{ e.description }}</td>
+            <td class="erp-worker-events-table__desc">
+              <div class="flex flex-col gap-2">
+                <span>{{ e.description }}</span>
+                @if (e.isVacation) {
+                  <a routerLink="/trabajador/permisos" class="inline-flex items-center gap-1.5 w-fit px-3 py-1 bg-[#47607e] text-[10px] font-bold text-white rounded-lg hover:bg-[#384c64] transition-colors uppercase tracking-wider">
+                    <span class="material-symbols-outlined text-sm">edit_calendar</span>
+                    Ver Solicitud
+                  </a>
+                }
+              </div>
+            </td>
             <td class="erp-worker-events-table__time">{{ e.time }}</td>
             <td class="text-right">
               <span class="erp-worker-pill-tag" [class.erp-worker-pill-tag--dark]="e.statusVariant === 'dark'"

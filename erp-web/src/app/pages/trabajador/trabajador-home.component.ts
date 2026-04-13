@@ -5,6 +5,7 @@ import { AttendanceService } from '../../core/http/attendance.service';
 import { MessagesApiService } from '../../core/messages/messages-api.service';
 import { ErpMessageRow } from '../../core/messages/messages-api.types';
 import { NotificationService, AppNotification } from '../../core/services/notification.service';
+import { LeaveRequestsService } from '../../core/services/leave-requests.service';
 
 /** Color de los dígitos del reloj según acción de checador. */
 export type WorkerClockFaceState = 'default' | 'working' | 'break' | 'ended';
@@ -28,6 +29,7 @@ export class TrabajadorHomeComponent {
   private readonly attendanceService = inject(AttendanceService);
   private readonly messagesApi = inject(MessagesApiService);
   private readonly notificationService = inject(NotificationService);
+  private readonly leaveService = inject(LeaveRequestsService);
 
   protected inbox: {
     id: string;
@@ -47,15 +49,7 @@ export class TrabajadorHomeComponent {
   /** Última incidencia sin leer para mostrar en el dashboard principal */
   protected readonly activeIncidence = signal<ErpMessageRow | null>(null);
 
-  protected readonly events: readonly {
-    id: string;
-    type: string;
-    typeIcon: string;
-    description: string;
-    time: string;
-    status: string;
-    statusVariant: 'dark' | 'secondary' | 'success';
-  }[] = [];
+  protected readonly events = signal<any[]>([]);
 
   protected readonly hasActiveBatch = false;
 
@@ -91,6 +85,7 @@ export class TrabajadorHomeComponent {
       this.loadTodayStatus();
       this.loadInbox();
       this.loadOrderAlerts();
+      this.loadVacationNotifications();
     });
   }
 
@@ -172,6 +167,34 @@ export class TrabajadorHomeComponent {
       error: () => {
         // Silently fail — alert section will just show "no alerts"
       },
+    });
+  }
+
+  private loadVacationNotifications(): void {
+    this.leaveService.getMyRequests().subscribe(reqs => {
+      const hasProposal = reqs.some(r => r.status === 'ADMIN_PROPOSAL');
+      const hasApproved = reqs.some(r => r.status === 'APPROVED'); // Opcional: avisar si aprobaron
+
+      if (hasProposal && !this.leaveService.hasVacationUpdate()) {
+        this.leaveService.hasVacationUpdate.set(true);
+      }
+
+      const activeEvents: any[] = [];
+      
+      if (this.leaveService.hasVacationUpdate()) {
+        activeEvents.push({
+          id: 'v-1',
+          type: 'Vacaciones',
+          typeIcon: 'beach_access',
+          description: '¡Atención! Tienes una propuesta alternativa de fechas para tus vacaciones.',
+          time: 'Reciente',
+          status: 'Pendiente',
+          statusVariant: 'secondary',
+          isVacation: true
+        });
+      }
+
+      this.events.set(activeEvents);
     });
   }
 

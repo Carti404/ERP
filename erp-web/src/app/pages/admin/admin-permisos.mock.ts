@@ -27,7 +27,7 @@ export const ADMIN_PERMISOS_KPIS: AdminPermisoKpi[] = [
   },
 ];
 
-export type AdminPermisoBarVariant = 'vacaciones' | 'pendiente' | 'medico' | 'personal';
+export type AdminPermisoBarVariant = 'vacaciones' | 'pendiente' | 'aprobado' | 'rechazado' | 'medico' | 'personal';
 
 export interface AdminPermisoGanttBar {
   readonly label: string;

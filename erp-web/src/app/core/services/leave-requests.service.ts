@@ -12,6 +12,7 @@ export interface LeaveRequestHistory {
   message: string;
   proposedStartDate?: string;
   proposedEndDate?: string;
+  proposedSegments?: Array<{ start: string; end: string; count: number }>;
   createdAt: string;
   author?: {
     id: string;
@@ -53,6 +54,9 @@ export interface LeaveBalance {
 @Injectable({ providedIn: 'root' })
 export class LeaveRequestsService {
   private url = `${apiBaseUrl}/leave-requests`;
+  
+  /** Flag para mostrar notificación en el inicio del trabajador */
+  readonly hasVacationUpdate = signal<boolean>(false);
 
   constructor(private http: HttpClient) {}
 
@@ -91,6 +95,7 @@ export class LeaveRequestsService {
       message?: string;
       proposedStartDate?: string;
       proposedEndDate?: string;
+      proposedSegments?: Array<{ start: string; end: string; count: number }>;
     }
   ): Observable<LeaveRequest> {
     return this.http.patch<LeaveRequest>(`${this.url}/${id}/status`, payload);

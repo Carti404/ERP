@@ -85,7 +85,7 @@ export class LeaveRequestsService {
     return saved;
   }
 
-  async updateStatus(id: string, authorId: string, data: { status: LeaveRequestStatus; message?: string; proposedStartDate?: string; proposedEndDate?: string }) {
+  async updateStatus(id: string, authorId: string, data: { status: LeaveRequestStatus; message?: string; proposedStartDate?: string; proposedEndDate?: string; proposedSegments?: { start: string, end: string, count: number }[] }) {
     const req = await this.requestRepo.findOne({ where: { id } });
     if (!req) throw new NotFoundException('Solicitud no encontrada');
 
@@ -94,10 +94,19 @@ export class LeaveRequestsService {
     // Si el admin propone otras fechas y el trabajador acepta, o si el admin cambia
     if (data.status === LeaveRequestStatus.ADMIN_PROPOSAL) {
       // no actualizamos los dias de la request base aun, hasta que acepten
-    } else if (data.status === LeaveRequestStatus.APPROVED && data.proposedStartDate) {
-      req.startDate = new Date(data.proposedStartDate);
-      req.endDate = new Date(data.proposedEndDate || data.proposedStartDate);
-      req.totalDays = countWorkingDays(req.startDate, req.endDate);
+    } else if (data.status === LeaveRequestStatus.APPROVED) {
+      if (data.proposedSegments && data.proposedSegments.length > 0) {
+        req.segments = data.proposedSegments;
+        req.totalDays = req.segments.reduce((sum, seg) => sum + (seg.count || countWorkingDays(seg.start, seg.end)), 0);
+        // Si hay segmentos, el start/end global es el del primer y último segmento
+        req.startDate = new Date(req.segments[0].start);
+        req.endDate = new Date(req.segments[req.segments.length - 1].end);
+      } else if (data.proposedStartDate) {
+        req.startDate = new Date(data.proposedStartDate);
+        req.endDate = new Date(data.proposedEndDate || data.proposedStartDate);
+        req.totalDays = countWorkingDays(req.startDate, req.endDate);
+        req.segments = [{ start: data.proposedStartDate, end: data.proposedEndDate || data.proposedStartDate, count: req.totalDays }];
+      }
     }
     
     await this.requestRepo.save(req);
@@ -109,6 +118,7 @@ export class LeaveRequestsService {
       message: data.message || '',
       proposedStartDate: data.proposedStartDate ? new Date(data.proposedStartDate) : null,
       proposedEndDate: data.proposedEndDate ? new Date(data.proposedEndDate) : null,
+      proposedSegments: data.proposedSegments || null,
     });
     await this.historyRepo.save(history);
 

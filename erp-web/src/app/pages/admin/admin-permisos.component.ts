@@ -1,16 +1,9 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-import {
-  ADMIN_PERMISOS_GANTT_ROWS,
-  ADMIN_PERMISOS_KPIS,
-  ADMIN_PERMISOS_PANEL_BY_ROW_ID,
-  ADMIN_PERMISOS_TIMELINE_MARKERS,
-  type AdminPermisoBarVariant,
-  type AdminPermisoGanttRow,
-} from './admin-permisos.mock';
-
+import { Subscription, timer } from 'rxjs';
+import { ADMIN_PERMISOS_GANTT_ROWS, ADMIN_PERMISOS_KPIS, ADMIN_PERMISOS_PANEL_BY_ROW_ID, ADMIN_PERMISOS_TIMELINE_MARKERS, type AdminPermisoBarVariant, type AdminPermisoGanttRow } from './admin-permisos.mock';
 import { LeaveRequestsService, LeaveRequest } from '../../core/services/leave-requests.service';
+import { FeedbackService } from '../../core/services/feedback.service';
 
 @Component({
   selector: 'app-admin-permisos',
@@ -18,8 +11,10 @@ import { LeaveRequestsService, LeaveRequest } from '../../core/services/leave-re
   imports: [CommonModule],
   templateUrl: './admin-permisos.component.html',
 })
-export class AdminPermisosComponent implements OnInit {
+export class AdminPermisosComponent implements OnInit, OnDestroy {
   private readonly leaveService = inject(LeaveRequestsService);
+  private readonly fb = inject(FeedbackService);
+  private pollingSub?: Subscription;
 
   protected readonly kpis = signal([
     { id: 'ops', label: 'Total operarios (planta)', value: '0', sub: 'Cargando...', icon: 'group' },
@@ -54,11 +49,13 @@ export class AdminPermisosComponent implements OnInit {
       totalDays: req.totalDays,
       reason: req.reason,
       evidenceUrl: req.evidenceUrl,
-      status: req.status,
+      status: this.mapStatus(req.status),
+      statusRaw: req.status,
       segments: req.segments && req.segments.length > 0 
         ? req.segments.map(s => ({ start: s.start, end: s.end, count: s.count }))
         : [{ start: req.startDate, end: req.endDate, count: req.totalDays }],
-      type: req.type,
+      type: this.mapType(req.type),
+      typeRaw: req.type,
       timeline: (req.history || []).map(h => ({
         title: this.mapActionTitle(h.actionType),
         meta: h.message || 'Sin mensaje adicional',
@@ -87,8 +84,37 @@ export class AdminPermisosComponent implements OnInit {
     return 'secondary';
   }
 
+  private mapStatus(status: string): string {
+    const map: any = {
+      'PENDING': 'PENDIENTE',
+      'APPROVED': 'APROBADO',
+      'REJECTED': 'RECHAZADO',
+      'ADMIN_PROPOSAL': 'PROPUESTA ADMIN'
+    };
+    return map[status] || status;
+  }
+
+  private mapType(type: string): string {
+    const map: any = {
+      'VACATION': 'VACACIONES',
+      'ABSENCE': 'JUSTIFICANTE',
+      'MEDICAL': 'MÉDICO',
+      'PERSONAL': 'PERSONAL'
+    };
+    return map[type] || type;
+  }
+
   ngOnInit() {
-    this.loadData();
+    // Primera carga inmediata y luego cada 10 segundos
+    this.pollingSub = timer(0, 10000).subscribe(() => {
+      this.loadData();
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.pollingSub) {
+      this.pollingSub.unsubscribe();
+    }
   }
 
   private loadData() {
@@ -109,7 +135,9 @@ export class AdminPermisosComponent implements OnInit {
       // We will map each request as an individual row exactly
       const mapping = reqs.map((r, i) => {
         let variant: AdminPermisoBarVariant = 'vacaciones';
-        if (r.status === 'PENDING') variant = 'pendiente';
+        if (r.status === 'PENDING' || r.status === 'ADMIN_PROPOSAL') variant = 'pendiente';
+        else if (r.status === 'APPROVED') variant = 'aprobado';
+        else if (r.status === 'REJECTED') variant = 'rechazado';
         else if (r.type === 'MEDICAL') variant = 'medico';
         else if (r.type === 'PERSONAL') variant = 'personal';
 
@@ -117,33 +145,43 @@ export class AdminPermisosComponent implements OnInit {
           ? r.segments
           : [{ start: r.startDate, end: r.endDate, count: r.totalDays }];
 
-        const bars = reqSegments.map((seg, idx) => ({
-          label: r.status,
-          leftPct: Math.min((i * 10) + (idx * 12), 85),
-          widthPct: Math.max(5, seg.count * 5),
-          variant
-        }));
-
         return {
           id: r.id,
           initials: r.user?.fullName?.substring(0, 2).toUpperCase() || '--',
           name: r.user?.fullName || 'Sin Nombre',
-          area: 'Solicitud: ' + r.type,
-          bars
+          area: 'Solicitud: ' + this.mapType(r.type),
+          bars: reqSegments.map((seg, idx) => ({
+            label: this.mapStatus(r.status),
+            leftPct: Math.min((i * 10) + (idx * 12), 85),
+            widthPct: Math.max(5, seg.count * 5),
+            variant
+          }))
         };
       });
       this.ganttRows.set(mapping);
-      
-      if(mapping.length > 0 && !this.selectedRowId()) {
-         this.selectedRowId.set(mapping[0].id);
-      }
     });
   }
 
   // Modal para proponer alternativa
   protected readonly showAltModal = signal<boolean>(false);
-  protected readonly altStartDate = signal<string>('');
-  protected readonly altEndDate = signal<string>('');
+  protected readonly altSegments = signal<{ start: string; end: string; count: number }[]>([]);
+
+  protected addAltSegment(): void {
+    const today = new Date().toISOString().split('T')[0];
+    this.altSegments.update(prev => [...prev, { start: today, end: today, count: 1 }]);
+  }
+
+  protected removeAltSegment(index: number): void {
+    this.altSegments.update(prev => prev.filter((_, i) => i !== index));
+  }
+
+  protected updateAltSegment(index: number, field: 'start' | 'end', value: string): void {
+    this.altSegments.update(prev => prev.map((seg, i) => {
+      if (i !== index) return seg;
+      const updated = { ...seg, [field]: value };
+      return updated;
+    }));
+  }
 
 
   protected selectRow(rowId: string): void {
@@ -162,19 +200,28 @@ export class AdminPermisosComponent implements OnInit {
   }
 
   protected onApprove(): void {
-    if (window.confirm('¿Estás seguro de que deseas aprobar esta solicitud?')) {
-      const id = this.selectedRowId();
-      this.leaveService.updateStatus(id, { status: 'APPROVED', message: 'Aprobado por Administrador' }).subscribe(() => {
-        window.alert('Solicitud aprobada correctamente');
-        this.loadData();
-      });
-    }
+    this.fb.showConfirm(
+      'Aprobar solicitud',
+      '¿Estás seguro de que deseas aprobar esta solicitud?'
+    ).then(confirmed => {
+      if (confirmed) {
+        const id = this.selectedRowId();
+        this.leaveService.updateStatus(id, { status: 'APPROVED', message: 'Aprobado por Administrador' }).subscribe(() => {
+          this.fb.showToast('Solicitud aprobada correctamente', 'success');
+          this.loadData();
+        });
+      }
+    });
   }
 
   protected onProposeAlt(): void {
+    const detail = this.panelDetail();
+    if (!detail) return;
+    
+    // Inicializar con copia de los segmentos actuales
+    const initialSegments = detail.segments.map(s => ({ ...s }));
+    this.altSegments.set(initialSegments);
     this.showAltModal.set(true);
-    this.altStartDate.set('');
-    this.altEndDate.set('');
   }
 
   protected cancelAltProposal(): void {
@@ -182,39 +229,45 @@ export class AdminPermisosComponent implements OnInit {
   }
 
   protected sendAltProposal(): void {
-    if (!this.altStartDate() || !this.altEndDate()) {
-      window.alert('Debes seleccionar las fechas de inicio y fin para la propuesta.');
+    const segments = this.altSegments();
+    if (segments.length === 0) {
+      this.fb.showToast('Debes añadir al menos un periodo para la propuesta.', 'warning');
       return;
     }
+
     const id = this.selectedRowId();
     this.leaveService.updateStatus(id, { 
       status: 'ADMIN_PROPOSAL', 
-      message: 'El administrador ha sugerido unas nuevas fechas.',
-      proposedStartDate: this.altStartDate(),
-      proposedEndDate: this.altEndDate()
+      message: 'El administrador ha sugerido una nueva distribución de fechas.',
+      proposedSegments: segments
     }).subscribe(() => {
-      window.alert('Propuesta alternativa enviada');
+      this.fb.showToast('Propuesta alternativa enviada', 'success');
       this.showAltModal.set(false);
       this.loadData();
     });
   }
 
   protected onReject(): void {
-    const reason = window.prompt('Por favor, ingresa el motivo del rechazo. Este campo es obligatorio:');
-    if (reason === null) return;
-    
-    if (reason.trim() === '') {
-      window.alert('El motivo del rechazo es obligatorio. No se completó la acción.');
-      return;
-    }
-    
-    const id = this.selectedRowId();
-    this.leaveService.updateStatus(id, { 
-      status: 'REJECTED', 
-      message: reason 
-    }).subscribe(() => {
-      window.alert('Solicitud rechazada');
-      this.loadData();
+    this.fb.showPrompt(
+      'Rechazar solicitud',
+      'Por favor, ingresa el motivo del rechazo. Este campo es obligatorio:',
+      'Escribe el motivo aquí...'
+    ).then(reason => {
+      if (reason === null) return;
+      
+      if (reason.trim() === '') {
+        this.fb.showToast('El motivo del rechazo es obligatorio. No se completó la acción.', 'error');
+        return;
+      }
+      
+      const id = this.selectedRowId();
+      this.leaveService.updateStatus(id, { 
+        status: 'REJECTED', 
+        message: reason 
+      }).subscribe(() => {
+        this.fb.showToast('Solicitud rechazada', 'success');
+        this.loadData();
+      });
     });
   }
 

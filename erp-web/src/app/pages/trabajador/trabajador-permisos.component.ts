@@ -1,11 +1,12 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { forkJoin, Observable } from 'rxjs';
+import { forkJoin, Observable, Subscription, timer } from 'rxjs';
 import { SystemParametersApiService } from '../../core/system-parameters/system-parameters-api.service';
 import type { HolidayRowDto } from '../../core/system-parameters/system-parameters-api.types';
 import { LeaveRequestsService } from '../../core/services/leave-requests.service';
+import { FeedbackService } from '../../core/services/feedback.service';
 
-export type WorkerPermisoHistoryStatus = 'propuesta_admin' | 'aprobado' | 'revision';
+export type WorkerPermisoHistoryStatus = 'propuesta_admin' | 'aprobado' | 'revision' | 'rechazado';
 export type LeaveRequestNature = 'VACATION' | 'ABSENCE';
 export type AbsenceSubtype = 'PROGRAMMED' | 'URGENT';
 
@@ -24,6 +25,7 @@ export interface WorkerPermisoHistoryItem {
     readonly message: string;
     readonly proposedStartDate?: string;
     readonly proposedEndDate?: string;
+    readonly proposedSegments?: Array<{ start: string; end: string; count: number }>;
   };
 }
 
@@ -33,9 +35,11 @@ export interface WorkerPermisoHistoryItem {
   imports: [CommonModule],
   templateUrl: './trabajador-permisos.component.html',
 })
-export class TrabajadorPermisosComponent implements OnInit {
+export class TrabajadorPermisosComponent implements OnInit, OnDestroy {
   private readonly sysParams = inject(SystemParametersApiService);
   private readonly leaveService = inject(LeaveRequestsService);
+  private readonly fb = inject(FeedbackService);
+  private pollingSub?: Subscription;
 
   protected readonly balance = signal({
     availableDays: '—' as string | number,
@@ -78,6 +82,12 @@ export class TrabajadorPermisosComponent implements OnInit {
     return nature === 'VACATION' 
       ? 'Selecciona los días para tus vacaciones (pueden ser varios periodos).' 
       : 'Selecciona el día de tu inasistencia en el calendario.';
+  });
+
+  protected readonly hasNoAvailableDays = computed(() => {
+    const val = this.balance().availableDays;
+    // Si el valor es 0, '0' o el guion inicial, se considera que no tiene días.
+    return val === 0 || val === '0' || val === '—';
   });
 
   /** Agrupa las fechas seleccionadas en bloques continuos de días. */
@@ -219,6 +229,9 @@ export class TrabajadorPermisosComponent implements OnInit {
   protected readonly weekdayLabels = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'] as const;
 
   ngOnInit(): void {
+    // Limpiar notificación de inicio al entrar a esta vista
+    this.leaveService.hasVacationUpdate.set(false);
+
     this.sysParams.get().subscribe({
       next: (snap) => {
         this.holidays.set(snap.holidays);
@@ -226,7 +239,16 @@ export class TrabajadorPermisosComponent implements OnInit {
       error: (err) => console.error('Error al cargar parámetros del sistema', err),
     });
 
-    this.loadData();
+    // Polling cada 10 segundos para actualizar balance e historial
+    this.pollingSub = timer(0, 10000).subscribe(() => {
+      this.loadData();
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.pollingSub) {
+      this.pollingSub.unsubscribe();
+    }
   }
 
   private loadData(): void {
@@ -244,8 +266,12 @@ export class TrabajadorPermisosComponent implements OnInit {
       const requestedSum = reqs
         .filter(r => r.status === 'PENDING' || r.status === 'ADMIN_PROPOSAL')
         .reduce((acc, curr) => acc + curr.totalDays, 0);
+
+      const approvedSum = reqs
+        .filter(r => r.status === 'APPROVED')
+        .reduce((acc, curr) => acc + curr.totalDays, 0);
       
-      this.balance.update(b => ({ ...b, requested: requestedSum }));
+      this.balance.update(b => ({ ...b, requested: requestedSum, approved: approvedSum }));
 
       const mapped = reqs.map((r) => {
         const lo = new Date(r.startDate).toLocaleDateString();
@@ -253,19 +279,21 @@ export class TrabajadorPermisosComponent implements OnInit {
         
         let status: WorkerPermisoHistoryStatus = 'revision';
         if (r.status === 'APPROVED') status = 'aprobado';
-        else if (r.status === 'REJECTED') status = 'revision'; 
+        else if (r.status === 'REJECTED') status = 'rechazado'; 
         else if (r.status === 'ADMIN_PROPOSAL') status = 'propuesta_admin';
         
-        // Buscar el último mensaje de negociación si hay propuesta del admin
+        // Buscar el último mensaje de negociación o rechazo
         let negotiation = undefined;
-        if (r.status === 'ADMIN_PROPOSAL' && r.history && r.history.length > 0) {
-          const lastH = [...r.history].reverse().find(h => h.actionType === 'ADMIN_PROPOSAL');
+        if ((r.status === 'ADMIN_PROPOSAL' || r.status === 'REJECTED') && r.history && r.history.length > 0) {
+          const actionToFind = r.status === 'REJECTED' ? 'REJECTED' : 'ADMIN_PROPOSAL';
+          const lastH = [...r.history].reverse().find(h => h.actionType === actionToFind);
           if (lastH) {
             negotiation = {
               from: lastH.author?.fullName || 'Administrador',
               message: lastH.message,
               proposedStartDate: lastH.proposedStartDate,
-              proposedEndDate: lastH.proposedEndDate
+              proposedEndDate: lastH.proposedEndDate,
+              proposedSegments: lastH.proposedSegments
             };
           }
         }
@@ -360,12 +388,12 @@ export class TrabajadorPermisosComponent implements OnInit {
 
   protected onSendRequest(): void {
     if (this.selectedDatesMs().size === 0) {
-      window.alert('Debes seleccionar al menos un día en el calendario.');
+      this.fb.showToast('Debes seleccionar al menos un día en el calendario.', 'warning');
       return;
     }
 
     if (this.requestNature() === 'ABSENCE' && !this.reason()) {
-      window.alert('Debes proporcionar un motivo para el justificante.');
+      this.fb.showToast('Debes proporcionar un motivo para el justificante.', 'warning');
       return;
     }
 
@@ -409,7 +437,7 @@ export class TrabajadorPermisosComponent implements OnInit {
       next: () => {
         this.isSending.set(false);
         this.showConfirmModal.set(false);
-        window.alert('Solicitud enviada correctamente');
+        this.fb.showToast('Solicitud enviada correctamente', 'success');
         this.clearSelection();
         this.reason.set('');
         this.evidenceFile.set(null);
@@ -417,7 +445,7 @@ export class TrabajadorPermisosComponent implements OnInit {
       },
       error: (err) => {
         this.isSending.set(false);
-        window.alert(err?.error?.message || 'Hubo un error al enviar la solicitud');
+        this.fb.showToast(err?.error?.message || 'Hubo un error al enviar la solicitud', 'error');
       }
     });
   }
@@ -443,7 +471,7 @@ export class TrabajadorPermisosComponent implements OnInit {
     
     // Validar tipo de archivo (solo PDF)
     if (file.type !== 'application/pdf') {
-      window.alert('Solo se permiten archivos en formato PDF.');
+      this.fb.showToast('Solo se permiten archivos en formato PDF.', 'error');
       input.value = ''; // clean up
       this.evidenceFile.set(null);
       return;
@@ -452,7 +480,7 @@ export class TrabajadorPermisosComponent implements OnInit {
     // Validar tamaño de archivo (máximo 30MB)
     const MAX_MB = 30;
     if (file.size > MAX_MB * 1024 * 1024) {
-      window.alert(`El archivo excede el tamaño máximo permitido de ${MAX_MB}MB.`);
+      this.fb.showToast(`El archivo excede el tamaño máximo permitido de ${MAX_MB}MB.`, 'error');
       input.value = ''; // clean up
       this.evidenceFile.set(null);
       return;
@@ -463,31 +491,40 @@ export class TrabajadorPermisosComponent implements OnInit {
 
 
   protected onAcceptProposal(item: WorkerPermisoHistoryItem): void {
-    if (!item.negotiation?.proposedStartDate) return;
-    
-    if (confirm('¿Deseas aceptar las fechas propuestas por el administrador? Se actualizará tu solicitud.')) {
-      this.leaveService.updateStatus(item.id, {
-        status: 'APPROVED',
-        message: 'Aceptado por el trabajador',
-        proposedStartDate: item.negotiation.proposedStartDate,
-        proposedEndDate: item.negotiation.proposedEndDate
-      }).subscribe(() => {
-        alert('Solicitud actualizada y aprobada');
-        this.loadData();
-      });
-    }
+    this.fb.showConfirm(
+      'Aceptar propuesta', 
+      '¿Deseas aceptar las fechas propuestas por el administrador? Se actualizará tu solicitud.'
+    ).then(confirmed => {
+      if (confirmed) {
+        this.leaveService.updateStatus(item.id, {
+          status: 'APPROVED',
+          message: 'Aceptado por el trabajador',
+          proposedStartDate: item.negotiation!.proposedStartDate,
+          proposedEndDate: item.negotiation!.proposedEndDate,
+          proposedSegments: item.negotiation!.proposedSegments
+        }).subscribe(() => {
+          this.fb.showToast('Solicitud actualizada y aprobada', 'success');
+          this.loadData();
+        });
+      }
+    });
   }
 
   protected onRejectProposal(item: WorkerPermisoHistoryItem): void {
-    const reason = prompt('Indica por qué rechazas la propuesta del administrador:');
-    if (reason === null) return;
-    
-    this.leaveService.updateStatus(item.id, {
-      status: 'PENDING',
-      message: `El trabajador rechazó la propuesta: ${reason}`
-    }).subscribe(() => {
-      alert('Propuesta rechazada. El administrador revisará tu respuesta.');
-      this.loadData();
+    this.fb.showPrompt(
+      'Rechazar propuesta',
+      'Indica por qué rechazas la propuesta del administrador:',
+      'Escribe el motivo del rechazo...'
+    ).then(reason => {
+      if (reason === null) return;
+      
+      this.leaveService.updateStatus(item.id, {
+        status: 'PENDING',
+        message: `El trabajador rechazó la propuesta: ${reason}`
+      }).subscribe(() => {
+        this.fb.showToast('Propuesta rechazada. El administrador revisará tu respuesta.', 'info');
+        this.loadData();
+      });
     });
   }
 
@@ -498,6 +535,9 @@ export class TrabajadorPermisosComponent implements OnInit {
     if (status === 'aprobado') {
       return 'erp-permisos-badge erp-permisos-badge--aprobado';
     }
+    if (status === 'rechazado') {
+      return 'erp-permisos-badge erp-permisos-badge--rechazado';
+    }
     return 'erp-permisos-badge erp-permisos-badge--revision';
   }
 
@@ -507,6 +547,9 @@ export class TrabajadorPermisosComponent implements OnInit {
     }
     if (status === 'aprobado') {
       return 'Aprobado';
+    }
+    if (status === 'rechazado') {
+      return 'Rechazado';
     }
     return 'En revisión';
   }
