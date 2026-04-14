@@ -29,6 +29,7 @@ import { ProductionProcessTracking } from './production/entities/production-proc
 import { ProductionWaste } from './production/entities/production-waste.entity';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AppNotification } from './notifications/entities/notification.entity';
+import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
 
 
 @Module({
@@ -79,6 +80,7 @@ import { AppNotification } from './notifications/entities/notification.entity';
     HealthModule,
     ProductionModule,
     NotificationsModule,
+    CloudinaryModule,
     ScheduleModule.forRoot(),
   ],
 

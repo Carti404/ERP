@@ -5,6 +5,7 @@ import { ADMIN_PERMISOS_GANTT_ROWS, ADMIN_PERMISOS_KPIS, ADMIN_PERMISOS_PANEL_BY
 import { LeaveRequestsService, LeaveRequest } from '../../core/services/leave-requests.service';
 import { FeedbackService } from '../../core/services/feedback.service';
 import { apiBaseUrl } from '../../core/environment';
+import { MessagesApiService } from '../../core/messages/messages-api.service';
 
 @Component({
   selector: 'app-admin-permisos',
@@ -15,6 +16,7 @@ import { apiBaseUrl } from '../../core/environment';
 export class AdminPermisosComponent implements OnInit, OnDestroy {
   private readonly leaveService = inject(LeaveRequestsService);
   private readonly fb = inject(FeedbackService);
+  private readonly messagesService = inject(MessagesApiService);
   private pollingSub?: Subscription;
 
   protected readonly kpis = signal([
@@ -288,11 +290,24 @@ export class AdminPermisosComponent implements OnInit, OnDestroy {
 
   protected openEvidence(url: string | null): void {
     if (!url) return;
-    const fullUrl = url.startsWith('http') ? url : `${apiBaseUrl.split('/api')[0]}${url.startsWith('/') ? '' : '/'}${url}`;
-    if (this.isImageFile(fullUrl)) {
-      this.previewUrl.set(fullUrl);
-    } else {
-      window.open(fullUrl, '_blank');
+    
+    // Si es imagen, intentamos previsualizar con la URL directa (optimizado para carga rápida)
+    // Pero si falla o es PDF, vamos por el proxy de descarga
+    if (this.isImageFile(url)) {
+      this.previewUrl.set(url);
+      return;
     }
+
+    // Para PDFs y otros, forzar descarga vía proxy
+    const suggestedFilename = `evidencia_${this.selectedRowId()}`;
+    this.messagesService.downloadByUrl(url, suggestedFilename).subscribe({
+      next: (res) => {
+        window.open(res.url, '_blank');
+      },
+      error: (err) => {
+        console.error('Error al descargar evidencia:', err);
+        this.fb.showToast('No se pudo descargar la evidencia mediante el servidor local.', 'error');
+      }
+    });
   }
 }

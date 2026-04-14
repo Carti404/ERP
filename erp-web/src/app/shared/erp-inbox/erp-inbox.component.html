@@ -196,12 +196,12 @@
                     adjuntos ({{ msg.attachments.length }})</h4>
                   <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     @for (a of msg.attachments; track a.id) {
-                    <a [href]="a.url" target="_blank"
+                    <a href="#" (click)="onDownloadAttachment(a, $event)"
                       class="flex items-center gap-3 rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] p-3 transition-all hover:border-[var(--erp-login-primary-cta-bg)] hover:shadow-md dark:border-[rgb(255_255_255/0.08)]">
                       @if (a.isImage) {
                       <div
                         class="h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-[rgb(0_0_0/0.05)] bg-[rgb(0_0_0/0.03)] dark:border-[rgb(255_255_255/0.1)]">
-                        <img [src]="a.url" [alt]="a.filename" class="h-full w-full object-cover">
+                        <img [src]="a.previewUrl" [alt]="a.filename" class="h-full w-full object-cover">
                       </div>
                       } @else {
                       <div

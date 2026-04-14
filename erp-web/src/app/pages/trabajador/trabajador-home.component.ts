@@ -41,7 +41,7 @@ export class TrabajadorHomeComponent {
     importance: string;
   }[] = [];
 
-  protected unreadCount = 0;
+  protected unreadCount = signal(0);
 
   protected readonly orderAlerts = signal<AppNotification[]>([]);
   protected readonly hasUrgentAlert = computed(() => this.orderAlerts().length > 0);
@@ -122,7 +122,7 @@ export class TrabajadorHomeComponent {
     this.messagesApi.list('inbox').subscribe({
       next: (rows) => {
         const unread = rows.filter((r) => !r.read);
-        this.unreadCount = unread.length;
+        this.unreadCount.set(unread.length);
 
         const pScores: Record<string, number> = { HIGH: 3, MEDIUM: 2, LOW: 1 };
         unread.sort((a, b) => {

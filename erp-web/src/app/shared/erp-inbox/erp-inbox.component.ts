@@ -37,6 +37,7 @@ interface ErpInboxMessageVm {
     readonly id: string;
     readonly filename: string;
     readonly url: string;
+    readonly previewUrl: string;
     readonly mimetype: string;
     readonly size: number;
     readonly isImage: boolean;
@@ -325,7 +326,8 @@ export class ErpInboxComponent {
       importance: row.importance ?? 'LOW',
       attachments: (row.attachments || []).map((a) => ({
         ...a,
-        url: a.url.startsWith('http') ? a.url : `${apiBaseUrl.split('/api')[0]}${a.url.startsWith('/') ? '' : '/'}${a.url}`,
+        url: `${apiBaseUrl}/messages/attachments/${a.id}/download`,
+        previewUrl: a.url.startsWith('http') ? a.url : `${apiBaseUrl.split('/api')[0]}${a.url.startsWith('/') ? '' : '/'}${a.url}`,
         isImage: a.mimetype.startsWith('image/'),
       })),
     };
@@ -780,5 +782,18 @@ export class ErpInboxComponent {
       !this.composeBody().trim() ||
       this.composeSending()
     );
+  }
+
+  protected onDownloadAttachment(a: ErpInboxMessageVm['attachments'][0], ev: Event): void {
+    ev.preventDefault();
+    this.messagesApi.downloadAttachment(a.id).subscribe({
+      next: (res) => {
+        // Abrimos la URL firmada en una nueva pestaña para iniciar la descarga
+        window.open(res.url, '_blank');
+      },
+      error: () => {
+        alert('No se pudo descargar el archivo.');
+      },
+    });
   }
 }

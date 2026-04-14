@@ -48,4 +48,14 @@ export class MessagesApiService {
       formData,
     );
   }
+
+  downloadAttachment(id: string): Observable<{ url: string }> {
+    return this.http.get<{ url: string }>(`${this.base}/messages/attachments/${id}/download`);
+  }
+
+  downloadByUrl(url: string, filename?: string): Observable<{ url: string }> {
+    return this.http.get<{ url: string }>(`${this.base}/messages/attachments/download-evidence`, {
+      params: { url, filename: filename || '' },
+    });
+  }
 }

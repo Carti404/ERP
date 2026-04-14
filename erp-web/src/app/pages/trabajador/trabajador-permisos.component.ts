@@ -6,6 +6,7 @@ import type { HolidayRowDto } from '../../core/system-parameters/system-paramete
 import { LeaveRequestsService } from '../../core/services/leave-requests.service';
 import { FeedbackService } from '../../core/services/feedback.service';
 import { apiBaseUrl } from '../../core/environment';
+import { MessagesApiService } from '../../core/messages/messages-api.service';
 
 export type WorkerPermisoHistoryStatus = 'propuesta_admin' | 'aprobado' | 'revision' | 'rechazado';
 export type LeaveRequestNature = 'VACATION' | 'ABSENCE';
@@ -41,6 +42,7 @@ export class TrabajadorPermisosComponent implements OnInit, OnDestroy {
   private readonly sysParams = inject(SystemParametersApiService);
   private readonly leaveService = inject(LeaveRequestsService);
   private readonly fb = inject(FeedbackService);
+  private readonly messagesService = inject(MessagesApiService);
   private pollingSub?: Subscription;
 
   protected readonly balance = signal({
@@ -524,16 +526,23 @@ export class TrabajadorPermisosComponent implements OnInit, OnDestroy {
   protected openEvidence(url: string | null): void {
     if (!url) return;
     
-    const fullUrl = url.startsWith('http') ? url : `${apiBaseUrl.split('/api')[0]}${url.startsWith('/') ? '' : '/'}${url}`;
-    
-    // Determinar si es imagen por la extensión o si ya sabemos el tipo
-    const isImage = fullUrl.match(/\.(jpeg|jpg|png|gif|webp)$/i);
-    
-    if (isImage) {
-      this.previewUrl.set(fullUrl);
-    } else {
-      window.open(fullUrl, '_blank');
+    // Si es imagen, intentamos previsualizar con la URL directa
+    if (url.match(/\.(jpeg|jpg|png|gif|webp)$/i)) {
+      this.previewUrl.set(url);
+      return;
     }
+
+    // Para PDFs y otros, forzar descarga vía proxy
+    const suggestedFilename = `evidencia_mi_solicitud`;
+    this.messagesService.downloadByUrl(url, suggestedFilename).subscribe({
+      next: (res) => {
+        window.open(res.url, '_blank');
+      },
+      error: (err) => {
+        console.error('Error al descargar evidencia:', err);
+        this.fb.showToast('No se pudo descargar la evidencia mediante el servidor local.', 'error');
+      }
+    });
   }
 
 
