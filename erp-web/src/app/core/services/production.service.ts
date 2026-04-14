@@ -41,6 +41,7 @@ export interface ProductionAssignment {
   taskId: string;
   workerId: string;
   quantity: number;
+  assignedProcessIds?: string[];
   status: 'ASSIGNED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
   startedAt?: string;
   completedAt?: string;
@@ -89,7 +90,7 @@ export class ProductionService {
 
   // ──── Asignaciones ────
 
-  assignTask(taskId: string, assignments: { workerId: string; quantity: number }[]): Observable<any> {
+  assignTask(taskId: string, assignments: { workerId: string; quantity: number; processIds?: string[] }[]): Observable<any> {
     return this.http.post(`${apiBaseUrl}/production/${taskId}/assign`, { assignments });
   }
 

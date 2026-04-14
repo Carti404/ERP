@@ -40,6 +40,9 @@ export class ProductionAssignment {
   @Column({ name: 'completed_at', type: 'timestamptz', nullable: true })
   completedAt: Date;
 
+  @Column({ name: 'assigned_process_ids', type: 'jsonb', default: [] })
+  assignedProcessIds: string[];
+
   @OneToMany(() => ProductionProcessTracking, (t) => t.assignment)
   processTracking: ProductionProcessTracking[];
 

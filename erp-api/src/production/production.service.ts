@@ -192,6 +192,7 @@ export class ProductionSyncService {
         taskId,
         workerId: a.workerId,
         quantity: a.quantity,
+        assignedProcessIds: a.processIds || [],
         status: ProductionAssignmentStatus.ASSIGNED
       });
     });
@@ -205,10 +206,13 @@ export class ProductionSyncService {
     // Notificar a cada trabajador asignado
     for (const assignment of saved) {
       try {
+        const processCount = assignment.assignedProcessIds?.length || 0;
+        const processMsg = processCount > 0 ? ` con ${processCount} procesos específicos` : '';
+        
         await this.notificationsService.create({
           userId: assignment.workerId,
           title: 'Nueva orden de producción asignada',
-          message: `Se te asignó la producción de "${task.productName}" (Orden ${task.orderNumber}) — ${assignment.quantity} unidades.`,
+          message: `Se te asignó la producción de "${task.productName}" (Orden ${task.orderNumber}) — ${assignment.quantity} unidades${processMsg}.`,
           type: NotificationType.ALERT,
           category: NotificationCategory.PRODUCTION_ASSIGNED,
           referenceId: task.id,
@@ -368,6 +372,11 @@ export class ProductionSyncService {
     const process = assignment.task.processes.find(p => p.id === processId);
     if (!process) throw new NotFoundException('Proceso no encontrado en esta tarea');
 
+    // Verificar si el proceso está asignado a este trabajador específicamente
+    if (assignment.assignedProcessIds?.length > 0 && !assignment.assignedProcessIds.includes(processId)) {
+      throw new BadRequestException('Este proceso no te ha sido asignado específicamente.');
+    }
+
     // Verificar que no haya un proceso activo (sin completar) en este assignment
     const activeProcess = await this.trackingRepo.findOne({
       where: { assignmentId, completedAt: null as any },
@@ -383,14 +392,22 @@ export class ProductionSyncService {
 
     if (currentIndex > 0) {
       const previousProcessIds = sortedProcesses.slice(0, currentIndex).map(p => p.id);
+      
+      // Búsqueda GLOBAL: ¿Algún trabajador ya completó los procesos anteriores para esta TAREA?
       const completedTracking = await this.trackingRepo.find({
-        where: previousProcessIds.map(pid => ({ assignmentId, processId: pid })),
+        where: previousProcessIds.map(pid => ({ processId: pid })),
+        relations: ['assignment'],
       });
-      const completedIds = completedTracking.filter(t => t.completedAt).map(t => t.processId);
-      const allPreviousCompleted = previousProcessIds.every(pid => completedIds.includes(pid));
+      
+      // Filtrar los que pertenecen a esta tarea (por si acaso hay procesos con mismo ID en otras tareas, aunque sean UUID)
+      const taskCompletedIds = completedTracking
+        .filter(t => t.completedAt && t.assignment?.taskId === assignment.taskId)
+        .map(t => t.processId);
+        
+      const allPreviousCompleted = previousProcessIds.every(pid => taskCompletedIds.includes(pid));
       
       if (!allPreviousCompleted) {
-        throw new BadRequestException('Debes completar los procesos anteriores antes de continuar.');
+        throw new BadRequestException('Debes esperar a que los procesos anteriores de la orden sean completados.');
       }
     }
 
@@ -417,10 +434,18 @@ export class ProductionSyncService {
   async completeProcess(assignmentId: string, processId: string) {
     const tracking = await this.trackingRepo.findOne({
       where: { assignmentId, processId, completedAt: null as any },
+      relations: ['assignment', 'assignment.task', 'assignment.task.processes']
     });
 
     if (!tracking || !tracking.startedAt) {
       throw new BadRequestException('No se encontró un proceso en curso para finalizar.');
+    }
+
+    const { assignment } = tracking;
+    const process = assignment.task.processes.find(p => p.id === processId);
+    
+    if (!process) {
+      throw new NotFoundException('No se encontró el proceso en la tarea vinculada.');
     }
 
     tracking.completedAt = new Date();
@@ -428,7 +453,45 @@ export class ProductionSyncService {
 
     const saved = await this.trackingRepo.save(tracking);
     this.logger.log(`Proceso ${processId} completado. Duración: ${tracking.durationSeconds}s`);
+
+    // Notificar al siguiente trabajador si existe una asignación específica para el siguiente paso
+    await this.notifyNextWorkerIfAssigned(assignment.taskId, process.orderIndex, assignment.task.productName);
+
     return saved;
+  }
+
+  /** Notifica al trabajador asignado al SIGUIENTE proceso de la tarea */
+  private async notifyNextWorkerIfAssigned(taskId: string, currentOrderIndex: number, productName: string) {
+    try {
+      const nextProcess = await this.processRepo.findOne({
+        where: { taskId, orderIndex: currentOrderIndex + 1 }
+      });
+
+      if (!nextProcess) return;
+
+      // Buscar si hay alguna asignación que incluya este proceso
+      const nextAssignments = await this.assignmentRepo.find({
+        where: { taskId },
+      });
+
+      const assignedWorkers = nextAssignments.filter(a => 
+        a.assignedProcessIds?.includes(nextProcess.id)
+      );
+
+      for (const assignment of assignedWorkers) {
+        await this.notificationsService.create({
+          userId: assignment.workerId,
+          title: 'Proceso disponible para iniciar',
+          message: `El proceso anterior de "${productName}" ha finalizado. Ya puedes iniciar con: ${nextProcess.name}.`,
+          type: NotificationType.SUCCESS,
+          category: NotificationCategory.PRODUCTION_ASSIGNED,
+          referenceId: taskId,
+        });
+        this.logger.log(`Notificado trabajador ${assignment.workerId} para iniciar proceso ${nextProcess.name}`);
+      }
+    } catch (err) {
+      this.logger.error('Error al notificar al siguiente trabajador', err.message);
+    }
   }
 
   // ──────────────────────────────────────────────

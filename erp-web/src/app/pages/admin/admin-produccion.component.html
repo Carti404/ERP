@@ -276,28 +276,45 @@
                 <!-- Lista de Trabajadores Seleccionados -->
                 <div class="space-y-2.5 max-h-[300px] overflow-y-auto pr-1 erp-produccion-scrollbar">
                   @for (sw of selectedDelegationWorkers(); track sw.id) {
-                  <div class="flex items-center gap-3 rounded-lg bg-[#1b263b] p-2.5 border border-[#47607e]/20">
-                    <div class="flex-1 min-w-0">
-                      <div class="flex items-center gap-2">
-                        <span class="truncate text-xs font-bold text-white">Op: {{ sw.name }}</span>
+                  <div class="flex flex-col gap-2 rounded-lg bg-[#1b263b] p-2.5 border border-[#47607e]/20" [class.border-l-4]="workerProcessSelection()[sw.id]?.length" [class.border-l-emerald-500]="workerProcessSelection()[sw.id]?.length">
+                    <div class="flex items-center gap-3">
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                          <span class="truncate text-xs font-bold text-white">Op: {{ sw.name }}</span>
+                        </div>
+                        <p class="text-[9px] text-[#828da7] uppercase">{{ sw.puesto }}</p>
                       </div>
-                      <p class="text-[9px] text-[#828da7] uppercase">{{ sw.puesto }}</p>
-                    </div>
-                    
-                    <div class="flex items-center gap-2">
-                      <input
-                        class="w-16 rounded border-0 bg-[#051125] px-2 py-1.5 text-right text-xs text-white font-mono focus:outline-none focus:ring-1 focus:ring-[#47607e]"
-                        type="number" min="0" [value]="delegationInputValue(sw.id)"
-                        (input)="onDelegationInput(sw.id, ($any($event.target).value))" 
-                        placeholder="Cant." />
                       
-                      <button type="button" 
-                        (click)="removeWorkerFromDelegation(sw.id)"
-                        class="text-[#ba1a1a] hover:text-[#ff3838] transition-colors p-1"
-                        title="Quitar trabajador">
-                        <span class="material-symbols-outlined text-lg">delete</span>
-                      </button>
+                      <div class="flex items-center gap-2">
+                        <input
+                          class="w-16 rounded border-0 bg-[#051125] px-2 py-1.5 text-right text-xs text-white font-mono focus:outline-none focus:ring-1 focus:ring-[#47607e]"
+                          type="number" min="0" [value]="delegationInputValue(sw.id)"
+                          (input)="onDelegationInput(sw.id, ($any($event.target).value))" 
+                          placeholder="Cant." />
+                        
+                        <button type="button" 
+                          (click)="removeWorkerFromDelegation(sw.id)"
+                          class="text-[#ba1a1a] hover:text-[#ff3838] transition-colors p-1"
+                          title="Quitar trabajador">
+                          <span class="material-symbols-outlined text-lg">delete</span>
+                        </button>
+                      </div>
                     </div>
+
+                    <!-- Lista de Procesos para este trabajador -->
+                    @if (selectedTask()?.processes?.length) {
+                      <div class="flex flex-wrap gap-1 border-t border-[#47607e]/20 pt-2">
+                        @for (p of selectedTask()?.processes; track p.id) {
+                          <button type="button" 
+                            (click)="toggleWorkerProcess(sw.id, p.id)"
+                            [class]="isProcessSelected(sw.id, p.id) 
+                              ? 'rounded px-2 py-0.5 text-[9px] font-bold bg-[#47607e] text-white border border-[#47607e]' 
+                              : 'rounded px-2 py-0.5 text-[9px] font-bold bg-transparent text-[#828da7] border border-[#47607e]/40 hover:border-[#47607e] transition-colors'">
+                            {{ p.name }}
+                          </button>
+                        }
+                      </div>
+                    }
                   </div>
                   } @empty {
                     <div class="py-6 text-center border border-dashed border-[#47607e]/30 rounded-lg">

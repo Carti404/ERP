@@ -141,6 +141,24 @@ export class AdminProduccionComponent {
     }));
   });
 
+  // Selección de procesos por trabajador
+  protected readonly workerProcessSelection = signal<Record<string, string[]>>({});
+
+  protected toggleWorkerProcess(workerId: string, processId: string): void {
+    this.workerProcessSelection.update(prev => {
+      const current = prev[workerId] || [];
+      if (current.includes(processId)) {
+        return { ...prev, [workerId]: current.filter(id => id !== processId) };
+      } else {
+        return { ...prev, [workerId]: [...current, processId] };
+      }
+    });
+  }
+
+  protected isProcessSelected(workerId: string, processId: string): boolean {
+    return (this.workerProcessSelection()[workerId] || []).includes(processId);
+  }
+
   protected readonly availableWorkers = computed(() => {
     const selected = this.selectedWorkerIds();
     return this.delegationOps();
@@ -329,10 +347,12 @@ export class AdminProduccionComponent {
 
     this.isAssigning.set(true);
     const qtyMap = this.delegationQty();
+    const procMap = this.workerProcessSelection();
     const assignments = this.selectedWorkerIds()
       .map(workerId => ({ 
         workerId, 
-        quantity: Number(qtyMap[workerId]) || 0 
+        quantity: Number(qtyMap[workerId]) || 0,
+        processIds: procMap[workerId] || []
       }))
       .filter(a => a.quantity > 0);
 

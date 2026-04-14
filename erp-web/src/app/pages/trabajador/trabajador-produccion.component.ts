@@ -159,8 +159,11 @@ export class TrabajadorProduccionComponent implements OnInit, OnDestroy {
     this.activeAssignment.set(assignment);
     this.activeView.set('processes');
 
-    // Cargar procesos de la tarea
-    const taskProcesses = assignment.task?.processes || [];
+    // Cargar procesos de la tarea, filtrando por los asignados específicamente si existen
+    let taskProcesses = assignment.task?.processes || [];
+    if (assignment.assignedProcessIds && assignment.assignedProcessIds.length > 0) {
+      taskProcesses = taskProcesses.filter(p => assignment.assignedProcessIds!.includes(p.id));
+    }
     this.processes.set(taskProcesses);
 
     // Cargar tracking desde la data que ya trajo el backend
