@@ -100,4 +100,10 @@ export class LeaveRequestsService {
   ): Observable<LeaveRequest> {
     return this.http.patch<LeaveRequest>(`${this.url}/${id}/status`, payload);
   }
+
+  uploadEvidence(file: File): Observable<{ url: string; id: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ url: string; id: string }>(`${apiBaseUrl}/messages/attachments/upload`, formData);
+  }
 }

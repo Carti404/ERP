@@ -211,9 +211,14 @@
             <label
               class="cursor-pointer rounded-lg bg-[color-mix(in_srgb,var(--erp-login-muted)_10%,transparent)] px-4 py-2 text-xs font-bold uppercase tracking-wide text-[var(--erp-login-text-primary)] transition-colors hover:bg-[color-mix(in_srgb,var(--erp-login-muted)_15%,transparent)]">
               Seleccionar Archivo
-              <input type="file" class="hidden" accept="application/pdf" (change)="onFileSelected($event)" />
+              <input type="file" class="hidden" accept="application/pdf,image/*" (change)="onFileSelected($event)" />
             </label>
-            @if (evidenceFile()) {
+            @if (isUploading()) {
+            <div class="flex items-center gap-2">
+              <span class="h-4 w-4 animate-spin rounded-full border-2 border-[var(--erp-login-primary-cta-bg)]/20 border-t-[var(--erp-login-primary-cta-bg)]"></span>
+              <span class="text-[10px] font-bold text-[var(--erp-login-primary-cta-bg)]">Subiendo...</span>
+            </div>
+            } @else if (evidenceFile()) {
             <span class="text-xs text-[#47607e] font-semibold truncate flex-1">
               📄 {{ evidenceFile()?.name }}
             </span>
@@ -266,13 +271,31 @@
         @for (item of history(); track item.id) {
         <article class="erp-permisos-worker-history-card"
           [class.erp-permisos-worker-history-card--highlight]="item.status === 'propuesta_admin'">
-          <div class="flex flex-wrap items-start justify-between gap-2">
-            <div class="min-w-0">
-              <p class="font-bold text-[var(--erp-login-text-primary)]">{{ item.title }}</p>
-              <p class="mt-0.5 text-xs text-[var(--erp-login-muted)]">{{ item.dateRange }} · {{ item.daysLabel }}</p>
+            <div class="flex flex-wrap items-start justify-between gap-2">
+              <div class="min-w-0">
+                <p class="font-bold text-[var(--erp-login-text-primary)]">{{ item.title }}</p>
+                <div class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <p class="text-xs text-[var(--erp-login-muted)]">{{ item.dateRange }} · {{ item.daysLabel }}</p>
+                  @if (item.evidenceUrl) {
+                    <button type="button" 
+                      class="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-[#47607e] hover:opacity-70 transition-opacity"
+                      (click)="openEvidence(item.evidenceUrl)">
+                      <span class="material-symbols-outlined text-sm">
+                        {{ isImageFile(item.evidenceUrl) ? 'image' : 'description' }}
+                      </span>
+                      Ver justificante
+                    </button>
+                  }
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                @if (item.negotiation || item.status === 'propuesta_admin') {
+                  <span [class]="statusBadgeClass(item.status)">{{ statusLabel(item.status) }}</span>
+                } @else {
+                  <span [class]="statusBadgeClass(item.status)">{{ statusLabel(item.status) }}</span>
+                }
+              </div>
             </div>
-            <span [class]="statusBadgeClass(item.status)">{{ statusLabel(item.status) }}</span>
-          </div>
 
           <!-- Resumen de días solicitados en historial (Estilo Modal) -->
           <div class="mt-4 flex flex-col gap-2">
@@ -293,6 +316,7 @@
               </div>
             }
           </div>
+
           @if (item.negotiation) {
           <div
             class="mt-4 rounded-lg border border-[var(--erp-login-input-border)] bg-[color-mix(in_srgb,var(--erp-login-muted)_6%,transparent)] p-3 dark:border-[rgb(255_255_255/0.08)]">
@@ -348,6 +372,17 @@
       </div>
     </section>
   </div>
+
+  @if (previewUrl()) {
+  <div class="fixed inset-0 z-[110] flex items-center justify-center bg-black/90 p-4 animate-in fade-in duration-300">
+    <button type="button" (click)="previewUrl.set(null)" class="absolute right-6 top-6 text-white/70 hover:text-white transition-colors z-10">
+      <span class="material-symbols-outlined text-4xl">close</span>
+    </button>
+    <div class="relative max-h-screen max-w-full overflow-auto rounded-xl animate-in zoom-in-95 duration-200">
+      <img [src]="previewUrl()" alt="Vista previa de evidencia" class="mx-auto block h-auto max-w-full rounded-lg shadow-2xl">
+    </div>
+  </div>
+  }
 </div>
 
 <!-- Modal de Confirmación de Solicitud -->

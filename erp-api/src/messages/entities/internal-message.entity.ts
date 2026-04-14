@@ -4,9 +4,11 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
+import { InternalMessageAttachment } from './internal-message-attachment.entity';
 import { User } from '../../users/entities/user.entity';
 
 export enum MessageImportance {
@@ -62,5 +64,8 @@ export class InternalMessage {
 
   @Column({ type: 'varchar', length: 20, default: MessageCategory.GENERAL })
   category: MessageCategory;
+
+  @OneToMany(() => InternalMessageAttachment, (attachment) => attachment.message)
+  attachments: InternalMessageAttachment[];
 }
 

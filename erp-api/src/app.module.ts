@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { join } from 'path';
 
 import { AuthModule } from './auth/auth.module';
 import { HealthModule } from './health/health.module';
@@ -10,6 +12,7 @@ import { PlantRestSettings } from './system-parameters/entities/plant-rest-setti
 import { WorkScheduleBlock } from './system-parameters/entities/work-schedule-block.entity';
 import { SystemParametersModule } from './system-parameters/system-parameters.module';
 import { InternalMessage } from './messages/entities/internal-message.entity';
+import { InternalMessageAttachment } from './messages/entities/internal-message-attachment.entity';
 import { LeaveRequest } from './messages/entities/leave-request.entity';
 import { LeaveRequestHistory } from './messages/entities/leave-request-history.entity';
 import { MessagesModule } from './messages/messages.module';
@@ -31,6 +34,10 @@ import { AppNotification } from './notifications/entities/notification.entity';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'static'),
+      serveRoot: '/static',
+    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
@@ -46,6 +53,7 @@ import { AppNotification } from './notifications/entities/notification.entity';
           PlantRestSettings,
           Holiday,
           InternalMessage,
+          InternalMessageAttachment,
           LeaveRequest,
           LeaveRequestHistory,
           AttendanceRecord,

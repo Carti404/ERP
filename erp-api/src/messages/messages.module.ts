@@ -6,19 +6,31 @@ import { UsersModule } from '../users/users.module';
 import { InternalMessage } from './entities/internal-message.entity';
 import { LeaveRequest } from './entities/leave-request.entity';
 import { LeaveRequestHistory } from './entities/leave-request-history.entity';
+import { InternalMessageAttachment } from './entities/internal-message-attachment.entity';
 import { MessagesController } from './messages.controller';
 import { MessagesService } from './messages.service';
 import { LeaveRequestsController } from './leave-requests.controller';
 import { LeaveRequestsService } from './leave-requests.service';
+import { AttachmentsController } from './attachments.controller';
+import { AttachmentsService } from './attachments.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([InternalMessage, LeaveRequest, LeaveRequestHistory]),
+    TypeOrmModule.forFeature([
+      InternalMessage,
+      LeaveRequest,
+      LeaveRequestHistory,
+      InternalMessageAttachment,
+    ]),
     UsersModule,
     AuthModule,
   ],
-  controllers: [MessagesController, LeaveRequestsController],
-  providers: [MessagesService, LeaveRequestsService],
-  exports: [MessagesService, LeaveRequestsService],
+  controllers: [
+    MessagesController,
+    LeaveRequestsController,
+    AttachmentsController,
+  ],
+  providers: [MessagesService, LeaveRequestsService, AttachmentsService],
+  exports: [MessagesService, LeaveRequestsService, AttachmentsService],
 })
 export class MessagesModule {}

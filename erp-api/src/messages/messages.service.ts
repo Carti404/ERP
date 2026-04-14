@@ -10,6 +10,7 @@ import { IsNull, Repository } from 'typeorm';
 import { UsersService } from '../users/users.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { InternalMessage, MessageImportance, MessageCategory } from './entities/internal-message.entity';
+import { AttachmentsService } from './attachments.service';
 
 export enum MessageFolder {
   inbox = 'inbox',
@@ -35,6 +36,13 @@ export type MessageRowDto = {
   recipient: MessageParticipantDto;
   importance: MessageImportance;
   category: string;
+  attachments: {
+    id: string;
+    filename: string;
+    url: string;
+    mimetype: string;
+    size: number;
+  }[];
 };
 
 @Injectable()
@@ -43,6 +51,7 @@ export class MessagesService {
     @InjectRepository(InternalMessage)
     private readonly msgRepo: Repository<InternalMessage>,
     private readonly usersService: UsersService,
+    private readonly attachmentsService: AttachmentsService,
   ) {}
 
   /**
@@ -61,6 +70,7 @@ export class MessagesService {
       .createQueryBuilder('m')
       .leftJoinAndSelect('m.sender', 'sender')
       .leftJoinAndSelect('m.recipient', 'recipient')
+      .leftJoinAndSelect('m.attachments', 'attachments')
       .orderBy('m.createdAt', 'DESC');
 
     if (folder === MessageFolder.inbox) {
@@ -102,9 +112,14 @@ export class MessagesService {
       readAt: null,
     });
     const saved = await this.msgRepo.save(msg);
+
+    if (dto.attachmentIds && dto.attachmentIds.length > 0) {
+      await this.attachmentsService.associateToMessage(dto.attachmentIds, saved.id);
+    }
+
     const full = await this.msgRepo.findOne({
       where: { id: saved.id },
-      relations: ['sender', 'recipient'],
+      relations: ['sender', 'recipient', 'attachments'],
     });
     if (!full) {
       throw new NotFoundException();
@@ -181,6 +196,13 @@ export class MessagesService {
       recipient: this.participant(m.recipient),
       importance: m.importance,
       category: m.category,
+      attachments: (m.attachments || []).map((a) => ({
+        id: a.id,
+        filename: a.filename,
+        url: a.url,
+        mimetype: a.mimetype,
+        size: a.size,
+      })),
     };
   }
 }

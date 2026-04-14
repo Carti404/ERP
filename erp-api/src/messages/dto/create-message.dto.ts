@@ -1,5 +1,16 @@
-import { IsString, IsUUID, MaxLength, MinLength, IsEnum, IsOptional } from 'class-validator';
-import { MessageImportance, MessageCategory } from '../entities/internal-message.entity';
+import {
+  IsString,
+  IsUUID,
+  MaxLength,
+  MinLength,
+  IsEnum,
+  IsOptional,
+  IsArray,
+} from 'class-validator';
+import {
+  MessageImportance,
+  MessageCategory,
+} from '../entities/internal-message.entity';
 
 export class CreateMessageDto {
   @IsUUID()
@@ -22,4 +33,9 @@ export class CreateMessageDto {
   @IsEnum(MessageCategory)
   @IsOptional()
   category?: MessageCategory;
+
+  @IsArray()
+  @IsUUID('4', { each: true })
+  @IsOptional()
+  attachmentIds?: string[];
 }

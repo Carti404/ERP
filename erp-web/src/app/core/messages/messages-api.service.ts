@@ -6,6 +6,7 @@ import { apiBaseUrl } from '../environment';
 import type { ErpUserPublic } from '../users/users-api.types';
 import type {
   CreateMessagePayload,
+  ErpMessageAttachment,
   ErpMessageFolder,
   ErpMessageRow,
 } from './messages-api.types';
@@ -37,5 +38,14 @@ export class MessagesApiService {
   /** Quita el mensaje de la bandeja del usuario (enviados o entrada). */
   archive(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/messages/${id}`);
+  }
+
+  uploadAttachment(file: File): Observable<ErpMessageAttachment> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<ErpMessageAttachment>(
+      `${this.base}/messages/attachments/upload`,
+      formData,
+    );
   }
 }

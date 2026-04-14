@@ -134,6 +134,31 @@
                   <p class="text-sm italic text-[var(--erp-login-text-primary)]">«{{ detail.reason }}»</p>
                 </div>
               </div>
+              @if (detail.evidenceUrl) {
+                <div>
+                  <p class="text-[10px] font-black uppercase tracking-widest text-[var(--erp-login-muted)]">Evidencia adjunta</p>
+                  <button type="button" 
+                    class="mt-2 flex w-full items-center justify-between gap-3 rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] p-3 shadow-sm hover:surface-elevated transition-colors dark:border-[rgb(255_255_255/0.05)]"
+                    (click)="openEvidence(detail.evidenceUrl)">
+                    <div class="flex items-center gap-3">
+                      <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-[color-mix(in_srgb,#47607e_15%,transparent)] text-[#47607e]">
+                        <span class="material-symbols-outlined">
+                          {{ isImageFile(detail.evidenceUrl) ? 'image' : 'description' }}
+                        </span>
+                      </div>
+                      <div class="text-left">
+                        <p class="text-xs font-bold text-[var(--erp-login-text-primary)]">
+                          {{ isImageFile(detail.evidenceUrl) ? 'Fotografía de evidencia' : 'Documento PDF' }}
+                        </p>
+                        <p class="text-[10px] text-[var(--erp-login-muted)] uppercase tracking-widest">
+                          {{ isImageFile(detail.evidenceUrl) ? 'Click para previsualizar' : 'Click para abrir en pestaña' }}
+                        </p>
+                      </div>
+                    </div>
+                    <span class="material-symbols-outlined text-[var(--erp-login-muted)]">open_in_new</span>
+                  </button>
+                </div>
+              }
               <div>
                 <p class="mb-3 text-[10px] font-black uppercase tracking-widest text-[var(--erp-login-muted)]">
                   Historial de negociación
@@ -266,6 +291,16 @@
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  }
+  @if (previewUrl()) {
+    <div class="fixed inset-0 z-[150] flex items-center justify-center bg-black/90 p-4 animate-in fade-in duration-300">
+      <button type="button" (click)="previewUrl.set(null)" class="absolute right-6 top-6 text-white/70 hover:text-white transition-colors z-10">
+        <span class="material-symbols-outlined text-4xl">close</span>
+      </button>
+      <div class="relative max-h-screen max-w-full overflow-auto rounded-xl animate-in zoom-in-95 duration-200">
+        <img [src]="previewUrl()" alt="Vista previa de evidencia" class="mx-auto block h-auto max-w-full rounded-lg shadow-2xl">
       </div>
     </div>
   }

@@ -15,6 +15,7 @@ import type {
   ErpMessageFolder,
   ErpMessageParticipant,
   ErpMessageRow,
+  ErpMessageAttachment,
 } from '../../core/messages/messages-api.types';
 import type { ErpUserPublic } from '../../core/users/users-api.types';
 
@@ -31,6 +32,14 @@ interface ErpInboxMessageVm {
   readonly read: boolean;
   readonly bodyParagraphs: readonly string[];
   readonly importance: 'LOW' | 'MEDIUM' | 'HIGH';
+  readonly attachments: readonly {
+    readonly id: string;
+    readonly filename: string;
+    readonly url: string;
+    readonly mimetype: string;
+    readonly size: number;
+    readonly isImage: boolean;
+  }[];
 }
 
 interface MailboxComposeRecipient {
@@ -142,6 +151,17 @@ export class ErpInboxComponent {
   protected readonly composeSending = signal(false);
 
   protected readonly composeError = signal<string | null>(null);
+
+  protected readonly composeAttachments = signal<
+    {
+      id: string;
+      filename: string;
+      url: string;
+      mimetype: string;
+      size: number;
+      loading: boolean;
+    }[]
+  >([]);
 
   protected readonly listLoading = signal(false);
 
@@ -302,6 +322,10 @@ export class ErpInboxComponent {
       read: folder === 'inbox' ? row.read : true,
       bodyParagraphs: bodyToParagraphs(row.body),
       importance: row.importance ?? 'LOW',
+      attachments: (row.attachments || []).map((a) => ({
+        ...a,
+        isImage: a.mimetype.startsWith('image/'),
+      })),
     };
   }
 
@@ -359,6 +383,7 @@ export class ErpInboxComponent {
     this.composeSubject.set('');
     this.composeBody.set('');
     this.composeImportance.set('LOW');
+    this.composeAttachments.set([]);
     this.composeError.set(null);
     this.composeOpen.set(true);
     this.loadDirectoryIfNeeded();
@@ -493,6 +518,77 @@ export class ErpInboxComponent {
     this.composeRecipients.set([]);
   }
 
+  protected onFileSelected(ev: Event): void {
+    const input = ev.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) {
+      return;
+    }
+    const files = Array.from(input.files);
+    files.forEach((file) => {
+      // Validar tipo (solo imágenes y PDF)
+      const allowed = [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'application/pdf',
+      ];
+      if (!allowed.includes(file.type)) {
+        this.composeError.set(`Tipo de archivo no permitido: ${file.name}`);
+        return;
+      }
+      // Validar tamaño (10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        this.composeError.set(`Archivo demasiado grande (máx 10MB): ${file.name}`);
+        return;
+      }
+
+      const tempId = Math.random().toString(36).substring(7);
+      this.composeAttachments.update((list) => [
+        ...list,
+        {
+          id: tempId,
+          filename: file.name,
+          url: '',
+          mimetype: file.type,
+          size: file.size,
+          loading: true,
+        },
+      ]);
+
+      this.messagesApi.uploadAttachment(file).subscribe({
+        next: (res) => {
+          this.composeAttachments.update((list) =>
+            list.map((a) => (a.id === tempId ? { ...res, loading: false } : a)),
+          );
+        },
+        error: () => {
+          this.composeAttachments.update((list) =>
+            list.filter((a) => a.id !== tempId),
+          );
+          this.composeError.set(`Error al subir ${file.name}`);
+        },
+      });
+    });
+    // Limpiar input para permitir seleccionar el mismo archivo si se desea
+    input.value = '';
+  }
+
+  protected removeAttachment(id: string): void {
+    this.composeAttachments.update((list) => list.filter((a) => a.id !== id));
+  }
+
+  protected isImage(mimetype: string): boolean {
+    return mimetype.startsWith('image/');
+  }
+
+  protected formatSize(bytes: number): string {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  }
+
   protected onComposeSend(): void {
     const rs = this.composeRecipients();
     if (rs.length !== 1) {
@@ -505,8 +601,19 @@ export class ErpInboxComponent {
     }
     this.composeSending.set(true);
     this.composeError.set(null);
+
+    const attachmentIds = this.composeAttachments()
+      .filter((a) => !a.loading)
+      .map((a) => a.id);
+
     this.messagesApi
-      .create({ recipientId: rs[0].id, subject: subj, body: bod, importance: this.composeImportance() })
+      .create({
+        recipientId: rs[0].id,
+        subject: subj,
+        body: bod,
+        importance: this.composeImportance(),
+        attachmentIds,
+      })
       .subscribe({
         next: (row) => {
           this.composeSending.set(false);

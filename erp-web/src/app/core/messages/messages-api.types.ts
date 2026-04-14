@@ -18,6 +18,14 @@ export interface ErpMessageParticipant {
   email: string | null;
 }
 
+export interface ErpMessageAttachment {
+  id: string;
+  filename: string;
+  url: string;
+  mimetype: string;
+  size: number;
+}
+
 export interface ErpMessageRow {
   id: string;
   folder: ErpMessageFolder;
@@ -30,6 +38,7 @@ export interface ErpMessageRow {
   recipient: ErpMessageParticipant;
   importance: 'LOW' | 'MEDIUM' | 'HIGH';
   category: 'GENERAL' | 'INCIDENCE';
+  attachments: ErpMessageAttachment[];
 }
 
 export interface CreateMessagePayload {
@@ -38,4 +47,5 @@ export interface CreateMessagePayload {
   body: string;
   importance?: 'LOW' | 'MEDIUM' | 'HIGH';
   category?: 'GENERAL' | 'INCIDENCE';
+  attachmentIds?: string[];
 }

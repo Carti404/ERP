@@ -19,6 +19,7 @@ export interface WorkerPermisoHistoryItem {
   readonly daysLabel: string;
   readonly status: WorkerPermisoHistoryStatus;
   readonly periodLabel: string;
+  readonly evidenceUrl: string | null;
   readonly segments: Array<{ start: string; end: string; count: number }>;
   readonly negotiation?: {
     readonly from: string;
@@ -65,6 +66,8 @@ export class TrabajadorPermisosComponent implements OnInit, OnDestroy {
   protected readonly requestType = signal<LeaveRequestType>('VACATION');
   protected readonly reason = signal<string>('');
   protected readonly evidenceFile = signal<File | null>(null);
+  protected readonly isUploading = signal(false);
+  protected readonly previewUrl = signal<string | null>(null);
 
   protected readonly monthTitle = computed(() => {
     const d = this.viewDate();
@@ -308,6 +311,7 @@ export class TrabajadorPermisosComponent implements OnInit, OnDestroy {
             ? r.segments.map(s => ({ start: s.start, end: s.end, count: s.count }))
             : [{ start: r.startDate, end: r.endDate, count: r.totalDays }],
           status,
+          evidenceUrl: r.evidenceUrl,
           negotiation
         };
       });
@@ -400,17 +404,43 @@ export class TrabajadorPermisosComponent implements OnInit, OnDestroy {
     this.showConfirmModal.set(true);
   }
 
+  protected isImageFile(mimetype: string): boolean {
+    return mimetype.startsWith('image/');
+  }
+
   protected confirmSend(): void {
-    this.isSending.set(true);
+    if (this.isSending() || this.isUploading()) return;
     
     const segments = this.selectedSegments();
     if (segments.length === 0) return;
 
+    this.isSending.set(true);
+    
+    // Si hay archivo, primero lo subimos
+    const file = this.evidenceFile();
+    if (file) {
+      this.isUploading.set(true);
+      this.leaveService.uploadEvidence(file).subscribe({
+        next: (res) => {
+          this.isUploading.set(false);
+          this.submitFinalRequest(res.url, segments);
+        },
+        error: (err) => {
+          this.isUploading.set(false);
+          this.isSending.set(false);
+          this.fb.showToast('Error al subir la evidencia. Intenta de nuevo.', 'error');
+        }
+      });
+    } else {
+      this.submitFinalRequest(null, segments);
+    }
+  }
+
+  private submitFinalRequest(evidenceUrl: string | null, segments: any[]): void {
     const minDate = new Date(segments[0].start).toISOString().slice(0, 10);
     const maxDate = new Date(segments[segments.length - 1].end).toISOString().slice(0, 10);
-    const totalCount = segments.reduce((acc, seg) => acc + seg.count, 0);
+    const totalCount = segments.reduce((acc: number, seg: any) => acc + seg.count, 0);
     
-    // Alistamos los segmentos para el backend (convertir números MS a fechas string)
     const backendSegments = segments.map(seg => ({
       start: new Date(seg.start).toISOString().slice(0, 10),
       end: new Date(seg.end).toISOString().slice(0, 10),
@@ -429,7 +459,7 @@ export class TrabajadorPermisosComponent implements OnInit, OnDestroy {
       endDate: maxDate,
       totalDays: totalCount,
       reason: finalReason || (this.requestNature() === 'VACATION' ? 'Vacaciones solicitadas' : 'Justificante de falta'),
-      evidenceUrl: this.evidenceFile()?.name || '',
+      evidenceUrl: evidenceUrl || '',
       segments: backendSegments
     };
 
@@ -469,10 +499,11 @@ export class TrabajadorPermisosComponent implements OnInit, OnDestroy {
     
     const file = input.files[0];
     
-    // Validar tipo de archivo (solo PDF)
-    if (file.type !== 'application/pdf') {
-      this.fb.showToast('Solo se permiten archivos en formato PDF.', 'error');
-      input.value = ''; // clean up
+    // Validar tipo de archivo (PDF o Imagen)
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      this.fb.showToast('Solo se permiten archivos en formato PDF o imagen (JPG, PNG, WEBP).', 'error');
+      input.value = ''; 
       this.evidenceFile.set(null);
       return;
     }
@@ -481,12 +512,25 @@ export class TrabajadorPermisosComponent implements OnInit, OnDestroy {
     const MAX_MB = 30;
     if (file.size > MAX_MB * 1024 * 1024) {
       this.fb.showToast(`El archivo excede el tamaño máximo permitido de ${MAX_MB}MB.`, 'error');
-      input.value = ''; // clean up
+      input.value = ''; 
       this.evidenceFile.set(null);
       return;
     }
 
     this.evidenceFile.set(file);
+  }
+
+  protected openEvidence(url: string | null): void {
+    if (!url) return;
+    
+    // Determinar si es imagen por la extensión o si ya sabemos el tipo
+    const isImage = url.match(/\.(jpeg|jpg|png|gif|webp)$/i);
+    
+    if (isImage) {
+      this.previewUrl.set(url);
+    } else {
+      window.open(url, '_blank');
+    }
   }
 
 

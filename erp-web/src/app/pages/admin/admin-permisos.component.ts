@@ -25,6 +25,7 @@ export class AdminPermisosComponent implements OnInit, OnDestroy {
   protected readonly requests = signal<LeaveRequest[]>([]);
 
   protected readonly selectedRowId = signal<string>('');
+  protected readonly previewUrl = signal<string | null>(null);
 
   protected readonly panelDetail = computed(() => {
     const id = this.selectedRowId();
@@ -276,6 +277,20 @@ export class AdminPermisosComponent implements OnInit, OnDestroy {
       ev.preventDefault();
       ev.stopPropagation();
       this.selectRow(rowId);
+    }
+  }
+
+  protected isImageFile(url: string | null): boolean {
+    if (!url) return false;
+    return url.match(/\.(jpeg|jpg|png|gif|webp)$/i) !== null;
+  }
+
+  protected openEvidence(url: string | null): void {
+    if (!url) return;
+    if (this.isImageFile(url)) {
+      this.previewUrl.set(url);
+    } else {
+      window.open(url, '_blank');
     }
   }
 }
