@@ -113,7 +113,12 @@
             [class.erp-admin-inbox-msg-subject--unread]="!m.read">
             {{ m.subject }}
           </div>
-          <p class="line-clamp-2 text-xs leading-relaxed text-[var(--erp-login-muted)]">{{ m.preview }}</p>
+          <div class="flex items-center justify-between gap-2">
+            <p class="line-clamp-2 flex-1 text-xs leading-relaxed text-[var(--erp-login-muted)]">{{ m.preview }}</p>
+            @if (m.attachments.length > 0) {
+              <span class="material-symbols-outlined shrink-0 text-sm text-[var(--erp-login-muted)]" aria-hidden="true" title="Contiene adjuntos">attach_file</span>
+            }
+          </div>
         </button>
         }
         }
@@ -226,11 +231,38 @@
           class="mx-auto max-w-3xl rounded-lg border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] focus-within:ring-1 focus-within:ring-[#47607e] dark:border-[rgb(255_255_255/0.1)] dark:focus-within:ring-[var(--erp-login-accent)]">
           <label class="sr-only" for="admin-inbox-quick-reply">Respuesta rápida</label>
           <textarea id="admin-inbox-quick-reply" class="erp-admin-inbox-textarea" rows="4"
-            placeholder="Escribir respuesta rápida…"></textarea>
+            placeholder="Escribir respuesta rápida…" [value]="composeBody()" (input)="onComposeBodyInput($event)"></textarea>
+
+          @if (composeAttachments().length > 0) {
+          <div class="border-t border-[var(--erp-login-input-border)] bg-[rgba(0,0,0,0.01)] px-3 py-2 dark:border-[rgb(255_255_255/0.05)]">
+            <div class="flex flex-wrap gap-2">
+              @for (a of composeAttachments(); track a.id) {
+              <div class="flex items-center gap-2 rounded-lg border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] p-1.5 pr-2 dark:border-[rgb(255_255_255/0.08)]">
+                <div class="relative h-6 w-6 shrink-0 overflow-hidden rounded bg-[rgb(0_0_0/0.05)]">
+                  @if (a.url) {
+                    <img [src]="a.url" class="h-full w-full object-cover" [class.opacity-40]="a.loading">
+                  } @else if (!a.loading) {
+                    <span class="material-symbols-outlined text-base text-[#47607e] flex items-center justify-center h-full">image</span>
+                  }
+                  @if (a.loading) { 
+                    <div class="absolute inset-0 flex items-center justify-center bg-black/5">
+                      <span class="material-symbols-outlined animate-spin text-[10px] text-[#47607e]">sync</span> 
+                    </div>
+                  }
+                </div>
+                <span class="max-w-[120px] truncate text-[10px] font-bold text-[var(--erp-login-text-primary)]">{{ a.filename }}</span>
+                <button type="button" class="text-[#ef4444] hover:opacity-70" (click)="removeAttachment(a.id)" aria-label="Quitar">
+                  <span class="material-symbols-outlined text-sm">close</span>
+                </button>
+              </div>
+              }
+            </div>
+          </div>
+          }
           <div
             class="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--erp-login-input-border)] px-3 py-2 dark:border-[rgb(255_255_255/0.08)]">
             <div class="flex gap-1">
-              <button type="button" class="erp-admin-inbox-mini-icon" aria-label="Negrita">
+              <button type="button" class="erp-admin-inbox-mini-icon" aria-label="Negrita" (click)="onFormattingAction('bold')">
                 <span class="material-symbols-outlined text-base" aria-hidden="true">format_bold</span>
               </button>
               <button type="button" class="erp-admin-inbox-mini-icon" aria-label="Adjuntar archivo"
@@ -241,7 +273,13 @@
                 <span class="material-symbols-outlined text-base" aria-hidden="true">image</span>
               </button>
             </div>
-            <button type="button" class="erp-admin-inbox-send" (click)="onSendReply()">Enviar</button>
+            <button type="button" class="erp-admin-inbox-send flex items-center gap-2" 
+              [disabled]="composeSending() || !composeBody().trim() || isAnyAttachmentLoading()" (click)="onSendReply()">
+              @if (composeSending()) {
+                <span class="material-symbols-outlined animate-spin text-sm">sync</span>
+              }
+              <span>Enviar</span>
+            </button>
           </div>
         </div>
       </div>
@@ -395,23 +433,23 @@
             @for (a of composeAttachments(); track a.id) {
             <div
               class="flex items-center gap-3 rounded-lg border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] p-2 dark:border-[rgb(255_255_255/0.08)]">
-              @if (isImage(a.mimetype)) {
-              <div
-                class="h-10 w-10 shrink-0 overflow-hidden rounded bg-[rgb(0_0_0/0.05)] dark:bg-[rgb(255_255_255/0.05)]">
+              <div class="relative h-10 w-10 shrink-0 overflow-hidden rounded bg-[rgb(0_0_0/0.05)] dark:bg-[rgb(255_255_255/0.05)]">
+                @if (a.url) {
+                  <img [src]="a.url" class="h-full w-full object-cover" [class.opacity-40]="a.loading">
+                } @else if (!a.loading) {
+                  <div class="flex h-full w-full items-center justify-center rounded bg-[rgb(230_234_240)] text-[#47607e] dark:bg-[rgb(40_50_70)]">
+                    <span class="material-symbols-outlined text-xl">
+                      {{ isImage(a.mimetype) ? 'image' : 'description' }}
+                    </span>
+                  </div>
+                }
+                
                 @if (a.loading) {
-                <div class="flex h-full w-full items-center justify-center">
-                  <span class="material-symbols-outlined animate-spin text-lg">sync</span>
-                </div>
-                } @else {
-                <img [src]="a.url" class="h-full w-full object-cover">
+                  <div class="absolute inset-0 flex items-center justify-center bg-black/5">
+                    <span class="material-symbols-outlined animate-spin text-lg text-[var(--erp-login-primary-cta-bg)]">sync</span>
+                  </div>
                 }
               </div>
-              } @else {
-              <div
-                class="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-[rgb(230_234_240)] text-[#47607e] dark:bg-[rgb(40_50_70)]">
-                <span class="material-symbols-outlined text-xl">description</span>
-              </div>
-              }
               <div class="min-w-0 flex-1">
                 <span class="block truncate text-[11px] font-bold text-[var(--erp-login-text-primary)]">{{ a.filename
                   }}</span>

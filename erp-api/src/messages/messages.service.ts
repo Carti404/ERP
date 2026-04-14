@@ -134,7 +134,7 @@ export class MessagesService {
         recipientId: userId,
         archivedAtRecipient: IsNull(),
       },
-      relations: ['sender', 'recipient'],
+      relations: ['sender', 'recipient', 'attachments'],
     });
     if (!msg) {
       throw new NotFoundException('Mensaje no encontrado.');

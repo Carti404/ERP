@@ -9,6 +9,7 @@ import {
   untracked,
 } from '@angular/core';
 
+import { apiBaseUrl } from '../../core/environment';
 import { AuthService } from '../../core/auth/auth.service';
 import { MessagesApiService } from '../../core/messages/messages-api.service';
 import type {
@@ -324,6 +325,7 @@ export class ErpInboxComponent {
       importance: row.importance ?? 'LOW',
       attachments: (row.attachments || []).map((a) => ({
         ...a,
+        url: a.url.startsWith('http') ? a.url : `${apiBaseUrl.split('/api')[0]}${a.url.startsWith('/') ? '' : '/'}${a.url}`,
         isImage: a.mimetype.startsWith('image/'),
       })),
     };
@@ -543,12 +545,19 @@ export class ErpInboxComponent {
       }
 
       const tempId = Math.random().toString(36).substring(7);
+      
+      // Crear una URL local temporal si es imagen para feedback inmediato
+      let localPreview = '';
+      if (file.type.startsWith('image/')) {
+        localPreview = URL.createObjectURL(file);
+      }
+
       this.composeAttachments.update((list) => [
         ...list,
         {
           id: tempId,
           filename: file.name,
-          url: '',
+          url: localPreview,
           mimetype: file.type,
           size: file.size,
           loading: true,
@@ -557,8 +566,10 @@ export class ErpInboxComponent {
 
       this.messagesApi.uploadAttachment(file).subscribe({
         next: (res) => {
+          // Si creamos un objeto URL, debemos revocarlo después, pero por ahora lo reemplazamos
+          const fullUrl = res.url.startsWith('http') ? res.url : `${apiBaseUrl.split('/api')[0]}${res.url.startsWith('/') ? '' : '/'}${res.url}`;
           this.composeAttachments.update((list) =>
-            list.map((a) => (a.id === tempId ? { ...res, loading: false } : a)),
+            list.map((a) => (a.id === tempId ? { ...res, url: fullUrl, loading: false } : a)),
           );
         },
         error: () => {
@@ -589,6 +600,17 @@ export class ErpInboxComponent {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   }
 
+  protected isAnyAttachmentLoading(): boolean {
+    return this.composeAttachments().some((a) => a.loading);
+  }
+
+  protected onFormattingAction(type: 'bold'): void {
+    if (type === 'bold') {
+      const current = this.composeBody();
+      this.composeBody.set(current + ' **texto** ');
+    }
+  }
+
   protected onComposeSend(): void {
     const rs = this.composeRecipients();
     if (rs.length !== 1) {
@@ -617,6 +639,10 @@ export class ErpInboxComponent {
       .subscribe({
         next: (row) => {
           this.composeSending.set(false);
+          this.composeBody.set('');
+          this.composeSubject.set('');
+          this.composeAttachments.set([]);
+          this.composeRecipients.set([]);
           this.closeCompose();
           this.sentRows.update((list) => {
             if (list.some((m) => m.id === row.id)) {
@@ -694,7 +720,53 @@ export class ErpInboxComponent {
   }
 
   protected onSendReply(): void {
-    return;
+    const current = this.selected();
+    if (!current) return;
+
+    const body = this.composeBody().trim();
+    if (!body) return;
+
+    this.composeSending.set(true);
+    this.composeError.set(null);
+
+    const attachmentIds = this.composeAttachments()
+      .filter((a) => !a.loading)
+      .map((a) => a.id);
+
+    // Buscamos el ID real del destinatario (el sender del mensaje original si estamos en inbox)
+    const row = this.selectedMessageRow();
+    if (!row) return;
+    
+    // Si estamos en Inbox, el destinatario de nuestra respuesta es el sender.
+    // Si estamos en Sent, el destinatario es el recipient original.
+    const recipientId = this.folder() === 'inbox' ? row.sender.id : row.recipient.id;
+
+    this.messagesApi
+      .create({
+        recipientId,
+        subject: `Re: ${current.subject}`.replace(/^Re: Re:/i, 'Re:'),
+        body,
+        importance: current.importance,
+        attachmentIds,
+      })
+      .subscribe({
+        next: (row) => {
+          this.composeSending.set(false);
+          this.composeBody.set('');
+          this.composeAttachments.set([]);
+          
+          // Actualizar lista de enviados y navegar a ella para ver la respuesta
+          this.sentRows.update((list) => [row, ...list]);
+          this.folder.set('sent');
+          this.selectedId.set(row.id);
+          this.mobilePane.set('reader');
+          this.loadFolder('inbox');
+        },
+        error: (err) => {
+          this.composeSending.set(false);
+          this.composeError.set('No se pudo enviar la respuesta.');
+        },
+      });
   }
 
   protected messageAccent(m: ErpInboxMessageVm): string {

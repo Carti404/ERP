@@ -5,6 +5,7 @@ import { SystemParametersApiService } from '../../core/system-parameters/system-
 import type { HolidayRowDto } from '../../core/system-parameters/system-parameters-api.types';
 import { LeaveRequestsService } from '../../core/services/leave-requests.service';
 import { FeedbackService } from '../../core/services/feedback.service';
+import { apiBaseUrl } from '../../core/environment';
 
 export type WorkerPermisoHistoryStatus = 'propuesta_admin' | 'aprobado' | 'revision' | 'rechazado';
 export type LeaveRequestNature = 'VACATION' | 'ABSENCE';
@@ -523,13 +524,15 @@ export class TrabajadorPermisosComponent implements OnInit, OnDestroy {
   protected openEvidence(url: string | null): void {
     if (!url) return;
     
+    const fullUrl = url.startsWith('http') ? url : `${apiBaseUrl.split('/api')[0]}${url.startsWith('/') ? '' : '/'}${url}`;
+    
     // Determinar si es imagen por la extensión o si ya sabemos el tipo
-    const isImage = url.match(/\.(jpeg|jpg|png|gif|webp)$/i);
+    const isImage = fullUrl.match(/\.(jpeg|jpg|png|gif|webp)$/i);
     
     if (isImage) {
-      this.previewUrl.set(url);
+      this.previewUrl.set(fullUrl);
     } else {
-      window.open(url, '_blank');
+      window.open(fullUrl, '_blank');
     }
   }
 
