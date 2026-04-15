@@ -1,40 +1,22 @@
-5068  - 14/04/2026, 1:57:21 p.m.     LOG [RouterExplorer] Mapped {/api/v1/messages/attachments/binary-proxy, GET} route +0ms
-[Nest] 25068  - 14/04/2026, 1:57:21 p.m.     LOG [RoutesResolver] AttendanceController {/api/v1/attendance}: +0ms
-[Nest] 25068  - 14/04/2026, 1:57:21 p.m.     LOG [RouterExplorer] Mapped {/api/v1/attendance/today, GET} route +0ms
-[Nest] 25068  - 14/04/2026, 1:57:21 p.m.     LOG [RouterExplorer] Mapped {/api/v1/attendance/me, GET} route +1ms
-[1:57:38 p.m.] File change detected. Starting incremental compilation...
+[Nest] 15752  - 15/04/2026, 3:13:54 p.m.     LOG [NestApplication] Nest application successfully started +13ms
+[Nest] 15752  - 15/04/2026, 3:13:54 p.m.   ERROR [NestApplication] Error: listen EADDRINUSE: address already in use :::3005 +2ms
+node:net:1940
+    const ex = new UVExceptionWithHostPort(err, 'listen', address, port);
+               ^
 
-src/production/production.service.ts:450:43 - error TS2552: Cannot find name 'assignment'. Did you mean 'assignmentId'?
-
-450     await this.notifyNextWorkerIfAssigned(assignment.taskId, process.orderIndex, assignment.task.productName);     
-                                              ~~~~~~~~~~
-
-  src/production/production.service.ts:434:25
-    434   async completeProcess(assignmentId: string, processId: string) {
-                                ~~~~~~~~~~~~~~~~~~~~
-    'assignmentId' is declared here.
-
-src/production/production.service.ts:450:70 - error TS2339: Property 'orderIndex' does not exist on type 'Process'.    
-
-450     await this.notifyNextWorkerIfAssigned(assignment.taskId, process.orderIndex, assignment.task.productName);     
-                                                                         ~~~~~~~~~~
-
-src/production/production.service.ts:450:82 - error TS2552: Cannot find name 'assignment'. Did you mean 'assignmentId'?
-
-450     await this.notifyNextWorkerIfAssigned(assignment.taskId, process.orderIndex, assignment.task.productName);     
-                                                                                     ~~~~~~~~~~
-
-  src/production/production.service.ts:434:25
-    434   async completeProcess(assignmentId: string, processId: string) {
-                                ~~~~~~~~~~~~~~~~~~~~
-    'assignmentId' is declared here.
-
-[1:57:38 p.m.] Found 3 errors. Watching for file changes.
-
-[Nest] 25068  - 14/04/2026, 1:57:53 p.m.     LOG [ProductionSyncService] Obteniendo catálogo de productos producibles desde Mundo Terapeuta...
-[Nest] 25068  - 14/04/2026, 1:58:00 p.m.     LOG [ProductionSyncService] Sincronizando órdenes de producción desde Mundo Terapeuta...
-[Nest] 25068  - 14/04/2026, 1:58:00 p.m.     LOG [ProductionSyncService] Sincronización completada. 0 nuevas órdenes importadas.
-[Nest] 25068  - 14/04/2026, 1:58:08 p.m.     LOG [ProductionSyncService] Obteniendo catálogo de productos producibles desde Mundo Terapeuta...
-[Nest] 25068  - 14/04/2026, 1:58:47 p.m.     LOG [ProductionSyncService] Obteniendo catálogo de productos producibles desde Mundo Terapeuta...
-[Nest] 25068  - 14/04/2026, 1:59:00 p.m.     LOG [ProductionSyncService] Sincronizando órdenes de producción desde Mundo Terapeuta...
-[Nest] 25068  - 14/04/2026, 1:59:00 p.m.     LOG [ProductionSyncService] Sincronización completada. 0 nuevas órdenes importadas.
+Error: listen EADDRINUSE: address already in use :::3005
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at ExpressAdapter.listen (H:\dev\ERP\erp-api\node_modules\@nestjs\platform-express\adapters\express-adapter.js:115:32)
+    at H:\dev\ERP\erp-api\node_modules\@nestjs\core\nest-application.js:188:30
+    at new Promise (<anonymous>)
+    at NestApplication.listen (H:\dev\ERP\erp-api\node_modules\@nestjs\core\nest-application.js:178:16)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async bootstrap (H:\dev\ERP\erp-api\src\main.ts:35:3) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3005
+}

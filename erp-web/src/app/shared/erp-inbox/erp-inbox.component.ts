@@ -786,13 +786,13 @@ export class ErpInboxComponent {
 
   protected onDownloadAttachment(a: ErpInboxMessageVm['attachments'][0], ev: Event): void {
     ev.preventDefault();
-    this.messagesApi.downloadAttachment(a.id).subscribe({
+    // Abrir inline en el navegador (nueva pestaña) con URL navegable (token corto)
+    this.messagesApi.attachmentLink(a.id, 'inline').subscribe({
       next: (res) => {
-        // Abrimos la URL firmada en una nueva pestaña para iniciar la descarga
-        window.open(res.url, '_blank');
+        window.open(res.url, '_blank', 'noopener');
       },
       error: () => {
-        alert('No se pudo descargar el archivo.');
+        alert('No se pudo abrir el archivo.');
       },
     });
   }

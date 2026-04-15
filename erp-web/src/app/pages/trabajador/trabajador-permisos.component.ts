@@ -525,22 +525,15 @@ export class TrabajadorPermisosComponent implements OnInit, OnDestroy {
 
   protected openEvidence(url: string | null): void {
     if (!url) return;
-    
-    // Si es imagen, intentamos previsualizar con la URL directa
-    if (url.match(/\.(jpeg|jpg|png|gif|webp)$/i)) {
-      this.previewUrl.set(url);
-      return;
-    }
 
-    // Para PDFs y otros, forzar descarga vía proxy
     const suggestedFilename = `evidencia_mi_solicitud`;
-    this.messagesService.downloadByUrl(url, suggestedFilename).subscribe({
+    this.messagesService.evidenceLink(url, 'inline', suggestedFilename).subscribe({
       next: (res) => {
-        window.open(res.url, '_blank');
+        window.open(res.url, '_blank', 'noopener');
       },
       error: (err) => {
         console.error('Error al descargar evidencia:', err);
-        this.fb.showToast('No se pudo descargar la evidencia mediante el servidor local.', 'error');
+        this.fb.showToast('No se pudo abrir la evidencia mediante el servidor local.', 'error');
       }
     });
   }

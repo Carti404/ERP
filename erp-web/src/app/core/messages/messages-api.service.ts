@@ -53,9 +53,28 @@ export class MessagesApiService {
     return this.http.get<{ url: string }>(`${this.base}/messages/attachments/${id}/download`);
   }
 
+  attachmentLink(
+    id: string,
+    disposition: 'inline' | 'attachment',
+  ): Observable<{ url: string }> {
+    return this.http.get<{ url: string }>(`${this.base}/messages/attachments/${id}/link`, {
+      params: { disposition },
+    });
+  }
+
   downloadByUrl(url: string, filename?: string): Observable<{ url: string }> {
     return this.http.get<{ url: string }>(`${this.base}/messages/attachments/download-evidence`, {
       params: { url, filename: filename || '' },
+    });
+  }
+
+  evidenceLink(
+    url: string,
+    disposition: 'inline' | 'attachment',
+    filename?: string,
+  ): Observable<{ url: string }> {
+    return this.http.get<{ url: string }>(`${this.base}/messages/attachments/link-proxy`, {
+      params: { url, disposition, filename: filename || '' },
     });
   }
 }
