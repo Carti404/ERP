@@ -15,4 +15,17 @@ export class DashboardController {
   async getAdminKpis() {
     return this.dashboardService.getAdminKpis();
   }
+  
+  @Get('attendance-summary')
+  @Roles(UserRole.ADMIN)
+  async getAttendanceSummary() {
+    const now = new Date();
+    return this.dashboardService.getAttendanceSummary(now.getFullYear(), now.getMonth());
+  }
+
+  @Get('assigned-orders')
+  @Roles(UserRole.ADMIN)
+  async getAssignedOrders() {
+    return this.dashboardService.getAssignedOrders();
+  }
 }

@@ -1,17 +1,16 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 
 import {
-  ADMIN_ALERTS_MOCK,
   ADMIN_ATTENDANCE_CALENDAR_MOCK,
   ADMIN_KPIS_MOCK,
-  ADMIN_SHIFT_PRODUCTION_MOCK,
   KPI_TONE_HEX,
   type AttendanceCalDayKind,
+  type AttendanceCalendarPanelMock,
   type KpiTone,
   type AdminKpiMock,
 } from './admin-dashboard.mock';
 import { KpiMiniChartComponent } from '../../shared/kpi-mini-chart.component';
-import { DashboardService } from '../../core/services/dashboard.service';
+import { DashboardService, AssignedOrder } from '../../core/services/dashboard.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -22,13 +21,44 @@ import { DashboardService } from '../../core/services/dashboard.service';
 export class AdminDashboardComponent implements OnInit {
   private readonly dashboardService = inject(DashboardService);
 
-  protected kpis = signal<AdminKpiMock[]>([]);
-  protected readonly alerts = ADMIN_ALERTS_MOCK;
-  protected readonly attendanceCalendar = ADMIN_ATTENDANCE_CALENDAR_MOCK;
-  protected readonly shiftProduction = ADMIN_SHIFT_PRODUCTION_MOCK;
+  // Inicializamos con Mocks para que nunca se vea vacío
+  protected kpis = signal<AdminKpiMock[]>(ADMIN_KPIS_MOCK);
+  protected attendanceCalendar = signal<AttendanceCalendarPanelMock>(ADMIN_ATTENDANCE_CALENDAR_MOCK);
+  
+
+  protected assignedOrders = signal<AssignedOrder[]>([]);
 
   ngOnInit(): void {
     this.loadKpis();
+    this.loadAttendanceSummary();
+    this.loadAssignedOrders();
+  }
+
+  private loadAssignedOrders(): void {
+    this.dashboardService.getAssignedOrders().subscribe({
+      next: (orders) => this.assignedOrders.set(orders),
+      error: (err) => console.error('Error loading assigned orders', err),
+    });
+  }
+
+  private loadAttendanceSummary(): void {
+    this.dashboardService.getAttendanceSummary().subscribe({
+      next: (summary) => {
+        // Actualizamos la señal del calendario manteniendo el resto del objeto (title, weekDays)
+        this.attendanceCalendar.update(prev => ({
+          ...prev,
+          days: summary.map((s) => ({
+            d: s.day.toString(),
+            kind: s.kind,
+          })),
+          critical: {
+            title: 'Diccionario de Colores',
+            body: 'Verde: 100% Asistencia | Naranja: 3+ Retardos | Rojo: 3+ Faltas. (Domingos no laborables)',
+          }
+        }));
+      },
+      error: (err) => console.error('Error loading attendance summary', err),
+    });
   }
 
   private loadKpis(): void {
@@ -41,11 +71,11 @@ export class AdminDashboardComponent implements OnInit {
             value: data.mermas.label,
             sub: 'Informadas por personal',
             trend: 'neutral',
-            tone: 'amber',
+            tone: 'violet',
             chart: {
               kind: 'donut',
               donut: [
-                { pct: 100, color: '#f59e0b' },
+                { pct: 100, color: '#8b5cf6' },
                 { pct: 0, color: 'rgb(148 163 184 / 0.35)' },
               ],
             },
@@ -67,10 +97,10 @@ export class AdminDashboardComponent implements OnInit {
           },
           {
             id: 'pend',
-            label: 'Cierres pendientes',
+            label: 'Órdenes de producción sin asignar',
             value: data.cierres.label,
-            sub: 'Por aprobar',
-            trend: 'down',
+            sub: 'Delegación pendiente',
+            trend: 'neutral',
             tone: 'cyan',
             chart: {
               kind: 'area',
@@ -80,10 +110,7 @@ export class AdminDashboardComponent implements OnInit {
         ];
         this.kpis.set(updatedKpis);
       },
-      error: (err) => {
-        // Fallback or error handling can go here, for now we keep the structure but empty
-        console.error('Error loading KPIs', err);
-      }
+      error: (err) => console.error('Error loading KPIs', err)
     });
   }
 
@@ -98,49 +125,17 @@ export class AdminDashboardComponent implements OnInit {
       case 'asist':
         return 'groups';
       case 'pend':
-        return 'pending_actions';
+        return 'assignment_late';
       default:
         return 'analytics';
     }
   }
 
-  protected trendIcon(t: 'up' | 'down' | 'neutral'): string {
-    if (t === 'up') {
-      return 'trending_up';
-    }
-    if (t === 'down') {
-      return 'trending_down';
-    }
-    return 'remove';
-  }
 
-  protected trendLabel(t: 'up' | 'down' | 'neutral'): string {
-    if (t === 'up') {
-      return 'Al alza';
-    }
-    if (t === 'down') {
-      return 'A la baja';
-    }
-    return 'Estable';
-  }
-
-  protected trendClass(t: 'up' | 'down' | 'neutral'): string {
-    const base = 'erp-trend';
-    if (t === 'up') {
-      return `${base} erp-trend--up`;
-    }
-    if (t === 'down') {
-      return `${base} erp-trend--down`;
-    }
-    return `${base} erp-trend--neutral`;
-  }
 
   protected calDayClass(kind: AttendanceCalDayKind): string {
     return `erp-cal-day erp-cal-day--${kind}`;
   }
 
-  /** Mock: enlazar a informe / ruta cuando exista el módulo. */
-  protected onExecutiveReport(): void {
-    return;
-  }
+
 }

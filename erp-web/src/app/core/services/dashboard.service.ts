@@ -18,6 +18,19 @@ export interface AdminKpis {
   };
 }
 
+export interface AttendanceSummaryDay {
+  day: number;
+  kind: 'ok' | 'warning' | 'critical' | 'weekend' | 'muted';
+}
+
+export interface AssignedOrder {
+  id: string;
+  orderNumber: string;
+  productName: string;
+  status: string;
+  workers: string[];
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -27,5 +40,13 @@ export class DashboardService {
 
   getAdminKpis(): Observable<AdminKpis> {
     return this.http.get<AdminKpis>(`${this.apiUrl}/admin-kpis`);
+  }
+
+  getAttendanceSummary(): Observable<AttendanceSummaryDay[]> {
+    return this.http.get<AttendanceSummaryDay[]>(`${this.apiUrl}/attendance-summary`);
+  }
+
+  getAssignedOrders(): Observable<AssignedOrder[]> {
+    return this.http.get<AssignedOrder[]>(`${this.apiUrl}/assigned-orders`);
   }
 }

@@ -1,44 +1,18 @@
 chunk-ZG7NXQWY.js   | -                 | 132.02 kB |
 
-Application bundle generation complete. [2.186 seconds] - 2026-04-15T15:25:14.193Z
+Application bundle generation complete. [5.683 seconds] - 2026-04-15T16:45:06.373Z
 
+Watch mode enabled. Watching for file changes...
 NOTE: Raw file sizes do not reflect development server per-request transformations.
   ➜  Local:   http://localhost:4200/
   ➜  press h + enter to show help
-Initial chunk files | Names  |  Raw size
-styles.css          | styles | 185.42 kB |
+Application bundle generation failed. [1.560 seconds] - 2026-04-15T16:49:00.752Z
 
-Application bundle generation complete. [0.217 seconds] - 2026-04-15T15:26:39.270Z
+X [ERROR] TS2339: Property 'title' does not exist on type 'WritableSignal<AttendanceCalendarPanelMock>'. [plugin angular-compiler]
 
-Stylesheet update sent to client(s).
-Application bundle generation failed. [0.545 seconds] - 2026-04-15T15:51:27.987Z
-
-X [ERROR] TS2305: Module '"@angular/common/http"' has no exported member 'Injectable'. [plugin angular-compiler]
-
-    src/app/core/services/dashboard.service.ts:2:9:
-      2 │ import { Injectable, inject } from '@angular/common/http';
-        ╵          ~~~~~~~~~~
-
-
-X [ERROR] TS2305: Module '"@angular/common/http"' has no exported member 'inject'. [plugin angular-compiler]
-
-    src/app/core/services/dashboard.service.ts:2:21:
-      2 │ import { Injectable, inject } from '@angular/common/http';
-        ╵                      ~~~~~~
-
-
-X [ERROR] TS2305: Module '"../environment"' has no exported member 'environment'. [plugin angular-compiler]
-
-    src/app/core/services/dashboard.service.ts:4:9:
-      4 │ import { environment } from '../environment';
-        ╵          ~~~~~~~~~~~
-
-
-X [ERROR] TS2488: Type 'WritableSignal<AdminKpiMock[]>' must have a '[Symbol.iterator]()' method that returns an iterator. [plugin angular-compiler]
-
-    src/app/pages/admin/admin-dashboard.component.html:12:15:
-      12 │     @for (k of kpis; track k.id) {
-         ╵                ~~~~
+    src/app/pages/admin/admin-dashboard.component.html:44:32:
+      44 │           {{ attendanceCalendar.title }}
+         ╵                                 ~~~~~
 
   Error occurs in the template of component AdminDashboardComponent.
 
@@ -47,34 +21,11 @@ X [ERROR] TS2488: Type 'WritableSignal<AdminKpiMock[]>' must have a '[Symbol.ite
          ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-Application bundle generation failed. [0.224 seconds] - 2026-04-15T15:51:38.346Z
+X [ERROR] TS2339: Property 'weekDays' does not exist on type 'WritableSignal<AttendanceCalendarPanelMock>'. [plugin angular-compiler]
 
-X [ERROR] TS2305: Module '"@angular/common/http"' has no exported member 'Injectable'. [plugin angular-compiler]
-
-    src/app/core/services/dashboard.service.ts:2:9:
-      2 │ import { Injectable, inject } from '@angular/common/http';
-        ╵          ~~~~~~~~~~
-
-
-X [ERROR] TS2305: Module '"@angular/common/http"' has no exported member 'inject'. [plugin angular-compiler]
-
-    src/app/core/services/dashboard.service.ts:2:21:
-      2 │ import { Injectable, inject } from '@angular/common/http';
-        ╵                      ~~~~~~
-
-
-X [ERROR] TS2305: Module '"../environment"' has no exported member 'environment'. [plugin angular-compiler]
-
-    src/app/core/services/dashboard.service.ts:4:9:
-      4 │ import { environment } from '../environment';
-        ╵          ~~~~~~~~~~~
-
-
-X [ERROR] TS2488: Type 'WritableSignal<AdminKpiMock[]>' must have a '[Symbol.iterator]()' method that returns an iterator. [plugin angular-compiler]
-
-    src/app/pages/admin/admin-dashboard.component.html:12:15:
-      12 │     @for (k of kpis; track k.id) {
-         ╵                ~~~~
+    src/app/pages/admin/admin-dashboard.component.html:53:38:
+      53 │         @for (w of attendanceCalendar.weekDays; track $index) {
+         ╵                                       ~~~~~~~~
 
   Error occurs in the template of component AdminDashboardComponent.
 
@@ -83,26 +34,58 @@ X [ERROR] TS2488: Type 'WritableSignal<AdminKpiMock[]>' must have a '[Symbol.ite
          ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-Application bundle generation failed. [0.189 seconds] - 2026-04-15T15:51:48.602Z
+X [ERROR] TS2339: Property 'days' does not exist on type 'WritableSignal<AttendanceCalendarPanelMock>'. [plugin angular-compiler]
 
-X [ERROR] TS2305: Module '"@angular/common/http"' has no exported member 'Injectable'. [plugin angular-compiler]
+    src/app/pages/admin/admin-dashboard.component.html:56:41:
+      56 │         @for (cell of attendanceCalendar.days; track $index) {
+         ╵                                          ~~~~
 
-    src/app/core/services/dashboard.service.ts:2:9:
-      2 │ import { Injectable, inject } from '@angular/common/http';
-        ╵          ~~~~~~~~~~
+  Error occurs in the template of component AdminDashboardComponent.
 
-
-X [ERROR] TS2305: Module '"@angular/common/http"' has no exported member 'inject'. [plugin angular-compiler]
-
-    src/app/core/services/dashboard.service.ts:2:21:
-      2 │ import { Injectable, inject } from '@angular/common/http';
-        ╵                      ~~~~~~
+    src/app/pages/admin/admin-dashboard.component.ts:20:15:
+      20 │   templateUrl: './admin-dashboard.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-X [ERROR] TS2305: Module '"../environment"' has no exported member 'environment'. [plugin angular-compiler]
+X [ERROR] TS2339: Property 'critical' does not exist on type 'WritableSignal<AttendanceCalendarPanelMock>'. [plugin angular-compiler]
 
-    src/app/core/services/dashboard.service.ts:4:9:
-      4 │ import { environment } from '../environment';
-        ╵          ~~~~~~~~~~~
+    src/app/pages/admin/admin-dashboard.component.html:64:34:
+      64 │             {{ attendanceCalendar.critical.title }}
+         ╵                                   ~~~~~~~~
+
+  Error occurs in the template of component AdminDashboardComponent.
+
+    src/app/pages/admin/admin-dashboard.component.ts:20:15:
+      20 │   templateUrl: './admin-dashboard.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2339: Property 'critical' does not exist on type 'WritableSignal<AttendanceCalendarPanelMock>'. [plugin angular-compiler]
+
+    src/app/pages/admin/admin-dashboard.component.html:68:32:
+      68 │           {{ attendanceCalendar.critical.body }}
+         ╵                                 ~~~~~~~~
+
+  Error occurs in the template of component AdminDashboardComponent.
+
+    src/app/pages/admin/admin-dashboard.component.ts:20:15:
+      20 │   templateUrl: './admin-dashboard.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2304: Cannot find name 'AttendanceCalendarPanelMock'. [plugin angular-compiler]
+
+    src/app/pages/admin/admin-dashboard.component.ts:27:40:
+      27 │ ...Calendar = signal<AttendanceCalendarPanelMock>(ADMIN_ATTENDANCE...
+         ╵                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Application bundle generation failed. [0.211 seconds] - 2026-04-15T16:49:07.959Z
+
+X [ERROR] TS2304: Cannot find name 'AttendanceCalendarPanelMock'. [plugin angular-compiler]
+
+    src/app/pages/admin/admin-dashboard.component.ts:27:40:
+      27 │ ...Calendar = signal<AttendanceCalendarPanelMock>(ADMIN_ATTENDANCE...
+         ╵                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 

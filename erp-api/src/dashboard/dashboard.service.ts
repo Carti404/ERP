@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MoreThanOrEqual, Repository, Not } from 'typeorm';
+import { MoreThanOrEqual, Repository, Not, Between, In } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { AttendanceRecord } from '../attendance/entities/attendance-record.entity';
 import { ProductionTask } from '../production/entities/production-task.entity';
@@ -54,9 +54,9 @@ export class DashboardService {
       ? Math.round((presentWorkers / totalWorkers) * 100) 
       : 0;
 
-    // 3. Cierres pendientes (Tareas completadas por operarios, esperando acción admin)
-    const pendingClosures = await this.taskRepo.count({
-      where: { status: 'COMPLETED' },
+    // 3. Órdenes sin asignar (Tareas que están en estado inicial DRAFT)
+    const unassignedTasks = await this.taskRepo.count({
+      where: { status: 'DRAFT' },
     });
 
     return {
@@ -69,9 +69,92 @@ export class DashboardService {
         label: `${attendancePercentage}%`,
       },
       cierres: {
-        count: pendingClosures,
-        label: `${pendingClosures}`,
+        count: unassignedTasks,
+        label: `${unassignedTasks}`,
       },
     };
+  }
+
+  async getAttendanceSummary(year: number, month: number) {
+    const startDate = new Date(year, month, 1);
+    const endDate = new Date(year, month + 1, 0);
+
+    const totalWorkers = await this.userRepo.count({
+      where: { role: UserRole.WORKER, activo: true },
+    });
+
+    const records = await this.attendanceRepo.find({
+      where: {
+        workDate: Between(
+          startDate.toISOString().split('T')[0],
+          endDate.toISOString().split('T')[0],
+        ),
+      },
+    });
+
+    // Agrupar por fecha
+    const summary: Record<string, { day: number; kind: 'ok' | 'warning' | 'critical' | 'weekend' | 'muted' }> = {};
+    
+    // Inicializar todos los días del mes
+    for (let d = 1; d <= endDate.getDate(); d++) {
+      const date = new Date(year, month, d);
+      const dateStr = date.toISOString().split('T')[0];
+      const isSunday = date.getDay() === 0;
+      
+      summary[dateStr] = {
+        day: d,
+        kind: isSunday ? 'weekend' : 'muted',
+      };
+    }
+
+    // Procesar registros
+    const recordsByDate: Record<string, { faltas: number; retardos: number; present: number }> = {};
+    
+    records.forEach(r => {
+      if (!recordsByDate[r.workDate]) {
+        recordsByDate[r.workDate] = { faltas: 0, retardos: 0, present: 0 };
+      }
+      if (r.status === 'Falta') recordsByDate[r.workDate].faltas++;
+      else if (r.status === 'Retardo') recordsByDate[r.workDate].retardos++;
+      
+      if (r.status !== 'Falta') recordsByDate[r.workDate].present++;
+    });
+
+    // Determinar colores
+    Object.keys(recordsByDate).forEach(dateStr => {
+      const stats = recordsByDate[dateStr];
+      const dayData = summary[dateStr];
+      if (!dayData || dayData.kind === 'weekend') return;
+
+      if (stats.faltas >= 3) {
+        dayData.kind = 'critical';
+      } else if (stats.retardos >= 3) {
+        dayData.kind = 'warning';
+      } else if (stats.present >= totalWorkers && totalWorkers > 0) {
+        dayData.kind = 'ok';
+      }
+    });
+
+    return Object.values(summary).sort((a, b) => a.day - b.day);
+  }
+
+  async getAssignedOrders() {
+    this.logger.log('Obteniendo órdenes de producción asignadas para panel admin');
+    
+    const tasks = await this.taskRepo.find({
+      where: {
+        status: In(['ASSIGNED', 'IN_PROGRESS', 'PENDING_APPROVAL']),
+      },
+      relations: ['assignments', 'assignments.worker'],
+      order: { updatedAt: 'DESC' },
+    });
+
+    return tasks.map(t => ({
+      id: t.id,
+      orderNumber: t.orderNumber,
+      productName: t.productName,
+      status: t.status,
+      workers: t.assignments.map(a => a.worker?.fullName).filter(Boolean),
+    }));
   }
 }
