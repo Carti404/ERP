@@ -43,17 +43,19 @@ export class AdminDashboardComponent implements OnInit {
 
   private loadAttendanceSummary(): void {
     this.dashboardService.getAttendanceSummary().subscribe({
-      next: (summary) => {
-        // Actualizamos la señal del calendario manteniendo el resto del objeto (title, weekDays)
+      next: (resp) => {
+        // Actualizamos la señal del calendario con el título y días reales del backend
         this.attendanceCalendar.update(prev => ({
           ...prev,
-          days: summary.map((s) => ({
-            d: s.day.toString(),
+          title: resp.title,
+          days: resp.days.map((s) => ({
+            d: s.isPadding ? '' : s.day.toString(),
             kind: s.kind,
+            isPadding: s.isPadding
           })),
           critical: {
-            title: 'Diccionario de Colores',
-            body: 'Verde: 100% Asistencia | Naranja: 3+ Retardos | Rojo: 3+ Faltas. (Domingos no laborables)',
+            title: 'Resumen de incidencia',
+            body: 'Verde: 100% Asistencia | Naranja: 3+ Retardos | Rojo: 3+ Faltas. (Domingos omitidos)',
           }
         }));
       },

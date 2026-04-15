@@ -5,9 +5,6 @@
       <h1 class="text-2xl font-bold tracking-tight text-[#051125] dark:text-[var(--erp-login-text-primary)]">
         Matriz de asistencias
       </h1>
-      <p class="mt-1 text-sm text-[#45474d] dark:text-[var(--erp-login-muted)]">
-        Octubre 2023 · Planta piso 04 (demo)
-      </p>
     </div>
 
   </div>
@@ -33,12 +30,6 @@
                 aria-hidden="true">chevron_right</span>
             </button>
           </div>
-          <button type="button"
-            class="flex items-center gap-2 rounded-md bg-[#051125] px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-white transition-opacity hover:opacity-90"
-            (click)="onJustificacionOficio()">
-            <span class="material-symbols-outlined text-sm" aria-hidden="true">add</span>
-            Justificación de oficio
-          </button>
         </div>
         <div class="erp-asistencias-hide-scrollbar overflow-x-auto">
           <table class="w-full border-collapse text-left">
@@ -81,18 +72,14 @@
                     [class.ring-2]="isCellSelected(row.id, cell.realDate)"
                     [class.ring-amber-500]="isCellSelected(row.id, cell.realDate)"
                     [class.border-emerald-600/30]="cell.kind === 'punctual'"
-                    [class.bg-emerald-50]="cell.kind === 'punctual'"
-                    [class.text-emerald-700]="cell.kind === 'punctual'"
-                    [class.border-amber-600/30]="cell.kind === 'delay'"
-                    [class.bg-amber-50]="cell.kind === 'delay'"
-                    [class.text-amber-700]="cell.kind === 'delay'"
-                    [class.border-rose-600/30]="cell.kind === 'absence'"
-                    [class.bg-rose-50]="cell.kind === 'absence'"
-                    [class.text-rose-700]="cell.kind === 'absence'">
+                    [class.bg-emerald-50]="cell.kind === 'punctual'" [class.text-emerald-700]="cell.kind === 'punctual'"
+                    [class.border-amber-600/30]="cell.kind === 'delay'" [class.bg-amber-50]="cell.kind === 'delay'"
+                    [class.text-amber-700]="cell.kind === 'delay'" [class.border-rose-600/30]="cell.kind === 'absence'"
+                    [class.bg-rose-50]="cell.kind === 'absence'" [class.text-rose-700]="cell.kind === 'absence'">
                     @if (cell.kind === 'absence') {
-                      <span class="material-symbols-outlined text-base">close</span>
+                    <span class="material-symbols-outlined text-base">close</span>
                     } @else {
-                      {{ cell.time }}
+                    {{ cell.time }}
                     }
                   </button>
                   }
@@ -153,36 +140,31 @@
 
           <!-- Sección de comunicación por incidencias -->
           @if (isIncidenceCell(d.kind)) {
-          <div class="mt-6 space-y-3 rounded-xl border border-amber-200 bg-amber-50/30 p-4 dark:border-amber-900/50 dark:bg-amber-950/20">
+          <div
+            class="mt-6 space-y-3 rounded-xl border border-amber-200 bg-amber-50/30 p-4 dark:border-amber-900/50 dark:bg-amber-950/20">
             <div class="flex items-center gap-2 text-amber-800 dark:text-amber-200">
               <span class="material-symbols-outlined text-sm">contact_support</span>
               <p class="text-[10px] font-black uppercase tracking-wider">Consultar incidencia</p>
             </div>
-            
+
             <div class="relative">
-              <textarea 
-                [(ngModel)]="incidenceNote"
-                rows="3" 
-                placeholder="Preguntar el motivo del retardo o falta..."
-                class="w-full rounded-lg border border-amber-200 bg-white p-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/20 dark:border-amber-900/50 dark:bg-slate-900 dark:text-white"
-              ></textarea>
+              <textarea [(ngModel)]="incidenceNote" rows="3" placeholder="Preguntar el motivo del retardo o falta..."
+                class="w-full rounded-lg border border-amber-200 bg-white p-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/20 dark:border-amber-900/50 dark:bg-slate-900 dark:text-white"></textarea>
             </div>
 
-            <button 
-              type="button"
+            <button type="button"
               class="flex w-full items-center justify-center gap-2 rounded-lg bg-amber-600 py-2.5 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:bg-amber-700 active:scale-[0.98] disabled:opacity-50"
-              [disabled]="!incidenceNote || isSendingIncidence()"
-              (click)="onSendIncidenceMessage(d.workerId || '')"
-            >
+              [disabled]="!incidenceNote || isSendingIncidence()" (click)="onSendIncidenceMessage(d.workerId || '')">
               @if (isSendingIncidence()) {
-                <span class="h-3 w-3 animate-spin rounded-full border-2 border-white/20 border-t-white"></span>
-                Enviando...
+              <span class="h-3 w-3 animate-spin rounded-full border-2 border-white/20 border-t-white"></span>
+              Enviando...
               } @else {
-                <span class="material-symbols-outlined text-sm">send</span>
-                Notificar al trabajador
+              <span class="material-symbols-outlined text-sm">send</span>
+              Notificar al trabajador
               }
             </button>
-            <p class="text-center text-[9px] text-amber-700/60 dark:text-amber-400/40">El trabajador verá esta consulta en su dashboard principal.</p>
+            <p class="text-center text-[9px] text-amber-700/60 dark:text-amber-400/40">El trabajador verá esta consulta
+              en su dashboard principal.</p>
           </div>
           }
         </div>

@@ -21,6 +21,12 @@ export interface AdminKpis {
 export interface AttendanceSummaryDay {
   day: number;
   kind: 'ok' | 'warning' | 'critical' | 'weekend' | 'muted';
+  isPadding?: boolean;
+}
+
+export interface AttendanceSummaryResponse {
+  title: string;
+  days: AttendanceSummaryDay[];
 }
 
 export interface AssignedOrder {
@@ -42,8 +48,8 @@ export class DashboardService {
     return this.http.get<AdminKpis>(`${this.apiUrl}/admin-kpis`);
   }
 
-  getAttendanceSummary(): Observable<AttendanceSummaryDay[]> {
-    return this.http.get<AttendanceSummaryDay[]>(`${this.apiUrl}/attendance-summary`);
+  getAttendanceSummary(): Observable<AttendanceSummaryResponse> {
+    return this.http.get<AttendanceSummaryResponse>(`${this.apiUrl}/attendance-summary`);
   }
 
   getAssignedOrders(): Observable<AssignedOrder[]> {

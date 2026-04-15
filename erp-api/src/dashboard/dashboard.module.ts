@@ -7,6 +7,8 @@ import { AttendanceRecord } from '../attendance/entities/attendance-record.entit
 import { ProductionTask } from '../production/entities/production-task.entity';
 import { ProductionWaste } from '../production/entities/production-waste.entity';
 
+import { SystemParametersModule } from '../system-parameters/system-parameters.module';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -15,6 +17,7 @@ import { ProductionWaste } from '../production/entities/production-waste.entity'
       ProductionTask,
       ProductionWaste,
     ]),
+    SystemParametersModule,
   ],
   controllers: [DashboardController],
   providers: [DashboardService],

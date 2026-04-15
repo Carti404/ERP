@@ -86,10 +86,10 @@ export class AttendanceService {
         
         if (now <= entryDate) {
           calculatedStatus = 'Puntual';
-        } else if (now <= limitDate) {
-          calculatedStatus = 'Retardo';
         } else {
-          calculatedStatus = 'Falta';
+          // Todo registro después de la hora de entrada (incluida la tolerancia) es Retardo.
+          // La Falta se reserva para la ausencia total de registro al final del día.
+          calculatedStatus = 'Retardo';
         }
       }
 
@@ -142,7 +142,13 @@ export class AttendanceService {
       relations: ['logs'],
     });
 
-    // 3. Estructurar para el frontend
+    // 3. Obtener feriados para identificar días no laborables
+    const systemParams = await this.systemParamsService.getSnapshot();
+    const holidaysInRange = systemParams.holidays.filter(h => 
+      h.date >= startDate && h.date <= endDate
+    );
+
+    // 4. Estructurar para el frontend
     // Agrupamos por usuario y luego por fecha para fácil acceso
     const matrixMap: Record<string, Record<string, any>> = {};
 
@@ -168,6 +174,7 @@ export class AttendanceService {
         puesto: w.puesto,
       })),
       matrix: matrixMap,
+      holidays: holidaysInRange, // Enviamos los festivos detectados
       startDate,
       endDate,
     };

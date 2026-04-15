@@ -59,6 +59,10 @@ export interface AttendanceMatrixResponse {
     checkIn: string | null;
     checkOut: string | null;
   }>>;
+  holidays: Array<{
+    date: string;
+    title: string;
+  }>;
   startDate: string;
   endDate: string;
 }

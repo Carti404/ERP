@@ -51,7 +51,7 @@
         <span class="text-center text-[9px] font-black uppercase text-[var(--erp-login-label)]">{{ w }}</span>
         }
         @for (cell of attendanceCalendar().days; track $index) {
-        <div [class]="calDayClass(cell.kind)">{{ cell.d }}</div>
+        <div [class]="calDayClass(cell.kind)" [class.opacity-0]="cell.isPadding">{{ cell.d }}</div>
         }
       </div>
       <div class="erp-cal-critical">

@@ -69,10 +69,16 @@ export class AdminAsistenciasComponent {
     for (let i = 0; i < 7; i++) {
       const d = new Date(start);
       d.setDate(start.getDate() + i);
+      
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const dateStr = `${y}-${m}-${day}`;
+
       headers.push({
         key: dayNames[i],
         label: `${dayNames[i].toUpperCase()} ${d.getDate()}`,
-        fullDate: d.toISOString().split('T')[0]
+        fullDate: dateStr
       });
     }
     return headers;
@@ -87,23 +93,33 @@ export class AdminAsistenciasComponent {
     const headers = this.dayHeaders();
     if (!resp) return [];
 
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
     return resp.workers.map(w => {
       const workerCells = headers.map(h => {
         const record = resp.matrix[w.id]?.[h.fullDate];
+        const isHoliday = resp.holidays?.some(hol => hol.date === h.fullDate);
+        const dateObj = new Date(h.fullDate + 'T12:00:00'); // Evitar problemas de zona horaria
+        const isSunday = dateObj.getDay() === 0;
         
         let kind: AdminAsistenciaCellKind = 'off';
         let time = '';
 
         if (record) {
-          // Mapeo simple de status a colores semáforo
-          if (record.status === 'Puntual') kind = 'punctual';
-          else if (record.status === 'Retardo') kind = 'delay';
-          else if (record.status === 'Falta') kind = 'absence';
-          else kind = 'off';
+          // Si existe registro, es Puntual o Retardo (aunque el DB diga 'Falta' por registros antiguos)
+          if (record.status === 'Puntual') {
+            kind = 'punctual';
+          } else {
+            kind = 'delay';
+          }
 
           if (record.checkIn) {
             time = new Date(record.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
           }
+        } else if (h.fullDate < todayStr && !isSunday && !isHoliday) {
+          // Si el día ya pasó, no hay registro, no es domingo y no es festivo -> FALTA
+          kind = 'absence';
         }
 
         return { kind, time, realDate: h.fullDate };
@@ -147,10 +163,10 @@ export class AdminAsistenciasComponent {
   constructor() {
     effect(() => {
       const { start, end } = this.weekRange();
-      this.loadMatrix(
-        start.toISOString().split('T')[0],
-        end.toISOString().split('T')[0]
-      );
+      
+      const toStr = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      
+      this.loadMatrix(toStr(start), toStr(end));
     });
   }
 

@@ -69,6 +69,7 @@ export type AttendanceCalDayKind = 'muted' | 'ok' | 'warning' | 'critical' | 'we
 export interface AttendanceCalDayMock {
   d: string;
   kind: AttendanceCalDayKind;
+  isPadding?: boolean;
 }
 
 export interface AttendanceCalendarPanelMock {

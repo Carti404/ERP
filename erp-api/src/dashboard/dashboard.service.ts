@@ -6,6 +6,7 @@ import { AttendanceRecord } from '../attendance/entities/attendance-record.entit
 import { ProductionTask } from '../production/entities/production-task.entity';
 import { ProductionWaste } from '../production/entities/production-waste.entity';
 import { UserRole } from '../common/enums/user-role.enum';
+import { SystemParametersService } from '../system-parameters/system-parameters.service';
 
 @Injectable()
 export class DashboardService {
@@ -20,6 +21,7 @@ export class DashboardService {
     private readonly taskRepo: Repository<ProductionTask>,
     @InjectRepository(ProductionWaste)
     private readonly wasteRepo: Repository<ProductionWaste>,
+    private readonly systemParamsService: SystemParametersService,
   ) {}
 
   async getAdminKpis() {
@@ -38,15 +40,16 @@ export class DashboardService {
     });
 
     // 2. Asistencia hoy (Porcentaje sobre trabajadores activos)
-    const todayStr = now.toISOString().split('T')[0];
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const totalWorkers = await this.userRepo.count({
       where: { role: UserRole.WORKER, activo: true },
     });
 
+    // Contamos CUALQUIER registro de hoy como presente (sin importar si decian Falta por la lógica antigua)
+    // Ya que la regla de negocio actual es que las verdaderas Faltas son la ausencia de registro al final del día.
     const presentWorkers = await this.attendanceRepo.count({
       where: {
         workDate: todayStr,
-        status: Not('Falta'),
       },
     });
 
@@ -79,63 +82,114 @@ export class DashboardService {
     const startDate = new Date(year, month, 1);
     const endDate = new Date(year, month + 1, 0);
 
-    const totalWorkers = await this.userRepo.count({
-      where: { role: UserRole.WORKER, activo: true },
-    });
+    const [totalWorkers, records, params] = await Promise.all([
+      this.userRepo.count({ where: { role: UserRole.WORKER, activo: true } }),
+      this.attendanceRepo.find({
+        where: {
+          workDate: Between(
+            startDate.toISOString().split('T')[0],
+            endDate.toISOString().split('T')[0],
+          ),
+        },
+      }),
+      this.systemParamsService.getSnapshot(),
+    ]);
 
-    const records = await this.attendanceRepo.find({
-      where: {
-        workDate: Between(
-          startDate.toISOString().split('T')[0],
-          endDate.toISOString().split('T')[0],
-        ),
-      },
-    });
+    const holidayDates = new Set(params.holidays.map(h => h.date));
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
     // Agrupar por fecha
     const summary: Record<string, { day: number; kind: 'ok' | 'warning' | 'critical' | 'weekend' | 'muted' }> = {};
     
+    // Nombres de meses en español
+    const monthNames = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    const monthTitle = `Control de Asistencia - ${monthNames[month]} ${year}`;
+
     // Inicializar todos los días del mes
     for (let d = 1; d <= endDate.getDate(); d++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       const date = new Date(year, month, d);
-      const dateStr = date.toISOString().split('T')[0];
       const isSunday = date.getDay() === 0;
+      const isHoliday = holidayDates.has(dateStr);
       
       summary[dateStr] = {
         day: d,
-        kind: isSunday ? 'weekend' : 'muted',
+        kind: (isSunday || isHoliday) ? 'weekend' : 'muted',
       };
     }
 
-    // Procesar registros
+    // Procesar registros existentes
     const recordsByDate: Record<string, { faltas: number; retardos: number; present: number }> = {};
     
     records.forEach(r => {
       if (!recordsByDate[r.workDate]) {
         recordsByDate[r.workDate] = { faltas: 0, retardos: 0, present: 0 };
       }
-      if (r.status === 'Falta') recordsByDate[r.workDate].faltas++;
-      else if (r.status === 'Retardo') recordsByDate[r.workDate].retardos++;
       
-      if (r.status !== 'Falta') recordsByDate[r.workDate].present++;
-    });
+      // IMPORTANTE: Si tiene registro (aunque sea 'Falta' por lógica antigua), SÍ se presentó.
+      recordsByDate[r.workDate].present++;
 
-    // Determinar colores
-    Object.keys(recordsByDate).forEach(dateStr => {
-      const stats = recordsByDate[dateStr];
-      const dayData = summary[dateStr];
-      if (!dayData || dayData.kind === 'weekend') return;
-
-      if (stats.faltas >= 3) {
-        dayData.kind = 'critical';
-      } else if (stats.retardos >= 3) {
-        dayData.kind = 'warning';
-      } else if (stats.present >= totalWorkers && totalWorkers > 0) {
-        dayData.kind = 'ok';
+      // Tratamos cualquier registro que no sea Puntual como Retardo (igual que en la Matriz)
+      // dejando las "Faltas" estrictamente para aquellos sin ningún registro.
+      if (r.status !== 'Puntual') {
+        recordsByDate[r.workDate].retardos++;
       }
     });
 
-    return Object.values(summary).sort((a, b) => a.day - b.day);
+    // Determinar colores y detectar ausencias
+    Object.keys(summary).forEach(dateStr => {
+      const dayData = summary[dateStr];
+      if (dayData.kind === 'weekend') return;
+
+      const stats = recordsByDate[dateStr] || { present: 0, retardos: 0 };
+      const isPast = dateStr < todayStr;
+      const isToday = dateStr === todayStr;
+      
+      // Calculamos faltas reales: trabajadores que NO tienen registro
+      const realFaltas = totalWorkers - stats.present;
+
+      if (isPast) {
+        // En días pasados, aplicamos los umbrales de cierre
+        if (realFaltas >= 3) {
+          dayData.kind = 'critical'; // Rojo si faltaron 3 o más
+        } else if (stats.retardos >= 3) {
+          dayData.kind = 'warning'; // Naranja si llegaron 3 o más tarde
+        } else if (stats.present > 0) {
+          dayData.kind = 'ok'; // Verde si la operación fue normal
+        } else {
+          // Si no hubo registros en absoluto
+          dayData.kind = 'critical';
+        }
+      } else if (isToday) {
+        // Para hoy, si ya hay 3+ retardos, avisamos
+        if (stats.retardos >= 3) {
+          dayData.kind = 'warning';
+        } else if (stats.present > 0) {
+          dayData.kind = 'ok';
+        }
+      }
+      // Los días futuros permanecen en 'muted' (gris)
+    });
+
+    // Alineación para que el día 1 caiga en el día de la semana correcto
+    const firstDay = new Date(year, month, 1).getDay(); // 0: Dom, 1: Lun...
+    const paddingCount = firstDay === 0 ? 6 : firstDay - 1; // Ajustar a Lunes como día 1
+    
+    const daysArray = Object.values(summary).sort((a, b) => a.day - b.day);
+    const paddedDays: any[] = [];
+    
+    for (let i = 0; i < paddingCount; i++) {
+       paddedDays.push({ day: 0, kind: 'muted', isPadding: true });
+    }
+
+    return {
+      title: monthTitle,
+      days: [...paddedDays, ...daysArray]
+    };
   }
 
   async getAssignedOrders() {
