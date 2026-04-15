@@ -22,6 +22,14 @@ import type { ErpUserPublic } from '../../core/users/users-api.types';
 
 type InboxFolderId = ErpMessageFolder;
 
+interface MessageBubbleVm {
+  readonly id: number;
+  readonly isReferenced: boolean;
+  readonly author: string;
+  readonly date: string;
+  readonly contentParagraphs: readonly string[];
+}
+
 interface ErpInboxMessageVm {
   readonly id: string;
   readonly from: string;
@@ -31,7 +39,7 @@ interface ErpInboxMessageVm {
   readonly subject: string;
   readonly preview: string;
   readonly read: boolean;
-  readonly bodyParagraphs: readonly string[];
+  readonly thread: readonly MessageBubbleVm[];
   readonly importance: 'LOW' | 'MEDIUM' | 'HIGH';
   readonly attachments: readonly {
     readonly id: string;
@@ -77,8 +85,53 @@ function bodyToParagraphs(body: string): string[] {
 }
 
 function previewFromBody(body: string): string {
-  const oneLine = body.replace(/\s+/g, ' ').trim();
+  const t = body.split(/---------- Mensaje referenciado ----------/i)[0] || '';
+  const oneLine = t.replace(/\s+/g, ' ').trim();
   return oneLine.length > 120 ? `${oneLine.slice(0, 117)}…` : oneLine;
+}
+
+function parseThreadedBody(body: string, senderName: string, folder: InboxFolderId, myName: string): MessageBubbleVm[] {
+  const sections = body.split(/---------- Mensaje referenciado ----------/i);
+  const bubbles: MessageBubbleVm[] = [];
+  
+  // Normalizar nombres para comparación
+  const normalize = (n: string) => n.trim().toLowerCase();
+  const myNameNorm = normalize(myName);
+
+  if (sections[0].trim()) {
+    const isMe = folder === 'sent' || normalize(senderName) === myNameNorm;
+    bubbles.push({
+      id: 0,
+      isReferenced: false,
+      author: isMe ? 'Tú' : senderName,
+      date: '',
+      contentParagraphs: bodyToParagraphs(sections[0])
+    });
+  }
+
+  for (let i = 1; i < sections.length; i++) {
+    const raw = sections[i].trim();
+    if (!raw) continue;
+    
+    const fromMatch = raw.match(/(?:De|Para):\s*(.*?)$/m);
+    const dateMatch = raw.match(/Fecha:\s*(.*?)$/m);
+    
+    const authorExtracted = fromMatch ? fromMatch[1].trim() : 'Sistema';
+    const dateExtracted = dateMatch ? dateMatch[1].trim() : '';
+    const cleanContent = raw.replace(/(?:De|Para|Fecha|Asunto):.*?$/gm, '').trim();
+    
+    const isMe = normalize(authorExtracted) === myNameNorm;
+
+    bubbles.push({
+      id: i,
+      isReferenced: true,
+      author: isMe ? 'Tú' : authorExtracted,
+      date: dateExtracted,
+      contentParagraphs: bodyToParagraphs(cleanContent)
+    });
+  }
+  
+  return bubbles.reverse();
 }
 
 function roleHint(role: ErpUserPublic['role']): string {
@@ -113,6 +166,7 @@ function participantToChip(p: ErpMessageParticipant): MailboxComposeRecipient {
   selector: 'app-erp-inbox',
   standalone: true,
   templateUrl: './erp-inbox.component.html',
+  styleUrl: './erp-inbox.component.css',
 })
 export class ErpInboxComponent {
   readonly pageTitle = input('Mensajería');
@@ -211,7 +265,27 @@ export class ErpInboxComponent {
     const f = this.folder();
     const rows = f === 'inbox' ? this.inboxRows() : this.sentRows();
     const q = this.searchQuery().trim().toLowerCase();
-    let list = rows.map((r) => this.rowToVm(r, f));
+    
+    // Convertir todas las filas a VMs primero
+    let allVms = rows.map((r) => this.rowToVm(r, f));
+    
+    // Agrupar por "Hilo": Mismo asunto (normalizado) y mismo contacto
+    const threads = new Map<string, ErpInboxMessageVm>();
+    
+    for (const m of allVms) {
+      // Normalizar asunto: quitar "Re:", "Fwd:", etc.
+      const cleanSubject = m.subject.replace(/^(Re|Fwd|Res|R):\s*/i, '').trim().toLowerCase();
+      // El hilo es la combinación del asunto limpio y el contacto
+      const threadKey = `${cleanSubject}::${m.fromEmail || m.from}`;
+      
+      const existing = threads.get(threadKey);
+      if (!existing || new Date(m.timeDetail) > new Date(existing.timeDetail)) {
+        threads.set(threadKey, m);
+      }
+    }
+    
+    let list = Array.from(threads.values());
+
     if (q) {
       list = list.filter(
         (m) =>
@@ -220,7 +294,9 @@ export class ErpInboxComponent {
           m.preview.toLowerCase().includes(q),
       );
     }
-    return list;
+    
+    // Ordenar por fecha más reciente
+    return list.sort((a,b) => b.id.localeCompare(a.id));
   });
 
   protected readonly selected = computed((): ErpInboxMessageVm | null => {
@@ -299,6 +375,20 @@ export class ErpInboxComponent {
     });
 
     effect((onCleanup) => {
+      // Sistema "En Vivo" (Polling cada 5 segundos)
+      const interval = setInterval(() => {
+        untracked(() => {
+          this.loadFolder('inbox', true);
+          this.loadFolder('sent', true);
+        });
+      }, 5000);
+
+      onCleanup(() => {
+        clearInterval(interval);
+      });
+    });
+
+    effect((onCleanup) => {
       if (this.composeOpen()) {
         document.body.style.overflow = 'hidden';
       } else {
@@ -322,7 +412,12 @@ export class ErpInboxComponent {
       subject: row.subject,
       preview: previewFromBody(row.body),
       read: folder === 'inbox' ? row.read : true,
-      bodyParagraphs: bodyToParagraphs(row.body),
+      thread: parseThreadedBody(
+        row.body,
+        counterpart.fullName,
+        folder,
+        this.auth.session()?.displayName || ''
+      ),
       importance: row.importance ?? 'LOW',
       attachments: (row.attachments || []).map((a) => ({
         ...a,
@@ -333,8 +428,10 @@ export class ErpInboxComponent {
     };
   }
 
-  private loadFolder(folder: InboxFolderId): void {
-    this.listLoading.set(true);
+  private loadFolder(folder: InboxFolderId, silent = false): void {
+    if (!silent) {
+      this.listLoading.set(true);
+    }
     this.listError.set(null);
     this.messagesApi.list(folder).subscribe({
       next: (rows) => {
@@ -346,8 +443,10 @@ export class ErpInboxComponent {
         this.listLoading.set(false);
       },
       error: () => {
-        this.listLoading.set(false);
-        this.listError.set('No se pudieron cargar los mensajes.');
+        if (!silent) {
+          this.listLoading.set(false);
+          this.listError.set('No se pudieron cargar los mensajes.');
+        }
       },
     });
   }
@@ -746,25 +845,26 @@ export class ErpInboxComponent {
     this.messagesApi
       .create({
         recipientId,
-        subject: `Re: ${current.subject}`.replace(/^Re: Re:/i, 'Re:'),
-        body,
+        subject: `Re: ${current.subject}`.replace(/^(Re:\s*)+/i, 'Re: '),
+        body: `${body}\n\n${this.referenceBlock(row, this.folder())}`,
         importance: current.importance,
         attachmentIds,
       })
       .subscribe({
-        next: (row) => {
+        next: (newRow) => {
           this.composeSending.set(false);
           this.composeBody.set('');
           this.composeAttachments.set([]);
           
-          // Actualizar lista de enviados y navegar a ella para ver la respuesta
-          this.sentRows.update((list) => [row, ...list]);
+          // Actualizar lista de enviados para que aparezca el nuevo mensaje
+          this.sentRows.update((list) => [newRow, ...list]);
+          
+          // Notificación visual de éxito (opcional, pero ayuda a la fluidez)
+          this.selectedId.set(newRow.id);
           this.folder.set('sent');
-          this.selectedId.set(row.id);
-          this.mobilePane.set('reader');
-          this.loadFolder('inbox');
+          this.loadFolder('inbox'); // Recargar para limpiar estados de lectura
         },
-        error: (err) => {
+        error: () => {
           this.composeSending.set(false);
           this.composeError.set('No se pudo enviar la respuesta.');
         },

@@ -1,0 +1,288 @@
+.erp-mailbox {
+  --mailbox-sidebar-bg: #1b263b;
+  --mailbox-sidebar-text: #ffffff;
+  --mailbox-sidebar-muted: #828da7;
+  
+  --mailbox-surface: #f1f5f9;
+  --mailbox-card: #ffffff;
+  --mailbox-border: #e2e8f0;
+  
+  --mailbox-primary: #1b263b;
+  --mailbox-accent: #3498db;
+  --mailbox-text: #1e293b;
+  --mailbox-muted: #64748b;
+  
+  --mailbox-selected-bg: #eef2ff;
+  --mailbox-selected-border: #3498db;
+}
+
+:host {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+:host-context(.dark) .erp-mailbox {
+  --mailbox-sidebar-bg: #0a0e18;
+  --mailbox-sidebar-text: #d7e2ff;
+  --mailbox-sidebar-muted: #64748b;
+  
+  --mailbox-surface: #0a0e18;
+  --mailbox-card: #161d2e;
+  --mailbox-border: #2f3d55;
+  
+  --mailbox-primary: #afc9eb;
+  --mailbox-accent: #afc9eb;
+  --mailbox-text: #d7e2ff;
+  --mailbox-muted: #8f9097;
+  
+  --mailbox-selected-bg: #1f2a3f;
+  --mailbox-selected-border: #afc9eb;
+}
+
+/* Sidebar "Command Center" */
+.erp-admin-inbox-sidebar {
+  background-color: var(--mailbox-sidebar-bg);
+  color: var(--mailbox-sidebar-text);
+  border-right: none;
+}
+
+.erp-admin-inbox-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin: 2px 8px;
+  border-radius: 8px;
+  color: var(--mailbox-sidebar-muted);
+  font-weight: 600;
+  transition: all 0.2s ease;
+  background: transparent;
+  width: calc(100% - 16px);
+  border: none;
+  cursor: pointer;
+}
+
+.erp-admin-inbox-nav:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+.erp-admin-inbox-nav--active {
+  background-color: var(--mailbox-accent) !important;
+  color: #ffffff !important;
+}
+
+.erp-admin-inbox-nav__badge {
+  background-color: #ef4444;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 1px 7px;
+  border-radius: 99px;
+  margin-left: auto;
+}
+
+.erp-admin-inbox-compose {
+  background-color: var(--mailbox-accent);
+  color: #ffffff;
+  font-weight: 900;
+  border-radius: 12px;
+  width: 100%;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: none;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 12px;
+}
+
+/* List: Premium Cards */
+.erp-admin-inbox-list {
+  background-color: var(--mailbox-surface);
+  padding: 8px;
+  gap: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.erp-admin-inbox-msg {
+  background-color: var(--mailbox-card);
+  border: 1px solid var(--mailbox-border);
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.erp-admin-inbox-msg:hover {
+  border-color: var(--mailbox-accent);
+  transform: translateY(-1px);
+}
+
+.erp-admin-inbox-msg--selected {
+  border-color: var(--mailbox-selected-border) !important;
+  background-color: var(--mailbox-selected-bg) !important;
+}
+
+/* Indicador de prioridad lateral sólido */
+.erp-admin-inbox-msg::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: transparent;
+}
+
+.erp-admin-inbox-msg[data-accent="high"]::before { background-color: #ef4444; }
+.erp-admin-inbox-msg[data-accent="medium"]::before { background-color: #f59e0b; }
+.erp-admin-inbox-msg[data-accent="low"]::before { background-color: #10b981; }
+
+.erp-admin-inbox-msg-from {
+  color: var(--mailbox-text);
+  font-weight: 700;
+}
+
+.erp-admin-inbox-msg--unread .erp-admin-inbox-msg-from {
+  font-weight: 900;
+  color: var(--mailbox-accent);
+}
+
+/* Reader Blocks */
+.erp-admin-inbox-reader {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  background-color: var(--mailbox-card);
+}
+
+.erp-admin-inbox-toolbar-wrap {
+  border-bottom: 2px solid var(--mailbox-border);
+  padding: 12px 20px;
+}
+
+.erp-admin-inbox-toolbar-primary {
+  background-color: var(--mailbox-sidebar-bg);
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 12px;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+}
+
+.erp-admin-inbox-toolbar-secondary {
+  background-color: var(--mailbox-card);
+  color: var(--mailbox-sidebar-bg);
+  border: 2px solid var(--mailbox-sidebar-bg);
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 12px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.erp-admin-inbox-toolbar-icon {
+  background-color: #fee2e2;
+  color: #ef4444;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+  cursor: pointer;
+}
+
+/* Composer Heavy Card */
+.erp-mailbox-compose-panel {
+  background-color: var(--mailbox-card);
+  border-radius: 16px;
+  border: 4px solid var(--mailbox-sidebar-bg);
+}
+
+.erp-mailbox-compose-panel__head {
+  background-color: var(--mailbox-sidebar-bg);
+  padding: 20px;
+}
+
+.erp-mailbox-compose-panel__head h2 {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.erp-mailbox-compose-panel__head p {
+  color: var(--mailbox-sidebar-muted);
+}
+
+.erp-mailbox-compose-label {
+  font-weight: 800;
+  color: var(--mailbox-text);
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.erp-mailbox-compose-input, .erp-mailbox-compose-textarea, .erp-mailbox-compose-to-field {
+  background-color: var(--mailbox-surface) !important;
+  border: 2px solid var(--mailbox-border) !important;
+  border-radius: 10px !important;
+  padding: 12px !important;
+  color: var(--mailbox-text) !important;
+}
+
+.erp-mailbox-compose-input:focus, .erp-mailbox-compose-textarea:focus {
+  border-color: var(--mailbox-accent) !important;
+  outline: none;
+}
+
+.erp-mailbox-compose-btn-primary {
+  background-color: var(--mailbox-accent);
+  color: #ffffff;
+  padding: 14px 28px;
+  border-radius: 10px;
+  font-weight: 900;
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+/* Avatar */
+.erp-mailbox-avatar {
+  background-color: var(--mailbox-sidebar-bg);
+  color: #ffffff;
+  font-weight: 900;
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+}
+
+/* Attachments */
+.erp-mailbox-attachment-card {
+  background-color: var(--mailbox-surface);
+  border: 2px solid var(--mailbox-border);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.erp-mailbox-attachment-card:hover {
+  border-color: var(--mailbox-accent);
+  background-color: var(--mailbox-card);
+}

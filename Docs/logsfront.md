@@ -1,91 +1,31 @@
-chunk-ZG7NXQWY.js   | -                 | 132.02 kB |
+chunk-HFJHQSYG.js   | -                 | 141.16 kB |
 
-Application bundle generation complete. [5.683 seconds] - 2026-04-15T16:45:06.373Z
+Application bundle generation complete. [0.497 seconds] - 2026-04-15T23:46:24.575Z
 
-Watch mode enabled. Watching for file changes...
-NOTE: Raw file sizes do not reflect development server per-request transformations.
-  ➜  Local:   http://localhost:4200/
-  ➜  press h + enter to show help
-Application bundle generation failed. [1.560 seconds] - 2026-04-15T16:49:00.752Z
+▲ [WARNING] NG8103: NG8103: The `*ngIf` directive was used in the template, but neither the `NgIf` directive nor the `CommonModule` was imported. Use Angular's built-in control flow @if or make sure that either the `NgIf` directive or the `CommonModule` is included in the `@Component.imports` array of this component. Find more at https://v21.angular.dev/extended-diagnostics/NG8103 [plugin angular-compiler]
 
-X [ERROR] TS2339: Property 'title' does not exist on type 'WritableSignal<AttendanceCalendarPanelMock>'. [plugin angular-compiler]
+    src/app/shared/erp-inbox/erp-inbox.component.html:208:30:
+      208 │                         <img *ngIf="a.url" [src]="a.url" class="h...
+          ╵                               ~~~~
 
-    src/app/pages/admin/admin-dashboard.component.html:44:32:
-      44 │           {{ attendanceCalendar.title }}
-         ╵                                 ~~~~~
+  Warning occurs in the template of component ErpInboxComponent.
 
-  Error occurs in the template of component AdminDashboardComponent.
-
-    src/app/pages/admin/admin-dashboard.component.ts:20:15:
-      20 │   templateUrl: './admin-dashboard.component.html',
-         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    src/app/shared/erp-inbox/erp-inbox.component.ts:168:15:
+      168 │   templateUrl: './erp-inbox.component.html',
+          ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-X [ERROR] TS2339: Property 'weekDays' does not exist on type 'WritableSignal<AttendanceCalendarPanelMock>'. [plugin angular-compiler]
+▲ [WARNING] NG8103: NG8103: The `*ngIf` directive was used in the template, but neither the `NgIf` directive nor the `CommonModule` was imported. Use Angular's built-in control flow @if or make sure that either the `NgIf` directive or the `CommonModule` is included in the `@Component.imports` array of this component. Find more at https://v21.angular.dev/extended-diagnostics/NG8103 [plugin angular-compiler]
 
-    src/app/pages/admin/admin-dashboard.component.html:53:38:
-      53 │         @for (w of attendanceCalendar.weekDays; track $index) {
-         ╵                                       ~~~~~~~~
+    src/app/shared/erp-inbox/erp-inbox.component.html:209:31:
+      209 │                         <span *ngIf="!a.url" class="material-symb...
+          ╵                                ~~~~
 
-  Error occurs in the template of component AdminDashboardComponent.
+  Warning occurs in the template of component ErpInboxComponent.
 
-    src/app/pages/admin/admin-dashboard.component.ts:20:15:
-      20 │   templateUrl: './admin-dashboard.component.html',
-         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-X [ERROR] TS2339: Property 'days' does not exist on type 'WritableSignal<AttendanceCalendarPanelMock>'. [plugin angular-compiler]
-
-    src/app/pages/admin/admin-dashboard.component.html:56:41:
-      56 │         @for (cell of attendanceCalendar.days; track $index) {
-         ╵                                          ~~~~
-
-  Error occurs in the template of component AdminDashboardComponent.
-
-    src/app/pages/admin/admin-dashboard.component.ts:20:15:
-      20 │   templateUrl: './admin-dashboard.component.html',
-         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    src/app/shared/erp-inbox/erp-inbox.component.ts:168:15:
+      168 │   templateUrl: './erp-inbox.component.html',
+          ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-X [ERROR] TS2339: Property 'critical' does not exist on type 'WritableSignal<AttendanceCalendarPanelMock>'. [plugin angular-compiler]
-
-    src/app/pages/admin/admin-dashboard.component.html:64:34:
-      64 │             {{ attendanceCalendar.critical.title }}
-         ╵                                   ~~~~~~~~
-
-  Error occurs in the template of component AdminDashboardComponent.
-
-    src/app/pages/admin/admin-dashboard.component.ts:20:15:
-      20 │   templateUrl: './admin-dashboard.component.html',
-         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-X [ERROR] TS2339: Property 'critical' does not exist on type 'WritableSignal<AttendanceCalendarPanelMock>'. [plugin angular-compiler]
-
-    src/app/pages/admin/admin-dashboard.component.html:68:32:
-      68 │           {{ attendanceCalendar.critical.body }}
-         ╵                                 ~~~~~~~~
-
-  Error occurs in the template of component AdminDashboardComponent.
-
-    src/app/pages/admin/admin-dashboard.component.ts:20:15:
-      20 │   templateUrl: './admin-dashboard.component.html',
-         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-X [ERROR] TS2304: Cannot find name 'AttendanceCalendarPanelMock'. [plugin angular-compiler]
-
-    src/app/pages/admin/admin-dashboard.component.ts:27:40:
-      27 │ ...Calendar = signal<AttendanceCalendarPanelMock>(ADMIN_ATTENDANCE...
-         ╵                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-Application bundle generation failed. [0.211 seconds] - 2026-04-15T16:49:07.959Z
-
-X [ERROR] TS2304: Cannot find name 'AttendanceCalendarPanelMock'. [plugin angular-compiler]
-
-    src/app/pages/admin/admin-dashboard.component.ts:27:40:
-      27 │ ...Calendar = signal<AttendanceCalendarPanelMock>(ADMIN_ATTENDANCE...
-         ╵                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
+Page reload sent to client(s).
