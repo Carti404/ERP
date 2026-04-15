@@ -15,6 +15,7 @@ export enum LeaveRequestStatus {
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
   ADMIN_PROPOSAL = 'ADMIN_PROPOSAL',
+  WORKER_APPEAL = 'WORKER_APPEAL',
 }
 
 @Entity('leave_requests')

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Subscription, timer } from 'rxjs';
 import { ADMIN_PERMISOS_GANTT_ROWS, ADMIN_PERMISOS_KPIS, ADMIN_PERMISOS_PANEL_BY_ROW_ID, ADMIN_PERMISOS_TIMELINE_MARKERS, type AdminPermisoBarVariant, type AdminPermisoGanttRow } from './admin-permisos.mock';
 import { LeaveRequestsService, LeaveRequest } from '../../core/services/leave-requests.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { FeedbackService } from '../../core/services/feedback.service';
 import { apiBaseUrl } from '../../core/environment';
 import { MessagesApiService } from '../../core/messages/messages-api.service';
@@ -15,6 +16,7 @@ import { MessagesApiService } from '../../core/messages/messages-api.service';
 })
 export class AdminPermisosComponent implements OnInit, OnDestroy {
   private readonly leaveService = inject(LeaveRequestsService);
+  private readonly notificationService = inject(NotificationService);
   private readonly fb = inject(FeedbackService);
   private readonly messagesService = inject(MessagesApiService);
   private pollingSub?: Subscription;
@@ -113,6 +115,9 @@ export class AdminPermisosComponent implements OnInit, OnDestroy {
     this.pollingSub = timer(0, 10000).subscribe(() => {
       this.loadData();
     });
+
+    // Limpiar notificaciones de permisos al entrar
+    this.notificationService.markByCategoryAsRead('LEAVE_REQUEST').subscribe();
   }
 
   ngOnDestroy() {

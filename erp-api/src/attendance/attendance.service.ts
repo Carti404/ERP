@@ -10,6 +10,8 @@ import { UserRole } from '../common/enums/user-role.enum';
 import { Between } from 'typeorm';
 import { AttendanceMatrixQueryDto } from './dto/attendance-matrix-query.dto';
 import { SystemParametersService } from '../system-parameters/system-parameters.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationCategory, NotificationType } from '../notifications/entities/notification.entity';
 
 @Injectable()
 export class AttendanceService {
@@ -20,6 +22,7 @@ export class AttendanceService {
     private readonly logRepository: Repository<AttendanceLog>,
     private readonly usersService: UsersService,
     private readonly systemParamsService: SystemParametersService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   /**
@@ -116,6 +119,23 @@ export class AttendanceService {
     });
 
     await this.logRepository.save(log);
+
+    // Notificar si es Retardo
+    if (record.status === 'Retardo') {
+      const admins = await this.usersService.findAdmins();
+      const adminIds = admins.map(a => a.id);
+      const worker = await this.usersService.findById(userId);
+      
+      if (adminIds.length > 0) {
+        await this.notificationsService.createForMany(adminIds, {
+          title: 'Retardo registrado',
+          message: `${worker?.fullName || 'Un trabajador'} ha llegado con retardo hoy.`,
+          category: NotificationCategory.ATTENDANCE_INCIDENCE,
+          type: NotificationType.ALERT,
+          referenceId: record.id,
+        });
+      }
+    }
 
     return {
       message: `Event ${eventType} registered successfully`,

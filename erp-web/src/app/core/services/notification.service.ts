@@ -9,7 +9,7 @@ export interface AppNotification {
   title: string;
   message: string;
   type: 'INFO' | 'ALERT' | 'SUCCESS';
-  category: 'PRODUCTION_ASSIGNED' | 'PRODUCTION_COMPLETED' | 'GENERAL';
+  category: 'PRODUCTION_ASSIGNED' | 'PRODUCTION_COMPLETED' | 'LEAVE_REQUEST' | 'ATTENDANCE_INCIDENCE' | 'GENERAL';
   isRead: boolean;
   referenceId: string | null;
   createdAt: string;
@@ -42,6 +42,11 @@ export class NotificationService {
   /** Mark all notifications as read */
   markAllAsRead(): Observable<any> {
     return this.http.post(`${apiBaseUrl}/notifications/mark-all-read`, {});
+  }
+
+  /** Mark all notifications of a specific category as read */
+  markByCategoryAsRead(category: string): Observable<any> {
+    return this.http.patch(`${apiBaseUrl}/notifications/category/${category}/read`, {});
   }
 
   /** Delete/clear notifications, optionally filtered by category */

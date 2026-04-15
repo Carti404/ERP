@@ -100,6 +100,12 @@ export class NotificationsService {
     this.logger.log(`Todas las notificaciones marcadas como leídas para usuario ${userId}`);
   }
 
+  /** Mark all notifications of a specific category as read for a user */
+  async markByCategoryAsRead(userId: string, category: NotificationCategory): Promise<void> {
+    await this.notifRepo.update({ userId, category, isRead: false }, { isRead: true });
+    this.logger.log(`Notificaciones de categoría ${category} marcadas como leídas para usuario ${userId}`);
+  }
+
   /** Delete all notifications for a user, optionally filtered by category */
   async deleteForUser(userId: string, category?: NotificationCategory): Promise<number> {
     const where: any = { userId };

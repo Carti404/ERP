@@ -11,7 +11,7 @@ import { NotificationService, AppNotification } from '../../core/services/notifi
 export class AdminNotificacionesComponent implements OnInit {
   private readonly notificationService = inject(NotificationService);
 
-  protected readonly productionNotifs = signal<AppNotification[]>([]);
+  protected readonly notifications = signal<AppNotification[]>([]);
   protected readonly loading = signal(true);
   protected readonly unreadCount = signal(0);
 
@@ -20,12 +20,12 @@ export class AdminNotificacionesComponent implements OnInit {
   protected readonly currentPage = signal(1);
 
   protected readonly totalPages = computed(() =>
-    Math.max(1, Math.ceil(this.productionNotifs().length / this.pageSize))
+    Math.max(1, Math.ceil(this.notifications().length / this.pageSize))
   );
 
   protected readonly paginatedNotifs = computed(() => {
     const start = (this.currentPage() - 1) * this.pageSize;
-    return this.productionNotifs().slice(start, start + this.pageSize);
+    return this.notifications().slice(start, start + this.pageSize);
   });
 
   ngOnInit() {
@@ -37,11 +37,8 @@ export class AdminNotificacionesComponent implements OnInit {
     // Load production-related notifications (both assigned and completed)
     this.notificationService.getMyNotifications().subscribe({
       next: (notifs) => {
-        const productionNotifs = notifs.filter(
-          n => n.category === 'PRODUCTION_COMPLETED' || n.category === 'PRODUCTION_ASSIGNED'
-        );
-        this.productionNotifs.set(productionNotifs);
-        this.unreadCount.set(productionNotifs.filter(n => !n.isRead).length);
+        this.notifications.set(notifs);
+        this.unreadCount.set(notifs.filter(n => !n.isRead).length);
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
@@ -59,7 +56,19 @@ export class AdminNotificacionesComponent implements OnInit {
   protected prodIcon(n: AppNotification): string {
     if (n.category === 'PRODUCTION_COMPLETED') return 'check_circle';
     if (n.category === 'PRODUCTION_ASSIGNED') return 'assignment';
+    if (n.category === 'LEAVE_REQUEST') return 'event_note';
+    if (n.category === 'ATTENDANCE_INCIDENCE') return 'running_with_errors';
     return 'notifications';
+  }
+
+  protected categoryLabel(n: AppNotification): string {
+    switch (n.category) {
+      case 'PRODUCTION_COMPLETED': return 'Producción terminada';
+      case 'PRODUCTION_ASSIGNED': return 'Nueva asignación';
+      case 'LEAVE_REQUEST': return 'Permiso / Vacaciones';
+      case 'ATTENDANCE_INCIDENCE': return 'Incidencia Asistencia';
+      default: return 'Sistema';
+    }
   }
 
   protected prodIconColor(n: AppNotification): string {
@@ -72,7 +81,7 @@ export class AdminNotificacionesComponent implements OnInit {
     if (n.isRead) return;
     this.notificationService.markAsRead(n.id).subscribe({
       next: () => {
-        this.productionNotifs.update(list =>
+        this.notifications.update(list =>
           list.map(item => item.id === n.id ? { ...item, isRead: true } : item)
         );
         this.unreadCount.update(c => Math.max(0, c - 1));
@@ -83,7 +92,7 @@ export class AdminNotificacionesComponent implements OnInit {
   protected onMarkAllAsRead() {
     this.notificationService.markAllAsRead().subscribe({
       next: () => {
-        this.productionNotifs.update(list =>
+        this.notifications.update(list =>
           list.map(item => ({ ...item, isRead: true }))
         );
         this.unreadCount.set(0);
@@ -94,7 +103,7 @@ export class AdminNotificacionesComponent implements OnInit {
   protected onClearAll() {
     this.notificationService.clearNotifications().subscribe({
       next: () => {
-        this.productionNotifs.set([]);
+        this.notifications.set([]);
         this.unreadCount.set(0);
         this.currentPage.set(1);
       },

@@ -2,6 +2,7 @@ import { Component, computed, inject, signal, effect } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AttendanceService, AttendanceMatrixResponse } from '../../core/http/attendance.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { MessagesApiService } from '../../core/messages/messages-api.service';
 import { MessageImportance, MessageCategory } from '../../core/messages/messages-api.types';
 import { finalize } from 'rxjs';
@@ -31,6 +32,7 @@ export interface AdminAsistenciaSelection {
 })
 export class AdminAsistenciasComponent {
   private readonly attendanceApi = inject(AttendanceService);
+  private readonly notificationService = inject(NotificationService);
   private readonly messagesApi = inject(MessagesApiService);
   private readonly datePipe = inject(DatePipe);
 
@@ -168,6 +170,11 @@ export class AdminAsistenciasComponent {
       
       this.loadMatrix(toStr(start), toStr(end));
     });
+  }
+
+  ngOnInit() {
+    // Limpiar notificaciones de asistencia al entrar
+    this.notificationService.markByCategoryAsRead('ATTENDANCE_INCIDENCE').subscribe();
   }
 
   private loadMatrix(start: string, end: string) {

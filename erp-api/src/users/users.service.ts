@@ -110,6 +110,12 @@ export class UsersService {
     });
   }
 
+  async findAdmins(): Promise<User[]> {
+    return this.usersRepo.find({
+      where: { role: UserRole.ADMIN, activo: true },
+    });
+  }
+
   /** Listado administración: por nombre alfabéticamente. */
   async listForAdmin(): Promise<User[]> {
     return this.usersRepo

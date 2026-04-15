@@ -15,7 +15,7 @@
       </div>
       <div class="flex min-w-[100px] flex-col items-center rounded-lg bg-[#f3f4f5] px-5 py-3 dark:bg-[var(--erp-login-input-bg)]">
         <span class="mb-1 text-xs font-bold uppercase tracking-wider text-[#45474d] dark:text-[var(--erp-login-muted)]">Total</span>
-        <span class="text-2xl font-bold text-[#47607e]">{{ productionNotifs().length }}</span>
+        <span class="text-2xl font-bold text-[#47607e]">{{ notifications().length }}</span>
       </div>
     </div>
   </div>
@@ -25,8 +25,8 @@
     <section class="col-span-12 space-y-4 lg:col-span-7">
       <div class="flex items-center justify-between px-1">
         <h2 class="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-[#051125] dark:text-[var(--erp-login-text-primary)]">
-          <span class="material-symbols-outlined text-sm" aria-hidden="true">precision_manufacturing</span>
-          Alertas de producción
+          <span class="material-symbols-outlined text-sm" aria-hidden="true">notifications</span>
+          Alertas Recientes
         </h2>
         <div class="flex items-center gap-2">
           @if (unreadCount() > 0) {
@@ -36,7 +36,7 @@
             Marcar todo leído
           </button>
           }
-          @if (productionNotifs().length > 0) {
+          @if (notifications().length > 0) {
           <button type="button"
             class="rounded-lg border border-[#ba1a1a]/30 bg-[#ba1a1a]/10 px-3 py-1.5 text-[10px] font-bold uppercase text-[#ba1a1a] hover:bg-[#ba1a1a]/20 transition-colors"
             (click)="onClearAll()">
@@ -50,11 +50,11 @@
       <div class="rounded-lg border border-[#c5c6cd]/20 bg-white p-8 text-center dark:border-[var(--erp-login-input-border)] dark:bg-[var(--erp-login-card)]">
         <p class="text-sm text-[var(--erp-login-muted)]">Cargando notificaciones...</p>
       </div>
-      } @else if (productionNotifs().length === 0) {
+      } @else if (notifications().length === 0) {
       <div class="rounded-lg border border-dashed border-[var(--erp-login-input-border)] bg-white p-10 text-center dark:bg-[var(--erp-login-card)]">
         <span class="material-symbols-outlined mb-2 text-4xl text-[var(--erp-login-muted)]">notifications_off</span>
-        <p class="text-sm text-[var(--erp-login-muted)]">No hay alertas de producción aún.</p>
-        <p class="mt-1 text-xs text-[var(--erp-login-muted)]">Aquí aparecerán notificaciones cuando los trabajadores completen sus producciones.</p>
+        <p class="text-sm text-[var(--erp-login-muted)]">No hay alertas aún.</p>
+        <p class="mt-1 text-xs text-[var(--erp-login-muted)]">Aquí aparecerán notificaciones cuando ocurran eventos en el sistema que requieran tu atención.</p>
       </div>
       } @else {
       @for (n of paginatedNotifs(); track n.id) {
@@ -64,7 +64,7 @@
               <span class="material-symbols-outlined" [class]="prodIconColor(n)" aria-hidden="true"
                 style="font-variation-settings: 'FILL' 1">{{ prodIcon(n) }}</span>
               <span class="text-xs font-bold uppercase text-[#45474d] dark:text-[var(--erp-login-muted)]">
-                {{ n.category === 'PRODUCTION_COMPLETED' ? 'Producción terminada' : 'Asignación' }}
+                {{ categoryLabel(n) }}
               </span>
             </div>
             <div class="flex items-center gap-2">

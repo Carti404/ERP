@@ -6,6 +6,8 @@ import { LeaveRequestHistory, LeaveRequestActionType } from './entities/leave-re
 import { UsersService } from '../users/users.service';
 import { calculateVacationDays, countWorkingDays } from '../common/utils/vacation.utils';
 import { SystemParametersService } from '../system-parameters/system-parameters.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationCategory, NotificationType } from '../notifications/entities/notification.entity';
 
 @Injectable()
 export class LeaveRequestsService {
@@ -16,6 +18,7 @@ export class LeaveRequestsService {
     private readonly historyRepo: Repository<LeaveRequestHistory>,
     private readonly usersService: UsersService,
     private readonly systemParams: SystemParametersService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async getWorkerBalance(userId: string) {
@@ -87,6 +90,21 @@ export class LeaveRequestsService {
     });
     await this.historyRepo.save(history);
 
+    // Notificar a administradores
+    const admins = await this.usersService.findAdmins();
+    const adminIds = admins.map(a => a.id);
+    const worker = await this.usersService.findById(userId);
+    
+    if (adminIds.length > 0) {
+      await this.notificationsService.createForMany(adminIds, {
+        title: 'Nueva solicitud de permiso/vacaciones',
+        message: `${worker?.fullName || 'Un trabajador'} ha solicitado ${data.type === LeaveRequestType.VACATION ? 'vacaciones' : 'un permiso'}.`,
+        category: NotificationCategory.LEAVE_REQUEST,
+        type: NotificationType.INFO,
+        referenceId: saved.id,
+      });
+    }
+
     return saved;
   }
 
@@ -130,6 +148,33 @@ export class LeaveRequestsService {
       proposedSegments: data.proposedSegments || null,
     });
     await this.historyRepo.save(history);
+
+    // Notificar si es una apelación del trabajador
+    if (data.status === LeaveRequestStatus.WORKER_APPEAL) {
+      const admins = await this.usersService.findAdmins();
+      const adminIds = admins.map(a => a.id);
+      const worker = await this.usersService.findById(req.userId);
+      
+      if (adminIds.length > 0) {
+        await this.notificationsService.createForMany(adminIds, {
+          title: 'Apelación de fechas recibida',
+          message: `${worker?.fullName || 'Un trabajador'} ha propuesto nuevas fechas para su solicitud.`,
+          category: NotificationCategory.LEAVE_REQUEST,
+          type: NotificationType.INFO,
+          referenceId: req.id,
+        });
+      }
+    } else if (data.status === LeaveRequestStatus.APPROVED || data.status === LeaveRequestStatus.REJECTED || data.status === LeaveRequestStatus.ADMIN_PROPOSAL) {
+        // En estos casos notificar al TRABAJADOR
+        await this.notificationsService.create({
+            userId: req.userId,
+            title: `Tu solicitud ha sido ${data.status === LeaveRequestStatus.APPROVED ? 'aprobada' : data.status === LeaveRequestStatus.REJECTED ? 'rechazada' : 'actualizada con una propuesta'}`,
+            message: data.message || 'Se ha actualizado el estado de tu solicitud.',
+            category: NotificationCategory.LEAVE_REQUEST,
+            type: data.status === LeaveRequestStatus.REJECTED ? NotificationType.ALERT : NotificationType.SUCCESS,
+            referenceId: req.id,
+        });
+    }
 
     return req;
   }

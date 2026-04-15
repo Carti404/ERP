@@ -38,6 +38,16 @@ export class NotificationsController {
     return { success: true };
   }
 
+  /** Mark all notifications of a specific category as read */
+  @Patch('category/:category/read')
+  async markByCategoryAsRead(
+    @Param('category') category: NotificationCategory,
+    @CurrentUser() user: any,
+  ) {
+    await this.notificationsService.markByCategoryAsRead(user.userId, category);
+    return { success: true };
+  }
+
   /** Delete/clear notifications for the current user, optionally filtered by category */
   @Delete()
   async clearNotifications(
