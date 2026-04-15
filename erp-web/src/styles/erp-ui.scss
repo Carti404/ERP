@@ -1761,7 +1761,7 @@ html.dark .erp-worker-events-panel .erp-worker-events-table-wrap {
   box-shadow: 0 0 0 2px rgb(14 165 233 / 0.25);
 }
 
-.erp-mailbox-cat-dot[data-accent='compañero'] {
+.erp-mailbox-cat-dot[data-accent='companero'] {
   background: #10b981;
   box-shadow: 0 0 0 2px rgb(16 185 129 / 0.25);
 }
@@ -1829,7 +1829,7 @@ html.dark .erp-worker-events-panel .erp-worker-events-table-wrap {
   border-left-color: #0ea5e9;
 }
 
-.erp-mailbox .erp-admin-inbox-msg[data-accent='compañero'] {
+.erp-mailbox .erp-admin-inbox-msg[data-accent='companero'] {
   border-left-color: #10b981;
 }
 
@@ -1856,7 +1856,7 @@ html.dark .erp-worker-events-panel .erp-worker-events-table-wrap {
   background: color-mix(in srgb, #0ea5e9 10%, var(--erp-login-card));
 }
 
-.erp-mailbox .erp-admin-inbox-msg--selected[data-accent='compañero'] {
+.erp-mailbox .erp-admin-inbox-msg--selected[data-accent='companero'] {
   border-left-color: #10b981;
   background: color-mix(in srgb, #10b981 10%, var(--erp-login-card));
 }
@@ -1883,7 +1883,7 @@ html.dark .erp-worker-events-panel .erp-worker-events-table-wrap {
   background: color-mix(in srgb, #0ea5e9 12%, var(--erp-login-card));
 }
 
-.dark .erp-mailbox .erp-admin-inbox-msg--selected[data-accent='compañero'] {
+.dark .erp-mailbox .erp-admin-inbox-msg--selected[data-accent='companero'] {
   background: color-mix(in srgb, #10b981 12%, var(--erp-login-card));
 }
 
@@ -1977,7 +1977,7 @@ html.dark .erp-worker-events-panel .erp-worker-events-table-wrap {
   box-shadow: 0 0 0 2px rgb(14 165 233 / 0.55);
 }
 
-.erp-mailbox-reader[data-reading-accent='compañero'] .erp-mailbox-avatar {
+.erp-mailbox-reader[data-reading-accent='companero'] .erp-mailbox-avatar {
   box-shadow: 0 0 0 2px rgb(16 185 129 / 0.5);
 }
 
@@ -2019,7 +2019,7 @@ html.dark .erp-worker-events-panel .erp-worker-events-table-wrap {
   background: #0ea5e9;
 }
 
-.erp-mailbox-reader[data-reading-accent='compañero'] article > h3::after {
+.erp-mailbox-reader[data-reading-accent='companero'] article > h3::after {
   content: '';
   display: block;
   margin-top: 0.65rem;

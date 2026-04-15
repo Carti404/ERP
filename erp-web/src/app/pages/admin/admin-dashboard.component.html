@@ -3,13 +3,10 @@
     <h1 class="text-balance text-lg font-black uppercase tracking-wide text-[var(--erp-login-text-primary)] sm:text-xl">
       Resumen operativo
     </h1>
-    <p class="mt-0.5 max-w-xl text-xs text-[var(--erp-login-muted)]">
-      Datos de demostración. Se conectarán a la API cuando el backend esté listo.
-    </p>
   </div>
 
-  <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-    @for (k of kpis; track k.id) {
+  <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    @for (k of kpis(); track k.id) {
     <article class="erp-kpi-card p-3 sm:p-4" [attr.data-tone]="k.tone">
       <div class="erp-kpi-card__stripe" aria-hidden="true"></div>
       <div class="relative z-10 flex gap-3">
@@ -74,7 +71,7 @@
       <div class="mb-5 flex flex-col gap-4 sm:mb-6 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--erp-login-text-primary)]">
-            {{ shifton.title }}
+            {{ shiftProduction.title }}
           </h3>
           <p class="mt-1 text-[10px] font-medium text-[var(--erp-login-muted)]">
             {{ shiftProduction.objectiveLabel }}
