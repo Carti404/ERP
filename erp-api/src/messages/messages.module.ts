@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from '../auth/auth.module';
 import { UsersModule } from '../users/users.module';
+import { SystemParametersModule } from '../system-parameters/system-parameters.module';
 import { InternalMessage } from './entities/internal-message.entity';
 import { LeaveRequest } from './entities/leave-request.entity';
 import { LeaveRequestHistory } from './entities/leave-request-history.entity';
@@ -24,6 +25,7 @@ import { AttachmentsService } from './attachments.service';
     ]),
     UsersModule,
     AuthModule,
+    SystemParametersModule,
   ],
   controllers: [
     MessagesController,

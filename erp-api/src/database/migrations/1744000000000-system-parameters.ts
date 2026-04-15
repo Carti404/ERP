@@ -57,16 +57,7 @@ export class SystemParameters1744000000000 implements MigrationInterface {
       WHERE NOT EXISTS (SELECT 1 FROM "plant_rest_settings" WHERE "id" = 1)
     `);
 
-    await queryRunner.query(`
-      INSERT INTO "holidays" ("holiday_date", "title", "description")
-      SELECT '2024-05-01'::date, '1 de mayo', 'Día del trabajador'
-      WHERE NOT EXISTS (SELECT 1 FROM "holidays" WHERE "holiday_date" = '2024-05-01'::date)
-    `);
-    await queryRunner.query(`
-      INSERT INTO "holidays" ("holiday_date", "title", "description")
-      SELECT '2024-05-21'::date, '21 de mayo', 'Glorias navales'
-      WHERE NOT EXISTS (SELECT 1 FROM "holidays" WHERE "holiday_date" = '2024-05-21'::date)
-    `);
+    // No insertamos festivos por defecto para permitir gestión manual total.
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

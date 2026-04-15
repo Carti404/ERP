@@ -262,6 +262,10 @@ export class AdminParametrosComponent implements OnInit {
     }));
   }
 
+  protected patchVacationDeduction(raw: string): void {
+     // Eliminado según requerimiento
+  }
+
   protected removeHoliday(id: string): void {
     this.state.update((s) => ({
       ...s,

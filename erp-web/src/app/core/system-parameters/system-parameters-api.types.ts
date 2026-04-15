@@ -17,6 +17,7 @@ export interface SystemParametersSnapshot {
   snackMin: number;
   lunchFrom: string;
   lunchDurationMin: number;
+  vacationDeductionDays?: number;
   holidays: HolidayRowDto[];
 }
 

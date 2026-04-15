@@ -2,19 +2,25 @@
  * Utilidades para el cálculo de vacaciones en base a la Ley "Vacaciones Dignas" (2023).
  */
 
-export function countWorkingDays(startDate: Date | string, endDate: Date | string): number {
+export function countWorkingDays(startDate: Date | string, endDate: Date | string, holidayDates: string[] = []): number {
   const start = new Date(startDate);
   const end = new Date(endDate);
   start.setHours(0, 0, 0, 0);
   end.setHours(0, 0, 0, 0);
+
+  // Convertimos a Set para búsqueda O(1)
+  const holidaySet = new Set(holidayDates.map(d => d.slice(0, 10)));
 
   let workingDaysCount = 0;
   let currentDate = new Date(start);
 
   while (currentDate <= end) {
     const dayOfWeek = currentDate.getDay();
+    const isoDate = currentDate.toISOString().slice(0, 10);
+    
     // 0 = Sunday
-    if (dayOfWeek !== 0) {
+    // Descontamos si es domingo O si es uno de los festivos registrados
+    if (dayOfWeek !== 0 && !holidaySet.has(isoDate)) {
       workingDaysCount++;
     }
     currentDate.setDate(currentDate.getDate() + 1);
@@ -23,9 +29,9 @@ export function countWorkingDays(startDate: Date | string, endDate: Date | strin
   return workingDaysCount;
 }
 
-export function calculateVacationDays(fechaIngreso: Date | string | null): number {
+export function calculateVacationDays(fechaIngreso: Date | string | null, deductionDays = 0): number {
   if (!fechaIngreso) {
-    return 0; // Sin fecha de ingreso no hay días base. O podríamos asumir 12.
+    return 0; // Sin fecha de ingreso no hay días base.
   }
 
   const startDate = new Date(fechaIngreso);
@@ -39,29 +45,30 @@ export function calculateVacationDays(fechaIngreso: Date | string | null): numbe
   }
 
   if (yearsOfService < 1) {
-    return 0; // O proporcional si la lógica de la empresa lo dictamina, por ahora 0.
+    return 0; // O proporcional si la lógica de la empresa lo dictamina.
   }
 
   // Ley 2023:
-  // 1 año -> 12 días
-  // 2 años -> 14 días
-  // 3 años -> 16 días
-  // 4 años -> 18 días
-  // 5 años -> 20 días
-  // 6 - 10 años -> 22 días
-  // 11 - 15 años -> 24 días
-  // 16 - 20 años -> 26 días
-  // etc.
+  let legalDays = 12;
   
   if (yearsOfService >= 1 && yearsOfService <= 5) {
-    return 12 + (yearsOfService - 1) * 2;
+    legalDays = 12 + (yearsOfService - 1) * 2;
+  } else if (yearsOfService >= 6 && yearsOfService <= 10) {
+    legalDays = 22;
+  } else if (yearsOfService >= 11 && yearsOfService <= 15) {
+    legalDays = 24;
+  } else if (yearsOfService >= 16 && yearsOfService <= 20) {
+    legalDays = 26;
+  } else if (yearsOfService >= 21 && yearsOfService <= 25) {
+    legalDays = 28;
+  } else if (yearsOfService >= 26 && yearsOfService <= 30) {
+    legalDays = 30;
+  } else if (yearsOfService >= 31 && yearsOfService <= 35) {
+    legalDays = 32;
+  } else {
+    legalDays = 32;
   }
-  if (yearsOfService >= 6 && yearsOfService <= 10) return 22;
-  if (yearsOfService >= 11 && yearsOfService <= 15) return 24;
-  if (yearsOfService >= 16 && yearsOfService <= 20) return 26;
-  if (yearsOfService >= 21 && yearsOfService <= 25) return 28;
-  if (yearsOfService >= 26 && yearsOfService <= 30) return 30;
-  if (yearsOfService >= 31 && yearsOfService <= 35) return 32;
 
-  return 32; // Tope de la tabla típica, podría seguir subiendo
+  // Se restan los días festivos/obligatorios que la empresa descuenta por política
+  return Math.max(0, legalDays - deductionDays);
 }

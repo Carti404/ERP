@@ -43,6 +43,7 @@ export type SystemParametersResponse = {
   snackMin: number;
   lunchFrom: string;
   lunchDurationMin: number;
+  vacationDeductionDays?: number;
   holidays: { id: string; date: string; title: string; sub: string }[];
 };
 
@@ -86,6 +87,11 @@ export class SystemParametersService {
       snackMin: rest.snackNominalMinutes,
       lunchFrom: toHm(rest.lunchFromTime),
       lunchDurationMin: rest.lunchDurationMinutes,
+      vacationDeductionDays: holidays.filter(h => {
+        const dateStr = typeof h.holidayDate === 'string' ? h.holidayDate : holidayDateToIso(h.holidayDate);
+        const y = parseInt(dateStr.split('-')[0], 10);
+        return y === new Date().getFullYear();
+      }).length,
       holidays: holidays.map((h) => ({
         id: h.id,
         date: holidayDateToIso(h.holidayDate),
@@ -128,20 +134,14 @@ export class SystemParametersService {
       rest.lunchDurationMinutes = dto.lunchDurationMin;
       await manager.save(PlantRestSettings, rest);
 
-      await manager.clear(Holiday);
-      const seenDates = new Set<string>();
-      for (const h of dto.holidays) {
-        const d = h.date.slice(0, 10);
-        if (seenDates.has(d)) {
-          continue;
-        }
-        seenDates.add(d);
-        const row = manager.create(Holiday, {
-          holidayDate: d,
+      await manager.query('DELETE FROM holidays');
+      if (dto.holidays.length > 0) {
+        const hRows = dto.holidays.map(h => manager.create(Holiday, {
+          holidayDate: h.date.slice(0, 10),
           title: h.title.trim(),
-          description: h.sub?.trim() ? h.sub.trim() : null,
-        });
-        await manager.save(Holiday, row);
+          description: h.sub?.trim() || null,
+        }));
+        await manager.save(Holiday, hRows);
       }
     });
 
@@ -187,20 +187,14 @@ export class SystemParametersService {
 
   async updateHolidays(dto: UpdateHolidaysDto): Promise<SystemParametersResponse> {
     await this.dataSource.transaction(async (manager) => {
-      await manager.clear(Holiday);
-      const seenDates = new Set<string>();
-      for (const h of dto.holidays) {
-        const d = h.date.slice(0, 10);
-        if (seenDates.has(d)) {
-          continue;
-        }
-        seenDates.add(d);
-        const row = manager.create(Holiday, {
-          holidayDate: d,
+      await manager.query('DELETE FROM holidays');
+      if (dto.holidays.length > 0) {
+        const hRows = dto.holidays.map(h => manager.create(Holiday, {
+          holidayDate: h.date.slice(0, 10),
           title: h.title.trim(),
-          description: h.sub?.trim() ? h.sub.trim() : null,
-        });
-        await manager.save(Holiday, row);
+          description: h.sub?.trim() || null,
+        }));
+        await manager.save(Holiday, hRows);
       }
     });
 

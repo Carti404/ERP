@@ -224,6 +224,11 @@ export class UsersService {
       fullName: user.fullName,
       puesto: user.puesto,
       activo: user.activo,
+      fechaIngreso: user.fechaIngreso
+        ? (typeof user.fechaIngreso === 'string'
+          ? (user.fechaIngreso as string).slice(0, 10)
+          : (user.fechaIngreso as Date).toISOString().split('T')[0])
+        : null,
       inactivoDesde: user.inactivoDesde,
       createdAt: user.createdAt,
     };

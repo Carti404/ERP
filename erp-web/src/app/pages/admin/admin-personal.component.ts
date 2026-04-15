@@ -260,7 +260,7 @@ export class AdminPersonalComponent implements OnInit {
       puesto: w.puesto ?? '',
       role: w.role,
       pin: '',
-      fechaIngreso: w.fechaIngreso ? new Date(w.fechaIngreso).toISOString().split('T')[0] : '',
+      fechaIngreso: w.fechaIngreso ?? '',
     });
     this.formError.set(null);
     this.pinServerError.set(null);

@@ -5,6 +5,7 @@ import { LeaveRequest, LeaveRequestType, LeaveRequestStatus } from './entities/l
 import { LeaveRequestHistory, LeaveRequestActionType } from './entities/leave-request-history.entity';
 import { UsersService } from '../users/users.service';
 import { calculateVacationDays, countWorkingDays } from '../common/utils/vacation.utils';
+import { SystemParametersService } from '../system-parameters/system-parameters.service';
 
 @Injectable()
 export class LeaveRequestsService {
@@ -14,13 +15,15 @@ export class LeaveRequestsService {
     @InjectRepository(LeaveRequestHistory)
     private readonly historyRepo: Repository<LeaveRequestHistory>,
     private readonly usersService: UsersService,
+    private readonly systemParams: SystemParametersService,
   ) {}
 
   async getWorkerBalance(userId: string) {
     const user = await this.usersService.findById(userId);
     if (!user) throw new NotFoundException('Usuario no encontrado');
 
-    const totalAssigned = calculateVacationDays(user.fechaIngreso);
+    const params = await this.systemParams.getSnapshot();
+    const totalAssigned = calculateVacationDays(user.fechaIngreso, params.vacationDeductionDays ?? 0);
 
     const approvedVacations = await this.requestRepo.find({
       where: {
@@ -56,7 +59,9 @@ export class LeaveRequestsService {
   }
 
   async createRequest(userId: string, data: { type: LeaveRequestType; startDate: string; endDate: string; totalDays?: number; reason: string; evidenceUrl?: string; segments?: { start: string, end: string, count: number }[] }) {
-    const totalDays = data.totalDays ?? countWorkingDays(data.startDate, data.endDate);
+    const params = await this.systemParams.getSnapshot();
+    const holidayDates = params.holidays.map(h => h.date);
+    const totalDays = data.totalDays ?? countWorkingDays(data.startDate, data.endDate, holidayDates);
 
     if (data.type === LeaveRequestType.VACATION) {
       const balance = await this.getWorkerBalance(userId);
@@ -102,9 +107,13 @@ export class LeaveRequestsService {
         req.startDate = new Date(req.segments[0].start);
         req.endDate = new Date(req.segments[req.segments.length - 1].end);
       } else if (data.proposedStartDate) {
-        req.startDate = new Date(data.proposedStartDate);
-        req.endDate = new Date(data.proposedEndDate || data.proposedStartDate);
-        req.totalDays = countWorkingDays(req.startDate, req.endDate);
+        const start = data.proposedStartDate;
+        const end = data.proposedEndDate || start;
+        req.startDate = new Date(start);
+        req.endDate = new Date(end);
+        
+        const holidayDates = (await this.systemParams.getSnapshot()).holidays.map(h => h.date);
+        req.totalDays = countWorkingDays(req.startDate, req.endDate, holidayDates);
         req.segments = [{ start: data.proposedStartDate, end: data.proposedEndDate || data.proposedStartDate, count: req.totalDays }];
       }
     }
