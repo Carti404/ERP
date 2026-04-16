@@ -712,6 +712,15 @@ export class ErpInboxComponent {
     }
   }
 
+  protected onReplyKeydown(ev: Event): void {
+    if (!(ev instanceof KeyboardEvent)) return;
+    
+    if (ev.key === 'Enter' && !ev.shiftKey) {
+      ev.preventDefault();
+      this.onSendReply();
+    }
+  }
+
   protected onComposeSend(): void {
     const rs = this.composeRecipients();
     if (rs.length !== 1) {

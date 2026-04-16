@@ -1,31 +1,28 @@
-chunk-HFJHQSYG.js   | -                 | 141.16 kB |
+PS H:\dev\ERP\erp-web> npm start
 
-Application bundle generation complete. [0.497 seconds] - 2026-04-15T23:46:24.575Z
+> erp-web@0.0.0 start
+> ng serve
 
-▲ [WARNING] NG8103: NG8103: The `*ngIf` directive was used in the template, but neither the `NgIf` directive nor the `CommonModule` was imported. Use Angular's built-in control flow @if or make sure that either the `NgIf` directive or the `CommonModule` is included in the `@Component.imports` array of this component. Find more at https://v21.angular.dev/extended-diagnostics/NG8103 [plugin angular-compiler]
+Application bundle generation failed. [2.991 seconds] - 2026-04-16T15:45:36.705Z
 
-    src/app/shared/erp-inbox/erp-inbox.component.html:208:30:
-      208 │                         <img *ngIf="a.url" [src]="a.url" class="h...
-          ╵                               ~~~~
+X [ERROR] TS2339: Property 'onSendReply' does not exist on type 'ErpInboxComponent'. [plugin angular-compiler]
 
-  Warning occurs in the template of component ErpInboxComponent.
+    src/app/shared/erp-inbox/erp-inbox.component.html:219:110:
+      219 │ ...AttachmentLoading()" (click)="onSendReply()" aria-label="Enviar">
+          ╵                                  ~~~~~~~~~~~
 
-    src/app/shared/erp-inbox/erp-inbox.component.ts:168:15:
-      168 │   templateUrl: './erp-inbox.component.html',
-          ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-▲ [WARNING] NG8103: NG8103: The `*ngIf` directive was used in the template, but neither the `NgIf` directive nor the `CommonModule` was imported. Use Angular's built-in control flow @if or make sure that either the `NgIf` directive or the `CommonModule` is included in the `@Component.imports` array of this component. Find more at https://v21.angular.dev/extended-diagnostics/NG8103 [plugin angular-compiler]
-
-    src/app/shared/erp-inbox/erp-inbox.component.html:209:31:
-      209 │                         <span *ngIf="!a.url" class="material-symb...
-          ╵                                ~~~~
-
-  Warning occurs in the template of component ErpInboxComponent.
+  Error occurs in the template of component ErpInboxComponent.
 
     src/app/shared/erp-inbox/erp-inbox.component.ts:168:15:
       168 │   templateUrl: './erp-inbox.component.html',
           ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-Page reload sent to client(s).
+X [ERROR] TS2339: Property 'onSendReply' does not exist on type 'ErpInboxComponent'. [plugin angular-compiler]
+
+    src/app/shared/erp-inbox/erp-inbox.component.ts:720:11:
+      720 │       this.onSendReply();
+          ╵            ~~~~~~~~~~~
+
+
+Watch mode enabled. Watching for file changes...

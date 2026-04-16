@@ -1,4 +1,4 @@
-<div class="erp-mailbox erp-admin-inbox mx-auto flex max-w-[1600px] flex-col gap-3 lg:gap-4">
+<div class="erp-mailbox erp-admin-inbox flex flex-col overflow-hidden">
   <div class="mb-4">
     <h1
       class="text-balance text-2xl font-black uppercase tracking-tighter text-[var(--mailbox-primary)] sm:text-3xl">
@@ -128,20 +128,20 @@
           <span class="truncate text-sm font-semibold">{{ msg.subject }}</span>
         </div>
 
-        <div class="erp-admin-inbox-toolbar-wrap shrink-0 flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 sm:px-5">
-          <div class="flex flex-wrap gap-2">
-            <button type="button" class="erp-admin-inbox-toolbar-primary" (click)="onToolbarAction('reply')">
-              <span class="material-symbols-outlined text-lg" aria-hidden="true">reply</span>
-              Responder
+        <div class="erp-admin-inbox-toolbar-wrap flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <button type="button" class="erp-admin-inbox-toolbar-primary flex items-center gap-2" (click)="onToolbarAction('reply')">
+              <span class="material-symbols-outlined text-lg">reply</span>
+              <span class="hidden sm:inline">Responder</span>
             </button>
-            <button type="button" class="erp-admin-inbox-toolbar-secondary" (click)="onToolbarAction('forward')">
-              <span class="material-symbols-outlined text-lg" aria-hidden="true">forward</span>
-              Reenviar
+            <button type="button" class="erp-admin-inbox-toolbar-secondary flex items-center gap-2" (click)="onToolbarAction('forward')">
+              <span class="material-symbols-outlined text-lg">forward</span>
+              <span class="hidden sm:inline">Reenviar</span>
             </button>
           </div>
-          <div class="flex flex-wrap gap-2">
+          <div class="flex items-center gap-2">
             <button type="button" class="erp-admin-inbox-toolbar-icon" [disabled]="deleteToolbarBusy()" (click)="onToolbarAction('delete')" aria-label="Eliminar">
-              <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+              <span class="material-symbols-outlined">delete</span>
             </button>
           </div>
         </div>
@@ -157,15 +157,23 @@
             <h3 class="mb-6 text-2xl font-black leading-tight tracking-tighter text-[var(--mailbox-text)] sm:text-3xl">
               {{ msg.subject }}
             </h3>
-            <div class="flex flex-col gap-6 pb-6">
+            <div class="flex flex-col gap-6 pb-20">
               @for (bubble of msg.thread; track bubble.id) {
-                <div class="flex flex-col w-full max-w-[90%] sm:max-w-[80%]" [class.self-end]="bubble.author === 'Tú'" [class.self-start]="bubble.author !== 'Tú'">
-                  <div class="mb-1.5 flex items-baseline gap-2 px-1 text-[11px] font-black uppercase tracking-widest text-[var(--mailbox-muted)]" [class.pl-3]="bubble.author !== 'Tú'" [class.justify-end]="bubble.author === 'Tú'" [class.pr-3]="bubble.author === 'Tú'">
+                <div class="flex flex-col w-full max-w-[85%] sm:max-w-[70%]" [class.self-end]="bubble.author === 'Tú'" [class.self-start]="bubble.author !== 'Tú'">
+                  <div class="mb-1.5 flex items-baseline gap-2 px-1 text-[10px] font-bold uppercase tracking-widest text-[var(--mailbox-muted)]" [class.pl-3]="bubble.author !== 'Tú'" [class.justify-end]="bubble.author === 'Tú'" [class.pr-3]="bubble.author === 'Tú'">
                     <span>{{ bubble.author }}</span>
-                    <span class="opacity-50 font-bold text-[9px] tracking-tight">{{ bubble.date || msg.timeDetail }}</span>
+                    <span class="opacity-40 font-bold text-[9px] tracking-tight">{{ bubble.date || msg.timeDetail }}</span>
                   </div>
-                  <div class="rounded-2xl px-5 py-4 shadow-sm text-sm" [class.bg-[var(--mailbox-primary)]]="bubble.author === 'Tú'" [class.text-white]="bubble.author === 'Tú'" [class.bg-[var(--mailbox-surface)]]="bubble.author !== 'Tú'" [class.text-[var(--mailbox-text)]]="bubble.author !== 'Tú'" [class.rounded-br-sm]="bubble.author === 'Tú'" [class.rounded-bl-sm]="bubble.author !== 'Tú'">
-                    <div class="space-y-3 font-medium leading-relaxed" [class.opacity-90]="bubble.author === 'Tú'">
+                  <div class="rounded-2xl px-5 py-3.5 shadow-sm text-sm" 
+                    [class.bg-[var(--mailbox-accent)]]="bubble.author === 'Tú'" 
+                    [class.text-white]="bubble.author === 'Tú'" 
+                    [class.bg-[var(--mailbox-card)]]="bubble.author !== 'Tú'" 
+                    [class.border]="bubble.author !== 'Tú'"
+                    [class.border-[var(--mailbox-border)]]="bubble.author !== 'Tú'"
+                    [class.text-[var(--mailbox-text)]]="bubble.author !== 'Tú'" 
+                    [class.rounded-br-sm]="bubble.author === 'Tú'" 
+                    [class.rounded-bl-sm]="bubble.author !== 'Tú'">
+                    <div class="space-y-3 font-medium leading-relaxed" [class.opacity-95]="bubble.author === 'Tú'">
                       @for (p of bubble.contentParagraphs; track $index) { <p>{{ p }}</p> }
                     </div>
                   </div>
@@ -194,53 +202,49 @@
           </article>
         </div>
 
-        <div class="erp-admin-inbox-reply-area shrink-0 border-t border-[var(--mailbox-border)] p-4 bg-[var(--mailbox-card)]">
-          <div class="mx-auto max-w-3xl overflow-hidden rounded-xl border-2 border-[var(--mailbox-sidebar-bg)] bg-[var(--mailbox-card)]">
-            <label class="sr-only" for="admin-inbox-quick-reply">Respuesta rápida</label>
-            <textarea id="admin-inbox-quick-reply" class="erp-admin-inbox-textarea" rows="4" placeholder="Escribir respuesta rápida…" [value]="composeBody()" (input)="onComposeBodyInput($event)"></textarea>
+        <div class="erp-admin-inbox-reply-area">
+          <div class="mx-auto max-w-4xl">
+            <div class="overflow-hidden rounded-2xl border border-[var(--mailbox-border)] bg-[var(--mailbox-surface)] shadow-inner">
+              <label class="sr-only" for="admin-inbox-quick-reply">Respuesta rápida</label>
+              <textarea id="admin-inbox-quick-reply" class="erp-admin-inbox-textarea w-full" rows="1" placeholder="Escribir respuesta rápida…" [value]="composeBody()" (input)="onComposeBodyInput($event)" (keydown)="onReplyKeydown($event)"></textarea>
 
-            @if (composeAttachments().length > 0) {
-              <div class="bg-[var(--mailbox-surface)] px-3 py-2">
-                <div class="flex flex-wrap gap-2">
-                  @for (a of composeAttachments(); track a.id) {
-                    <div class="flex items-center gap-2 rounded-lg border border-[var(--mailbox-border)] bg-[var(--mailbox-card)] p-1.5 pr-2">
-                      <div class="relative h-6 w-6 shrink-0 overflow-hidden rounded bg-black/5">
-                        @if (a.url) {
-                          <img [src]="a.url" class="h-full w-full object-cover" [class.opacity-40]="a.loading">
-                        } @else {
-                          <span class="material-symbols-outlined text-base flex items-center justify-center h-full">image</span>
-                        }
-                      </div>
-                      <span class="max-w-[120px] truncate text-[10px] font-bold">{{ a.filename }}</span>
-                      <button type="button" class="text-[#ef4444] hover:opacity-70" (click)="removeAttachment(a.id)" aria-label="Quitar">
-                        <span class="material-symbols-outlined text-sm">close</span>
-                      </button>
-                    </div>
-                  }
-                </div>
-              </div>
-            }
-
-            <div class="flex items-center justify-between border-t border-[var(--mailbox-border)] bg-[var(--mailbox-surface)] px-4 py-3">
-              <div class="flex gap-2">
-                <button type="button" class="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-[var(--mailbox-sidebar-bg)] shadow-sm hover:bg-gray-50 box-shadow dark:bg-[#1f2a3f] dark:text-white" (click)="onFormattingAction('bold')" aria-label="Negrita">
-                  <span class="material-symbols-outlined text-xl">format_bold</span>
-                </button>
-                <div class="relative">
+              <div class="flex items-center justify-between px-4 py-2 bg-white/50 dark:bg-black/20">
+                <div class="flex items-center gap-1">
                   <input type="file" #quickReplyFile multiple class="hidden" (change)="onFileSelected($event)">
-                  <button type="button" class="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-[var(--mailbox-sidebar-bg)] shadow-sm hover:bg-gray-50 dark:bg-[#1f2a3f] dark:text-white" (click)="quickReplyFile.click()" [disabled]="isAnyAttachmentLoading()" aria-label="Adjuntar">
+                  <button type="button" class="flex h-8 w-8 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/5 text-[var(--mailbox-muted)]" (click)="quickReplyFile.click()" [disabled]="isAnyAttachmentLoading()" aria-label="Adjuntar">
                     <span class="material-symbols-outlined text-xl">attach_file</span>
                   </button>
                 </div>
+                <button type="button" class="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--mailbox-accent)] text-white shadow-md transition-all hover:scale-110 active:scale-95 disabled:opacity-50" 
+                  [disabled]="composeSending() || !composeBody().trim() || isAnyAttachmentLoading()" (click)="onSendReply()" aria-label="Enviar">
+                  @if (composeSending()) {
+                    <span class="material-symbols-outlined animate-spin text-lg">sync</span>
+                  } @else {
+                    <span class="material-symbols-outlined text-lg ml-0.5">send</span>
+                  }
+                </button>
               </div>
-              <button type="button" class="inline-flex items-center gap-2 rounded-lg bg-[#055140] px-5 py-2 text-xs font-black uppercase tracking-widest text-[#d1fae5] shadow-lg transition-all hover:scale-[1.02] hover:bg-[#065f46] disabled:opacity-50" 
-                [disabled]="composeSending() || !composeBody().trim() || isAnyAttachmentLoading()" (click)="onSendReply()">
-                @if (composeSending()) {
-                  <span class="material-symbols-outlined animate-spin text-sm">sync</span>
-                }
-                <span>Enviar Respuesta</span>
-              </button>
             </div>
+
+            @if (composeAttachments().length > 0) {
+              <div class="mt-3 flex flex-wrap gap-2 px-1">
+                @for (a of composeAttachments(); track a.id) {
+                  <div class="flex items-center gap-2 rounded-lg border border-[var(--mailbox-border)] bg-[var(--mailbox-card)] p-1.5 pr-2 shadow-sm animate-in fade-in zoom-in duration-200">
+                    <div class="relative h-6 w-6 shrink-0 overflow-hidden rounded bg-black/5">
+                      @if (a.url) {
+                        <img [src]="a.url" class="h-full w-full object-cover" [class.opacity-40]="a.loading">
+                      } @else {
+                        <span class="material-symbols-outlined text-base flex items-center justify-center h-full">image</span>
+                      }
+                    </div>
+                    <span class="max-w-[120px] truncate text-[10px] font-bold">{{ a.filename }}</span>
+                    <button type="button" class="text-[#ef4444] hover:opacity-70" (click)="removeAttachment(a.id)" aria-label="Quitar">
+                      <span class="material-symbols-outlined text-sm">close</span>
+                    </button>
+                  </div>
+                }
+              </div>
+            }
         </div>
       </div>
       } @else {
