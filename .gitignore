@@ -1,0 +1,36 @@
+# IDEs y Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+.history/
+
+# Archivos de Sistema
+.DS_Store
+Thumbs.db
+
+# Node.js
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.eslintcache
+
+# Compilación y Salida
+**/dist/
+**/build/
+**/.angular/
+
+# Entorno (Secretos)
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Logs
+**/logs/
+*.log
+
+# Otros
+.tmp/
+.temp/
