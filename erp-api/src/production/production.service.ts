@@ -53,7 +53,7 @@ export class ProductionSyncService {
       const defaultMtUrl = 'http://localhost:3000/api/erp/production-orders/pending';
       const mtUrl = process.env.MT_API_URL ? `${process.env.MT_API_URL}/api/erp/production-orders/pending` : defaultMtUrl;
       
-      const response = await firstValueFrom(
+      const response: any = await firstValueFrom(
         this.httpService.get(mtUrl)
       );
 
@@ -155,7 +155,7 @@ export class ProductionSyncService {
         ? `${process.env.MT_API_URL}/api/erp/production-orders/products-with-recipes` 
         : defaultMtUrl;
       
-      const response = await firstValueFrom(this.httpService.get(mtUrl));
+      const response: any = await firstValueFrom(this.httpService.get(mtUrl));
       return response.data;
     } catch (error) {
       this.logger.error('Error obteniendo productos desde MT', error.message);
@@ -179,6 +179,14 @@ export class ProductionSyncService {
     const task = await this.taskRepo.findOne({ where: { id: taskId } });
     if (!task) throw new NotFoundException('Tarea de producción no encontrada');
 
+    // ── Reservar materiales en Mundo Terapeuta antes de asignar trabajo ──
+    // Si esto falla, no dejamos asignaciones persistidas ni tarea en ASSIGNED.
+    const defaultMtBaseUrl = 'http://localhost:3000/api/erp/production-orders';
+    const mtBaseUrl = process.env.MT_API_URL
+      ? `${process.env.MT_API_URL}/api/erp/production-orders`
+      : defaultMtBaseUrl;
+    const reserveUrl = `${mtBaseUrl}/${task.externalMtId}/reserve`;
+
     // Eliminar asignaciones previas para esta tarea de forma robusta
     const deleteResult = await this.assignmentRepo.createQueryBuilder()
       .delete()
@@ -199,7 +207,31 @@ export class ProductionSyncService {
 
     const saved = await this.assignmentRepo.save(newAssignments);
     this.logger.log(`Creadas ${saved.length} nuevas asignaciones para la tarea ${taskId}`);
-    
+
+    try {
+      this.logger.log(
+        `Reservando materiales en MT para orden ${task.orderNumber} (externalMtId=${task.externalMtId})`,
+      );
+      await firstValueFrom(
+        this.httpService.post(reserveUrl, {
+          quantity: Number(task.quantityToProduce),
+          productId: task.productId,
+        }),
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error reservando materiales en MT para tarea ${taskId}: ${error?.message}`,
+      );
+      // rollback lógico: borrar asignaciones recién creadas
+      await this.assignmentRepo.delete({ taskId });
+      // asegurar estado consistente
+      task.status = 'DRAFT';
+      await this.taskRepo.save(task);
+      throw new BadRequestException(
+        `No se pudo reservar materiales en Mundo Terapeuta: ${error?.message}`,
+      );
+    }
+
     task.status = 'ASSIGNED';
     await this.taskRepo.save(task);
 
@@ -619,9 +651,11 @@ export class ProductionSyncService {
     this.logger.log(`Reportando completitud a MT: ${mtUrl} (cantidad: ${task.quantityToProduce})`);
 
     try {
-      const response = await firstValueFrom(
+      const response: any = await firstValueFrom(
         this.httpService.post(mtUrl, {
           quantityProduced: Number(task.quantityToProduce),
+          consumeReserved: true,
+          productId: task.productId,
         }),
       );
 
