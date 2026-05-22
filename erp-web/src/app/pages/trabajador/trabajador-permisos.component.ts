@@ -1,14 +1,27 @@
 import { Component, computed, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { forkJoin, Observable, Subscription, timer } from 'rxjs';
+import { Subscription, timer } from 'rxjs';
 import { SystemParametersApiService } from '../../core/system-parameters/system-parameters-api.service';
 import type { HolidayRowDto } from '../../core/system-parameters/system-parameters-api.types';
 import { LeaveRequestsService } from '../../core/services/leave-requests.service';
 import { FeedbackService } from '../../core/services/feedback.service';
-import { apiBaseUrl } from '../../core/environment';
 import { MessagesApiService } from '../../core/messages/messages-api.service';
+import { ErpLeaveCalendarComponent } from '../../shared/erp-leave-calendar/erp-leave-calendar.component';
+import {
+  countWorkingDaysBetween,
+  formatSegmentsSummary,
+  msSetToSegments,
+  segmentsEqual,
+  segmentsToDateMsSet,
+  type LeaveSegmentDto,
+} from '../../core/leave/leave-segments.util';
 
-export type WorkerPermisoHistoryStatus = 'propuesta_admin' | 'aprobado' | 'revision' | 'rechazado';
+export type WorkerPermisoHistoryStatus =
+  | 'propuesta_admin'
+  | 'apelacion_pendiente'
+  | 'aprobado'
+  | 'revision'
+  | 'rechazado';
 export type LeaveRequestNature = 'VACATION' | 'ABSENCE';
 export type AbsenceSubtype = 'PROGRAMMED' | 'URGENT';
 
@@ -30,12 +43,13 @@ export interface WorkerPermisoHistoryItem {
     readonly proposedEndDate?: string;
     readonly proposedSegments?: Array<{ start: string; end: string; count: number }>;
   };
+  readonly requestStatus?: string;
 }
 
 @Component({
   selector: 'app-trabajador-permisos',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ErpLeaveCalendarComponent],
   templateUrl: './trabajador-permisos.component.html',
 })
 export class TrabajadorPermisosComponent implements OnInit, OnDestroy {
@@ -71,6 +85,14 @@ export class TrabajadorPermisosComponent implements OnInit, OnDestroy {
   protected readonly evidenceFile = signal<File | null>(null);
   protected readonly isUploading = signal(false);
   protected readonly previewUrl = signal<string | null>(null);
+
+  protected readonly showAppealModal = signal(false);
+  protected readonly appealTargetId = signal<string | null>(null);
+  protected readonly appealOriginalDatesMs = signal<Set<number>>(new Set());
+  protected readonly appealProposalDatesMs = signal<Set<number>>(new Set());
+  protected readonly appealAdminProposalDatesMs = signal<Set<number>>(new Set());
+  protected readonly appealOriginalSegments = signal<LeaveSegmentDto[]>([]);
+  protected readonly appealCalendarViewDate = signal(new Date());
 
   protected readonly monthTitle = computed(() => {
     const d = this.viewDate();
@@ -287,22 +309,32 @@ export class TrabajadorPermisosComponent implements OnInit, OnDestroy {
         if (r.status === 'APPROVED') status = 'aprobado';
         else if (r.status === 'REJECTED') status = 'rechazado'; 
         else if (r.status === 'ADMIN_PROPOSAL') status = 'propuesta_admin';
-        
-        // Buscar el último mensaje de negociación o rechazo
+        else if (r.status === 'WORKER_APPEAL') status = 'apelacion_pendiente';
+
         let negotiation = undefined;
-        if ((r.status === 'ADMIN_PROPOSAL' || r.status === 'REJECTED') && r.history && r.history.length > 0) {
-          const actionToFind = r.status === 'REJECTED' ? 'REJECTED' : 'ADMIN_PROPOSAL';
-          const lastH = [...r.history].reverse().find(h => h.actionType === actionToFind);
-          if (lastH) {
+        if (r.history && r.history.length > 0) {
+          const actionToFind =
+            r.status === 'REJECTED'
+              ? 'REJECTED'
+              : r.status === 'WORKER_APPEAL'
+                ? 'WORKER_APPEAL'
+                : 'ADMIN_PROPOSAL';
+          const lastH = [...r.history].reverse().find((h) => h.actionType === actionToFind);
+          if (lastH && (r.status === 'ADMIN_PROPOSAL' || r.status === 'REJECTED' || r.status === 'WORKER_APPEAL')) {
             negotiation = {
               from: lastH.author?.fullName || 'Administrador',
               message: lastH.message,
               proposedStartDate: lastH.proposedStartDate,
               proposedEndDate: lastH.proposedEndDate,
-              proposedSegments: lastH.proposedSegments
+              proposedSegments: lastH.proposedSegments,
             };
           }
         }
+
+        const originalSegments: LeaveSegmentDto[] =
+          r.segments && r.segments.length > 0
+            ? r.segments.map((s) => ({ start: s.start, end: s.end, count: s.count }))
+            : [{ start: r.startDate, end: r.endDate, count: r.totalDays }];
 
         return {
           id: r.id,
@@ -310,12 +342,11 @@ export class TrabajadorPermisosComponent implements OnInit, OnDestroy {
           dateRange: r.startDate === r.endDate ? lo : `${lo} - ${hi}`,
           daysLabel: `${r.totalDays} día(s)`,
           periodLabel: `${r.startDate} al ${r.endDate}`,
-          segments: r.segments && r.segments.length > 0
-            ? r.segments.map(s => ({ start: s.start, end: s.end, count: s.count }))
-            : [{ start: r.startDate, end: r.endDate, count: r.totalDays }],
+          segments: originalSegments,
           status,
           evidenceUrl: r.evidenceUrl,
-          negotiation
+          negotiation,
+          requestStatus: r.status,
         };
       });
       this.history.set(mapped);
@@ -539,46 +570,106 @@ export class TrabajadorPermisosComponent implements OnInit, OnDestroy {
   }
 
 
-  protected onAcceptProposal(item: WorkerPermisoHistoryItem): void {
-    this.fb.showConfirm(
-      'Aceptar propuesta', 
-      '¿Deseas aceptar las fechas propuestas por el administrador? Se actualizará tu solicitud.'
-    ).then(confirmed => {
-      if (confirmed) {
-        this.leaveService.updateStatus(item.id, {
-          status: 'APPROVED',
-          message: 'Aceptado por el trabajador',
-          proposedStartDate: item.negotiation!.proposedStartDate,
-          proposedEndDate: item.negotiation!.proposedEndDate,
-          proposedSegments: item.negotiation!.proposedSegments
-        }).subscribe(() => {
-          this.fb.showToast('Solicitud actualizada y aprobada', 'success');
-          this.loadData();
-        });
-      }
-    });
+  protected hasAdminProposal(item: WorkerPermisoHistoryItem): boolean {
+    const n = item.negotiation;
+    if (!n) return false;
+    return !!(n.proposedSegments?.length || n.proposedStartDate);
   }
 
-  protected onRejectProposal(item: WorkerPermisoHistoryItem): void {
-    this.fb.showPrompt(
-      'Rechazar propuesta',
-      'Indica por qué rechazas la propuesta del administrador:',
-      'Escribe el motivo del rechazo...'
-    ).then(reason => {
-      if (reason === null) return;
-      
-      this.leaveService.updateStatus(item.id, {
-        status: 'PENDING',
-        message: `El trabajador rechazó la propuesta: ${reason}`
-      }).subscribe(() => {
-        this.fb.showToast('Propuesta rechazada. El administrador revisará tu respuesta.', 'info');
-        this.loadData();
+  protected onAcceptProposal(item: WorkerPermisoHistoryItem): void {
+    const segments = item.negotiation?.proposedSegments;
+    if (!segments?.length && !item.negotiation?.proposedStartDate) {
+      this.fb.showToast('No hay fechas propuestas para aceptar.', 'warning');
+      return;
+    }
+
+    this.fb
+      .showConfirm(
+        'Aceptar propuesta',
+        '¿Deseas aceptar las fechas propuestas por el administrador? La apelación se cerrará.',
+      )
+      .then((confirmed) => {
+        if (!confirmed) return;
+        this.leaveService
+          .updateStatus(item.id, {
+            status: 'APPROVED',
+            message: 'Aceptado por el trabajador',
+            proposedStartDate: item.negotiation!.proposedStartDate,
+            proposedEndDate: item.negotiation!.proposedEndDate,
+            proposedSegments: item.negotiation!.proposedSegments,
+          })
+          .subscribe({
+            next: () => {
+              this.fb.showToast('Solicitud actualizada y aprobada', 'success');
+              this.loadData();
+            },
+            error: (err) => {
+              this.fb.showToast(err?.error?.message || 'No se pudo aceptar la propuesta.', 'error');
+            },
+          });
       });
-    });
   }
+
+  protected onOpenAppeal(item: WorkerPermisoHistoryItem): void {
+    const originals = item.segments.map((s) => ({ ...s }));
+    this.appealTargetId.set(item.id);
+    this.appealOriginalSegments.set(originals);
+    this.appealOriginalDatesMs.set(segmentsToDateMsSet(originals));
+
+    const adminSegs = item.negotiation?.proposedSegments ?? [];
+    this.appealAdminProposalDatesMs.set(
+      adminSegs.length ? segmentsToDateMsSet(adminSegs) : new Set(),
+    );
+    this.appealProposalDatesMs.set(
+      adminSegs.length ? segmentsToDateMsSet(adminSegs) : segmentsToDateMsSet(originals),
+    );
+    this.appealCalendarViewDate.set(new Date(originals[0].start + 'T12:00:00'));
+    this.showAppealModal.set(true);
+  }
+
+  protected cancelAppeal(): void {
+    this.showAppealModal.set(false);
+    this.appealTargetId.set(null);
+  }
+
+  protected sendAppeal(): void {
+    const id = this.appealTargetId();
+    if (!id) return;
+
+    const sorted = [...this.appealProposalDatesMs()].sort((a, b) => a - b);
+    if (sorted.length === 0) {
+      this.fb.showToast('Selecciona al menos un día para tu contra-propuesta.', 'warning');
+      return;
+    }
+
+    const segments = msSetToSegments(sorted, countWorkingDaysBetween);
+    if (segmentsEqual(segments, this.appealOriginalSegments())) {
+      this.fb.showToast('Tu propuesta debe ser distinta a las fechas originales de la solicitud.', 'warning');
+      return;
+    }
+
+    this.leaveService
+      .updateStatus(id, {
+        status: 'WORKER_APPEAL',
+        message: 'El trabajador ha propuesto fechas alternativas.',
+        proposedSegments: segments,
+      })
+      .subscribe({
+        next: () => {
+          this.fb.showToast('Apelación enviada al administrador', 'success');
+          this.showAppealModal.set(false);
+          this.loadData();
+        },
+        error: (err) => {
+          this.fb.showToast(err?.error?.message || 'No se pudo enviar la apelación.', 'error');
+        },
+      });
+  }
+
+  protected readonly formatSegmentsSummary = formatSegmentsSummary;
 
   protected statusBadgeClass(status: WorkerPermisoHistoryStatus): string {
-    if (status === 'propuesta_admin') {
+    if (status === 'propuesta_admin' || status === 'apelacion_pendiente') {
       return 'erp-permisos-badge erp-permisos-badge--propuesta';
     }
     if (status === 'aprobado') {
@@ -593,6 +684,9 @@ export class TrabajadorPermisosComponent implements OnInit, OnDestroy {
   protected statusLabel(status: WorkerPermisoHistoryStatus): string {
     if (status === 'propuesta_admin') {
       return 'Propuesta admin';
+    }
+    if (status === 'apelacion_pendiente') {
+      return 'Apelación enviada';
     }
     if (status === 'aprobado') {
       return 'Aprobado';

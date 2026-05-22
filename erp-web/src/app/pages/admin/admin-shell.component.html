@@ -63,8 +63,14 @@
           routerLinkActive="erp-bottom-bar__item--active"
           [routerLinkActiveOptions]="{ exact: false }"
           class="erp-bottom-bar__item"
+          [class.erp-bottom-bar__item--activity]="navHasActivity(item.path)"
         >
-          <span class="material-symbols-outlined" aria-hidden="true">{{ item.icon }}</span>
+          <span class="relative inline-flex">
+            <span class="material-symbols-outlined" aria-hidden="true">{{ item.icon }}</span>
+            @if (navActivityCount(item.path) > 0) {
+              <span class="erp-bottom-bar__badge" aria-hidden="true">{{ navActivityCount(item.path) > 9 ? '9+' : navActivityCount(item.path) }}</span>
+            }
+          </span>
           <span class="erp-bottom-bar__label">{{ item.short }}</span>
         </a>
       } @else {

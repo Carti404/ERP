@@ -397,7 +397,7 @@ export class ProductionSyncService {
   async startProcess(assignmentId: string, processId: string) {
     const assignment = await this.assignmentRepo.findOne({
       where: { id: assignmentId },
-      relations: ['task', 'task.processes'],
+      relations: ['task', 'task.processes', 'worker'],
     });
     if (!assignment) throw new NotFoundException('Asignación no encontrada');
 
@@ -443,11 +443,20 @@ export class ProductionSyncService {
       }
     }
 
-    // Si el assignment estaba en ASSIGNED, cambiarlo a IN_PROGRESS
-    if (assignment.status === ProductionAssignmentStatus.ASSIGNED) {
+    const transitioningFromAssigned =
+      assignment.status === ProductionAssignmentStatus.ASSIGNED;
+
+    if (transitioningFromAssigned) {
       assignment.status = ProductionAssignmentStatus.IN_PROGRESS;
       assignment.startedAt = new Date();
       await this.assignmentRepo.save(assignment);
+
+      if (assignment.task.status === 'ASSIGNED') {
+        await this.taskRepo.update(assignment.taskId, { status: 'IN_PROGRESS' });
+        assignment.task.status = 'IN_PROGRESS';
+      }
+
+      await this.notifyAdminsProductionStarted(assignment, process);
     }
 
     // Crear el registro de tracking
@@ -585,6 +594,36 @@ export class ProductionSyncService {
     await this.checkAndNotifyTaskCompletion(assignment.taskId, assignment.task.productName, assignment.task.orderNumber);
 
     return saved;
+  }
+
+  /** Notifica a administradores cuando un trabajador inicia producción */
+  private async notifyAdminsProductionStarted(
+    assignment: ProductionAssignment,
+    process: ProductionProcess,
+  ) {
+    try {
+      const workerName = assignment.worker?.fullName ?? 'Un trabajador';
+      const productName = assignment.task?.productName ?? 'producto';
+      const orderNumber = assignment.task?.orderNumber ?? '';
+
+      const admins = await this.userRepo.find({ where: { role: UserRole.ADMIN, activo: true } });
+      const adminIds = admins.map((a) => a.id);
+
+      if (adminIds.length === 0) return;
+
+      await this.notificationsService.createForMany(adminIds, {
+        title: 'Producción iniciada',
+        message: `${workerName} inició el proceso "${process.name}" en la orden ${orderNumber} (${productName}).`,
+        type: NotificationType.INFO,
+        category: NotificationCategory.PRODUCTION_STARTED,
+        referenceId: assignment.taskId,
+      });
+    } catch (err) {
+      this.logger.error(
+        `Error al notificar inicio de producción (asignación ${assignment.id})`,
+        (err as Error).message,
+      );
+    }
   }
 
   /** Verifica si todas las asignaciones de una tarea fueron completadas y notifica a los admins */

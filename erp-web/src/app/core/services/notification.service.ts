@@ -9,7 +9,14 @@ export interface AppNotification {
   title: string;
   message: string;
   type: 'INFO' | 'ALERT' | 'SUCCESS';
-  category: 'PRODUCTION_ASSIGNED' | 'PRODUCTION_COMPLETED' | 'LEAVE_REQUEST' | 'ATTENDANCE_INCIDENCE' | 'GENERAL';
+  category:
+    | 'PRODUCTION_ASSIGNED'
+    | 'PRODUCTION_STARTED'
+    | 'PRODUCTION_COMPLETED'
+    | 'PRODUCTION_NO_PROCESSES'
+    | 'LEAVE_REQUEST'
+    | 'ATTENDANCE_INCIDENCE'
+    | 'GENERAL';
   isRead: boolean;
   referenceId: string | null;
   createdAt: string;
