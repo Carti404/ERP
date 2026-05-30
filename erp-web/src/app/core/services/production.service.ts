@@ -3,6 +3,14 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { apiBaseUrl } from '../environment';
 
+export interface ProcessRecipeItem {
+  productId: string;
+  productName: string;
+  itemType?: string;
+  unitOfMeasure?: string;
+  quantity: number;
+}
+
 export interface ProductionProcess {
   id: string;
   taskId: string;
@@ -10,7 +18,8 @@ export interface ProductionProcess {
   name: string;
   description: string;
   estimatedTimeValue: number;
-  estimatedTimeUnit: string; // 'minutes', 'hours', 'days', 'weeks'
+  estimatedTimeUnit: string;
+  recipeItems?: ProcessRecipeItem[];
 }
 
 export interface ProcessTracking {
@@ -20,6 +29,8 @@ export interface ProcessTracking {
   startedAt: string | null;
   completedAt: string | null;
   durationSeconds: number | null;
+  pausedAt?: string | null;
+  accumulatedPausedSeconds?: number;
   process?: ProductionProcess;
 }
 
@@ -125,6 +136,20 @@ export class ProductionService {
     });
   }
 
+  applyProcessTemplate(taskId: string): Observable<ProductionProcess[]> {
+    return this.http.post<ProductionProcess[]>(
+      `${apiBaseUrl}/production/${taskId}/processes/apply-template`,
+      {},
+    );
+  }
+
+  copyProcessesFromTask(taskId: string, sourceTaskId: string): Observable<ProductionProcess[]> {
+    return this.http.post<ProductionProcess[]>(
+      `${apiBaseUrl}/production/${taskId}/processes/copy-from/${sourceTaskId}`,
+      {},
+    );
+  }
+
   // ──── Tracking de Procesos (Trabajador) ────
 
   getTracking(assignmentId: string): Observable<ProcessTracking[]> {
@@ -133,6 +158,14 @@ export class ProductionService {
 
   startProcess(assignmentId: string, processId: string): Observable<ProcessTracking> {
     return this.http.post<ProcessTracking>(`${apiBaseUrl}/production/assignments/${assignmentId}/processes/${processId}/start`, {});
+  }
+
+  pauseProcess(assignmentId: string, processId: string): Observable<ProcessTracking> {
+    return this.http.post<ProcessTracking>(`${apiBaseUrl}/production/assignments/${assignmentId}/processes/${processId}/pause`, {});
+  }
+
+  resumeProcess(assignmentId: string, processId: string): Observable<ProcessTracking> {
+    return this.http.post<ProcessTracking>(`${apiBaseUrl}/production/assignments/${assignmentId}/processes/${processId}/resume`, {});
   }
 
   completeProcess(assignmentId: string, processId: string): Observable<ProcessTracking> {

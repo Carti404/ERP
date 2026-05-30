@@ -88,6 +88,21 @@ export class ProductionController {
     return this.productionService.setProcessesForTask(taskId, dto);
   }
 
+  @Post(':id/processes/apply-template')
+  @Roles(UserRole.ADMIN)
+  async applyProcessTemplate(@Param('id') taskId: string) {
+    return this.productionService.applyProcessTemplate(taskId);
+  }
+
+  @Post(':id/processes/copy-from/:sourceTaskId')
+  @Roles(UserRole.ADMIN)
+  async copyProcessesFromTask(
+    @Param('id') taskId: string,
+    @Param('sourceTaskId') sourceTaskId: string,
+  ) {
+    return this.productionService.copyProcessesFromTask(taskId, sourceTaskId);
+  }
+
   // ──── TRACKING DE PROCESOS (Trabajador ejecuta paso a paso) ────
 
   @Get('assignments/:id/tracking')
@@ -103,6 +118,24 @@ export class ProductionController {
     @Param('processId') processId: string,
   ) {
     return this.productionService.startProcess(assignmentId, processId);
+  }
+
+  @Post('assignments/:id/processes/:processId/pause')
+  @Roles(UserRole.WORKER)
+  async pauseProcess(
+    @Param('id') assignmentId: string,
+    @Param('processId') processId: string,
+  ) {
+    return this.productionService.pauseProcess(assignmentId, processId);
+  }
+
+  @Post('assignments/:id/processes/:processId/resume')
+  @Roles(UserRole.WORKER)
+  async resumeProcess(
+    @Param('id') assignmentId: string,
+    @Param('processId') processId: string,
+  ) {
+    return this.productionService.resumeProcess(assignmentId, processId);
   }
 
   @Post('assignments/:id/processes/:processId/complete')

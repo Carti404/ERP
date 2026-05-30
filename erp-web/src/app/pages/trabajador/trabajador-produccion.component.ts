@@ -39,6 +39,7 @@ export class TrabajadorProduccionComponent implements OnInit, OnDestroy {
 
   // Timer para el proceso activo
   protected readonly activeTimerSeconds = signal(0);
+  protected readonly processActionLoading = signal<string | null>(null);
   private timerInterval: any = null;
   private suppressAutoJump = false;
 
@@ -92,6 +93,10 @@ export class TrabajadorProduccionComponent implements OnInit, OnDestroy {
 
   protected readonly currentActiveProcess = computed(() => {
     return this.processStatuses().find(ps => ps.status === 'active');
+  });
+
+  protected readonly isTimerPaused = computed(() => {
+    return Boolean(this.currentActiveProcess()?.tracking?.pausedAt);
   });
 
   protected readonly nextPendingProcess = computed(() => {
@@ -173,9 +178,12 @@ export class TrabajadorProduccionComponent implements OnInit, OnDestroy {
     // Si hay un proceso activo (startedAt pero sin completedAt), restaurar el timer
     const active = existingTracking.find(t => t.startedAt && !t.completedAt);
     if (active) {
-      const elapsed = Math.floor((Date.now() - new Date(active.startedAt!).getTime()) / 1000);
-      this.activeTimerSeconds.set(elapsed);
-      this.startTimer();
+      this.activeTimerSeconds.set(this.calculateActiveTrackingSeconds(active));
+      if (active.pausedAt) {
+        this.stopTimer();
+      } else {
+        this.startTimer();
+      }
     } else if (this.allProcessesCompleted()) {
       // Si ya terminó todo pero no ha finalizado la asignación, ir directo a mermas
       this.showWasteForm();
@@ -186,8 +194,10 @@ export class TrabajadorProduccionComponent implements OnInit, OnDestroy {
     const assignment = this.activeAssignment();
     if (!assignment) return;
 
+    this.processActionLoading.set(`start-${processId}`);
     this.productionService.startProcess(assignment.id, processId).subscribe({
       next: (newTracking) => {
+        this.processActionLoading.set(null);
         this.tracking.update(prev => [...prev, newTracking]);
         this.activeTimerSeconds.set(0);
         this.startTimer();
@@ -202,6 +212,7 @@ export class TrabajadorProduccionComponent implements OnInit, OnDestroy {
         }
       },
       error: (err) => {
+        this.processActionLoading.set(null);
         console.error('Error al iniciar proceso', err);
         alert(err.error?.message || 'No se pudo iniciar el proceso.');
       }
@@ -212,8 +223,10 @@ export class TrabajadorProduccionComponent implements OnInit, OnDestroy {
     const assignment = this.activeAssignment();
     if (!assignment) return;
 
+    this.processActionLoading.set(`complete-${processId}`);
     this.productionService.completeProcess(assignment.id, processId).subscribe({
       next: (completedTracking) => {
+        this.processActionLoading.set(null);
         this.tracking.update(prev =>
           prev.map(t => t.processId === processId && !t.completedAt ? completedTracking : t)
         );
@@ -228,9 +241,54 @@ export class TrabajadorProduccionComponent implements OnInit, OnDestroy {
         }, 500);
       },
       error: (err) => {
+        this.processActionLoading.set(null);
         console.error('Error al completar proceso', err);
         alert(err.error?.message || 'No se pudo completar el proceso.');
       }
+    });
+  }
+
+  protected onPauseProcess(processId: string) {
+    const assignment = this.activeAssignment();
+    if (!assignment) return;
+
+    this.processActionLoading.set(`pause-${processId}`);
+    this.productionService.pauseProcess(assignment.id, processId).subscribe({
+      next: (pausedTracking) => {
+        this.processActionLoading.set(null);
+        this.tracking.update(prev =>
+          prev.map(t => t.id === pausedTracking.id ? pausedTracking : t)
+        );
+        this.activeTimerSeconds.set(this.calculateActiveTrackingSeconds(pausedTracking));
+        this.stopTimer();
+      },
+      error: (err) => {
+        this.processActionLoading.set(null);
+        console.error('Error al pausar proceso', err);
+        alert(err.error?.message || 'No se pudo pausar el proceso.');
+      },
+    });
+  }
+
+  protected onResumeProcess(processId: string) {
+    const assignment = this.activeAssignment();
+    if (!assignment) return;
+
+    this.processActionLoading.set(`resume-${processId}`);
+    this.productionService.resumeProcess(assignment.id, processId).subscribe({
+      next: (resumedTracking) => {
+        this.processActionLoading.set(null);
+        this.tracking.update(prev =>
+          prev.map(t => t.id === resumedTracking.id ? resumedTracking : t)
+        );
+        this.activeTimerSeconds.set(this.calculateActiveTrackingSeconds(resumedTracking));
+        this.startTimer();
+      },
+      error: (err) => {
+        this.processActionLoading.set(null);
+        console.error('Error al reanudar proceso', err);
+        alert(err.error?.message || 'No se pudo reanudar el proceso.');
+      },
     });
   }
 
@@ -238,6 +296,7 @@ export class TrabajadorProduccionComponent implements OnInit, OnDestroy {
 
   private startTimer() {
     this.stopTimer();
+    if (this.isTimerPaused()) return;
     this.timerInterval = setInterval(() => {
       this.activeTimerSeconds.update(v => v + 1);
     }, 1000);
@@ -248,6 +307,17 @@ export class TrabajadorProduccionComponent implements OnInit, OnDestroy {
       clearInterval(this.timerInterval);
       this.timerInterval = null;
     }
+  }
+
+  private calculateActiveTrackingSeconds(tracking: ProcessTracking): number {
+    if (!tracking.startedAt) return 0;
+
+    const startedAt = new Date(tracking.startedAt).getTime();
+    const pausedAt = tracking.pausedAt ? new Date(tracking.pausedAt).getTime() : null;
+    const endTime = pausedAt || Date.now();
+    const pausedSeconds = Number(tracking.accumulatedPausedSeconds) || 0;
+
+    return Math.max(0, Math.floor((endTime - startedAt) / 1000) - pausedSeconds);
   }
 
   protected formatEstimatedTime(value: number, unit: string): string {

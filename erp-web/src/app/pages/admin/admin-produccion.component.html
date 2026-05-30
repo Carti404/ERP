@@ -476,18 +476,34 @@
       @if (processSelectedTask()) {
       <section
         class="rounded-xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] p-5 shadow-sm">
-        <div class="mb-5 flex items-center justify-between">
+        <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h3 class="font-bold text-[var(--erp-login-text-primary)]">Procesos de Producción</h3>
             <p class="text-xs text-[var(--erp-login-muted)]">{{ processSelectedTask()?.productName }} — {{
               processSelectedTask()?.orderNumber }}</p>
           </div>
-          <button type="button"
-            class="flex items-center gap-1 rounded-lg bg-[#47607e] px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-[#5a7696]"
-            (click)="addProcessRow()">
-            <span class="material-symbols-outlined text-base">add</span>
-            Agregar Proceso
-          </button>
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button"
+              class="flex items-center gap-1 rounded-lg border border-[var(--erp-login-input-border)] px-3 py-2 text-xs font-bold text-[var(--erp-login-text-primary)] transition-colors hover:border-[#47607e] hover:text-[#47607e] disabled:opacity-50"
+              [disabled]="applyingTemplate()"
+              (click)="onApplyProductTemplate()">
+              <span class="material-symbols-outlined text-base">content_copy</span>
+              {{ applyingTemplate() ? 'Aplicando...' : 'Aplicar plantilla' }}
+            </button>
+            <button type="button"
+              class="flex items-center gap-1 rounded-lg border border-[var(--erp-login-input-border)] px-3 py-2 text-xs font-bold text-[var(--erp-login-text-primary)] transition-colors hover:border-[#47607e] hover:text-[#47607e] disabled:opacity-50"
+              [disabled]="ordersAvailableForCopy().length === 0"
+              (click)="onOpenCopyProcessesModal()">
+              <span class="material-symbols-outlined text-base">swap_horiz</span>
+              Copiar de otra orden
+            </button>
+            <button type="button"
+              class="flex items-center gap-1 rounded-lg bg-[#47607e] px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-[#5a7696]"
+              (click)="addProcessRow()">
+              <span class="material-symbols-outlined text-base">add</span>
+              Agregar Proceso
+            </button>
+          </div>
         </div>
 
         <div class="space-y-4">
@@ -544,6 +560,72 @@
                   </select>
                 </div>
               </div>
+            </div>
+
+            <div class="mt-4 rounded-lg border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] p-3">
+              <div class="mb-3 flex items-center justify-between gap-2">
+                <div>
+                  <p class="text-[10px] font-bold uppercase tracking-wider text-[var(--erp-login-muted)]">
+                    Insumos del proceso
+                  </p>
+                  <p class="text-[10px] text-[var(--erp-login-muted)]">
+                    Solo insumos de la receta de esta orden
+                  </p>
+                </div>
+                @if (getAvailableRecipeOptionsForProcess(i).length > 0) {
+                <select
+                  class="rounded-lg border border-[var(--erp-login-input-border)] bg-[var(--erp-login-surface)] px-2 py-1.5 text-xs text-[var(--erp-login-text-primary)] focus:border-[#47607e] focus:outline-none"
+                  (change)="addRecipeItemToProcess(i, $any($event.target).value); $any($event.target).value = ''">
+                  <option value="">+ Agregar insumo</option>
+                  @for (option of getAvailableRecipeOptionsForProcess(i); track option.productId) {
+                  <option [value]="option.productId">
+                    {{ option.productName }} (receta: {{ option.totalForOrder | number }} {{ option.unitOfMeasure }})
+                  </option>
+                  }
+                </select>
+                }
+              </div>
+
+              @if (row.recipeItems.length > 0) {
+              <div class="space-y-2">
+                @for (item of row.recipeItems; track item.productId; let itemIndex = $index) {
+                <div
+                  class="flex flex-col gap-2 rounded-lg border border-[var(--erp-login-input-border)] bg-[var(--erp-login-surface)] p-3 sm:flex-row sm:items-center">
+                  <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-bold text-[var(--erp-login-text-primary)]">{{ item.productName }}</p>
+                    <p class="text-[10px] text-[var(--erp-login-muted)]">
+                      {{ item.unitOfMeasure || 'ud' }}
+                      @if (item.itemType) {
+                      <span
+                        class="ml-2 rounded bg-gray-200 px-1 text-[9px] font-black uppercase text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                        {{ item.itemType }}
+                      </span>
+                      }
+                    </p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <label class="text-[10px] font-bold uppercase text-[var(--erp-login-muted)]">Cantidad</label>
+                    <input type="number" min="0" step="0.01"
+                      class="w-28 rounded-lg border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] px-3 py-2 text-sm text-[var(--erp-login-text-primary)] focus:border-[#47607e] focus:outline-none"
+                      [ngModel]="item.quantity"
+                      (ngModelChange)="updateRecipeItemQuantity(i, itemIndex, $event)" />
+                    <button type="button" class="text-[#ba1a1a] transition-colors hover:text-[#ff3838]"
+                      (click)="removeRecipeItemFromProcess(i, itemIndex)">
+                      <span class="material-symbols-outlined text-lg">close</span>
+                    </button>
+                  </div>
+                </div>
+                }
+              </div>
+              } @else {
+              <p class="py-2 text-center text-xs text-[var(--erp-login-muted)]">
+                @if (processRecipeOptions().length > 0) {
+                Sin insumos asignados. Agrega insumos de la receta para este paso.
+                } @else {
+                Esta orden no tiene receta disponible para asignar insumos.
+                }
+              </p>
+              }
             </div>
           </div>
           } @empty {
@@ -725,6 +807,58 @@
               (click)="onCommitDelegation()"
               [disabled]="isAssigning()">
               {{ isAssigning() ? 'Procesando...' : 'Sí, Aceptar Asignación' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  Modal: Copiar procesos desde otra orden    -->
+  <!-- ═══════════════════════════════════════════ -->
+  @if (showCopyProcessesModal()) {
+    <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-[#051125]/60 backdrop-blur-sm transition-opacity"
+        (click)="showCopyProcessesModal.set(false)"></div>
+
+      <div
+        class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] shadow-2xl shadow-black/50 transition-all">
+        <div class="bg-[#051125] px-6 py-4 text-white">
+          <h3 class="text-lg font-bold">Copiar procesos</h3>
+          <p class="text-xs text-[#828da7] uppercase">Selecciona una orden con procesos ya definidos</p>
+        </div>
+
+        <div class="p-6">
+          <label class="mb-2 block text-[10px] font-bold uppercase tracking-wider text-[var(--erp-login-muted)]">
+            Orden origen
+          </label>
+          <select
+            class="mb-4 w-full rounded-lg border border-[var(--erp-login-input-border)] bg-[var(--erp-login-card)] px-3 py-2 text-sm text-[var(--erp-login-text-primary)] focus:border-[#47607e] focus:outline-none"
+            [ngModel]="copySourceTaskId()"
+            (ngModelChange)="copySourceTaskId.set($event)">
+            <option value="">Selecciona una orden...</option>
+            @for (order of ordersAvailableForCopy(); track order.id) {
+            <option [value]="order.id">{{ order.label }}</option>
+            }
+          </select>
+
+          <p class="mb-6 text-xs text-[var(--erp-login-muted)]">
+            Se copiarán nombre, descripción, tiempos e insumos. Solo se conservarán insumos que existan en la receta de la orden destino.
+          </p>
+
+          <div class="flex w-full flex-col gap-3 sm:flex-row border-t border-[var(--erp-login-input-border)] pt-5">
+            <button type="button"
+              class="flex-1 rounded-xl bg-[#e1e3e4] py-3 text-sm font-bold text-[#45474d] transition-colors hover:bg-[#d1d3d4] dark:bg-[var(--erp-login-surface)] dark:text-[var(--erp-login-text-primary)] dark:hover:bg-[var(--erp-login-input-border)]"
+              (click)="showCopyProcessesModal.set(false)"
+              [disabled]="copyingProcesses()">
+              Cancelar
+            </button>
+            <button type="button"
+              class="flex-1 rounded-xl bg-[#051125] py-3 text-sm font-bold text-white shadow-lg transition-all hover:bg-[#1b263b] disabled:opacity-50"
+              (click)="onConfirmCopyProcesses()"
+              [disabled]="copyingProcesses() || !copySourceTaskId()">
+              {{ copyingProcesses() ? 'Copiando...' : 'Copiar procesos' }}
             </button>
           </div>
         </div>

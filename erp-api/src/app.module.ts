@@ -27,6 +27,7 @@ import { ProductionAssignment } from './production/entities/production-assignmen
 import { ProductionProcess } from './production/entities/production-process.entity';
 import { ProductionProcessTracking } from './production/entities/production-process-tracking.entity';
 import { ProductionWaste } from './production/entities/production-waste.entity';
+import { ProductProcessTemplate } from './production/entities/product-process-template.entity';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AppNotification } from './notifications/entities/notification.entity';
 import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
@@ -65,6 +66,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
           ProductionProcess,
           ProductionProcessTracking,
           ProductionWaste,
+          ProductProcessTemplate,
           AppNotification,
         ],
 

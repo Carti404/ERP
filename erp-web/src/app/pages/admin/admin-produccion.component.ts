@@ -2,11 +2,28 @@ import { DecimalPipe } from '@angular/common';
 import { Component, computed, signal, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { ProductionService, ProductionTask, ProductionProcess, WasteReport } from '../../core/services/production.service';
+import { ProductionService, ProductionTask, ProductionProcess, ProcessRecipeItem, WasteReport } from '../../core/services/production.service';
 import { UsersApiService } from '../../core/users/users-api.service';
 import { map } from 'rxjs';
 
 export type AdminProduccionTab = 'req' | 'asig' | 'sup';
+
+interface ProcessFormRow {
+  orderIndex: number;
+  name: string;
+  description: string;
+  estimatedTimeValue: number;
+  estimatedTimeUnit: string;
+  recipeItems: ProcessRecipeItem[];
+}
+
+interface ProcessRecipeOption {
+  productId: string;
+  productName: string;
+  itemType: string;
+  unitOfMeasure: string;
+  totalForOrder: number;
+}
 
 @Component({
   selector: 'app-admin-produccion',
@@ -91,6 +108,39 @@ export class AdminProduccionComponent {
     } else {
       return pending.filter(t => t.processes && t.processes.length > 0);
     }
+  });
+
+  /** Insumos disponibles de la receta de la orden seleccionada en Procesos */
+  protected readonly processRecipeOptions = computed((): ProcessRecipeOption[] => {
+    const task = this.processSelectedTask();
+    if (!task?.recipe?.items) return [];
+
+    return task.recipe.items
+      .map((item: any) => ({
+        productId: String(item.productId ?? item.product?.id ?? ''),
+        productName: item.productName || item.product?.name || 'Insumo',
+        itemType: item.itemType || item.product?.itemType || '',
+        unitOfMeasure: item.unitOfMeasure || item.product?.unitOfMeasure || '',
+        totalForOrder: (Number(item.quantityPerUnit) || 0) * (Number(task.quantityToProduce) || 0),
+      }))
+      .filter((item: ProcessRecipeOption) => item.productId);
+  });
+
+  /** Órdenes con procesos disponibles para copiar */
+  protected readonly ordersAvailableForCopy = computed(() => {
+    const currentId = this.processSelectedTask()?.id;
+    return this.rawProductionTasks()
+      .filter(
+        t =>
+          t.status !== 'REPORTED_TO_MT' &&
+          t.processes &&
+          t.processes.length > 0 &&
+          t.id !== currentId,
+      )
+      .map(t => ({
+        id: t.id,
+        label: `${t.productName} — ${t.orderNumber || 'S/F'} (${t.processes?.length || 0} pasos)`,
+      }));
   });
 
   protected readonly paginatedRequirements = computed(() => {
@@ -221,12 +271,16 @@ export class AdminProduccionComponent {
   // ──── PROCESOS ────
   protected readonly processSelectedTask = signal<ProductionTask | null>(null);
   protected readonly taskProcesses = signal<ProductionProcess[]>([]);
-  protected readonly processFormRows = signal<{ orderIndex: number; name: string; description: string; estimatedTimeValue: number; estimatedTimeUnit: string }[]>([]);
+  protected readonly processFormRows = signal<ProcessFormRow[]>([]);
   protected readonly savingProcesses = signal(false);
   protected readonly showDeleteProcessModal = signal(false);
   protected readonly showSuccessModal = signal(false);
   protected readonly successModalConfig = signal({ title: '', message: '' });
   protected readonly processToDeleteIndex = signal<number | null>(null);
+  protected readonly copySourceTaskId = signal('');
+  protected readonly showCopyProcessesModal = signal(false);
+  protected readonly applyingTemplate = signal(false);
+  protected readonly copyingProcesses = signal(false);
 
   // ──── TIEMPO TOTAL ESTIMADO ────
   protected readonly totalEstimatedTimeValue = signal(0);
@@ -402,6 +456,140 @@ export class AdminProduccionComponent {
 
   // ──── PROCESOS ────
 
+  private createEmptyProcessRow(orderIndex = 1): ProcessFormRow {
+    return {
+      orderIndex,
+      name: '',
+      description: '',
+      estimatedTimeValue: 0,
+      estimatedTimeUnit: 'minutes',
+      recipeItems: [],
+    };
+  }
+
+  private mapProcessToFormRow(process: ProductionProcess): ProcessFormRow {
+    return {
+      orderIndex: process.orderIndex,
+      name: process.name,
+      description: process.description,
+      estimatedTimeValue: process.estimatedTimeValue,
+      estimatedTimeUnit: process.estimatedTimeUnit || 'minutes',
+      recipeItems: (process.recipeItems || []).map(item => ({ ...item })),
+    };
+  }
+
+  protected getAvailableRecipeOptionsForProcess(processIndex: number): ProcessRecipeOption[] {
+    const row = this.processFormRows()[processIndex];
+    const used = new Set((row?.recipeItems || []).map(item => item.productId));
+    return this.processRecipeOptions().filter(option => !used.has(option.productId));
+  }
+
+  protected addRecipeItemToProcess(processIndex: number, productId: string): void {
+    const option = this.processRecipeOptions().find(item => item.productId === productId);
+    if (!option) return;
+
+    this.processFormRows.update(rows => {
+      const copy = rows.map(row => ({
+        ...row,
+        recipeItems: [...row.recipeItems],
+      }));
+      const row = copy[processIndex];
+      if (!row || row.recipeItems.some(item => item.productId === productId)) {
+        return rows;
+      }
+
+      row.recipeItems.push({
+        productId: option.productId,
+        productName: option.productName,
+        itemType: option.itemType,
+        unitOfMeasure: option.unitOfMeasure,
+        quantity: 0,
+      });
+      return copy;
+    });
+  }
+
+  protected removeRecipeItemFromProcess(processIndex: number, itemIndex: number): void {
+    this.processFormRows.update(rows => {
+      const copy = rows.map(row => ({
+        ...row,
+        recipeItems: [...row.recipeItems],
+      }));
+      copy[processIndex]?.recipeItems.splice(itemIndex, 1);
+      return copy;
+    });
+  }
+
+  protected updateRecipeItemQuantity(processIndex: number, itemIndex: number, quantity: number): void {
+    this.processFormRows.update(rows => {
+      const copy = rows.map(row => ({
+        ...row,
+        recipeItems: [...row.recipeItems],
+      }));
+      const item = copy[processIndex]?.recipeItems[itemIndex];
+      if (item) {
+        item.quantity = Math.max(0, Number(quantity) || 0);
+      }
+      return copy;
+    });
+  }
+
+  protected onOpenCopyProcessesModal(): void {
+    this.copySourceTaskId.set('');
+    this.showCopyProcessesModal.set(true);
+  }
+
+  protected onApplyProductTemplate(): void {
+    const task = this.processSelectedTask();
+    if (!task) return;
+
+    if (!confirm('¿Aplicar la plantilla del producto a esta orden? Se reemplazarán los procesos actuales.')) {
+      return;
+    }
+
+    this.applyingTemplate.set(true);
+    this.productionService.applyProcessTemplate(task.id).subscribe({
+      next: () => {
+        this.applyingTemplate.set(false);
+        this.loadProcesses(task.id);
+        this.successModalConfig.set({
+          title: 'Plantilla aplicada',
+          message: 'Se aplicaron los procesos de la plantilla del producto a esta orden.',
+        });
+        this.showSuccessModal.set(true);
+      },
+      error: (err) => {
+        this.applyingTemplate.set(false);
+        alert(err.error?.message || 'No se pudo aplicar la plantilla.');
+      },
+    });
+  }
+
+  protected onConfirmCopyProcesses(): void {
+    const task = this.processSelectedTask();
+    const sourceId = this.copySourceTaskId();
+    if (!task || !sourceId) return;
+
+    this.copyingProcesses.set(true);
+    this.productionService.copyProcessesFromTask(task.id, sourceId).subscribe({
+      next: () => {
+        this.copyingProcesses.set(false);
+        this.showCopyProcessesModal.set(false);
+        this.loadProcesses(task.id);
+        this.successModalConfig.set({
+          title: 'Procesos copiados',
+          message:
+            'Se copiaron los procesos desde la orden seleccionada. Los insumos que no existen en la receta de esta orden fueron omitidos.',
+        });
+        this.showSuccessModal.set(true);
+      },
+      error: (err) => {
+        this.copyingProcesses.set(false);
+        alert(err.error?.message || 'No se pudieron copiar los procesos.');
+      },
+    });
+  }
+
   protected setProcessFilter(mode: 'sin_procesos' | 'con_procesos'): void {
     this.processFilterMode.set(mode);
     this.processSelectedTask.set(null);
@@ -425,19 +613,13 @@ export class AdminProduccionComponent {
         this.taskProcesses.set(processes);
         // Crear form rows a partir de los procesos existentes
         if (processes.length > 0) {
-          this.processFormRows.set(processes.map(p => ({
-            orderIndex: p.orderIndex,
-            name: p.name,
-            description: p.description,
-            estimatedTimeValue: p.estimatedTimeValue,
-            estimatedTimeUnit: p.estimatedTimeUnit || 'minutes',
-          })));
+          this.processFormRows.set(processes.map(p => this.mapProcessToFormRow(p)));
         } else {
-          this.processFormRows.set([{ orderIndex: 1, name: '', description: '', estimatedTimeValue: 0, estimatedTimeUnit: 'minutes' }]);
+          this.processFormRows.set([this.createEmptyProcessRow()]);
         }
       },
       error: () => {
-        this.processFormRows.set([{ orderIndex: 1, name: '', description: '', estimatedTimeValue: 0, estimatedTimeUnit: 'minutes' }]);
+        this.processFormRows.set([this.createEmptyProcessRow()]);
       },
     });
   }
@@ -445,7 +627,7 @@ export class AdminProduccionComponent {
   protected addProcessRow(): void {
     const rows = this.processFormRows();
     const nextIndex = rows.length > 0 ? Math.max(...rows.map(r => r.orderIndex)) + 1 : 1;
-    this.processFormRows.set([...rows, { orderIndex: nextIndex, name: '', description: '', estimatedTimeValue: 0, estimatedTimeUnit: 'minutes' }]);
+    this.processFormRows.set([...rows, this.createEmptyProcessRow(nextIndex)]);
   }
 
   protected confirmRemoveProcessRow(index: number) {

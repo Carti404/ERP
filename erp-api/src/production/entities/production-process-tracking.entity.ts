@@ -43,6 +43,14 @@ export class ProductionProcessTracking {
   @Column({ name: 'duration_seconds', type: 'int', nullable: true })
   durationSeconds: number;
 
+  /** Momento en que el trabajador pausó el proceso actualmente */
+  @Column({ name: 'paused_at', type: 'timestamptz', nullable: true })
+  pausedAt: Date | null;
+
+  /** Segundos acumulados en pausa para excluirlos del tiempo real */
+  @Column({ name: 'accumulated_paused_seconds', type: 'int', default: 0 })
+  accumulatedPausedSeconds: number;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
 }

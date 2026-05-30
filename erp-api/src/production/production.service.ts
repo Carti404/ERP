@@ -12,8 +12,9 @@ import { ProductionWaste } from './entities/production-waste.entity';
 import { ProductProcessTemplate } from './entities/product-process-template.entity';
 import { ProductionAssignmentStatus } from '../common/enums/production-assignment-status.enum';
 import { CreateAssignmentsDto } from './dto/create-assignments.dto';
-import { SetProcessesDto } from './dto/set-processes.dto';
+import { SetProcessesDto, ProcessItemDto } from './dto/set-processes.dto';
 import { ReportWasteDto } from './dto/report-waste.dto';
+import { AllowedRecipeItem, ProcessRecipeItem } from './interfaces/process-recipe-item.interface';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType, NotificationCategory } from '../notifications/entities/notification.entity';
 import { User } from '../users/entities/user.entity';
@@ -92,6 +93,10 @@ export class ProductionSyncService {
                 description: t.description || '',
                 estimatedTimeValue: t.estimatedTimeValue,
                 estimatedTimeUnit: t.estimatedTimeUnit || 'minutes',
+                recipeItems: this.filterRecipeItemsForTask(
+                  t.recipeItems || [],
+                  this.buildAllowedRecipeMap(savedTask.recipe),
+                ),
               }),
             );
             await this.processRepo.save(autoProcesses);
@@ -315,24 +320,36 @@ export class ProductionSyncService {
     });
   }
 
-  async setProcessesForTask(taskId: string, dto: SetProcessesDto) {
+  async setProcessesForTask(
+    taskId: string,
+    dto: SetProcessesDto,
+    options?: { skipTemplateUpsert?: boolean },
+  ) {
     const task = await this.taskRepo.findOne({ where: { id: taskId } });
     if (!task) throw new NotFoundException('Tarea de producción no encontrada');
+
+    if (task.status === 'REPORTED_TO_MT') {
+      throw new BadRequestException('No se pueden modificar procesos de una orden ya reportada a MT');
+    }
+
+    const allowedMap = this.buildAllowedRecipeMap(task.recipe);
 
     // Eliminar procesos anteriores
     await this.processRepo.delete({ taskId });
 
     // Crear nuevos procesos
-    const newProcesses = dto.processes.map(p =>
-      this.processRepo.create({
+    const newProcesses = dto.processes.map(p => {
+      const recipeItems = this.validateAndSanitizeRecipeItems(p.recipeItems, allowedMap);
+      return this.processRepo.create({
         taskId,
         orderIndex: p.orderIndex,
         name: p.name,
         description: p.description || '',
         estimatedTimeValue: p.estimatedTimeValue,
         estimatedTimeUnit: p.estimatedTimeUnit || 'minutes',
-      }),
-    );
+        recipeItems,
+      });
+    });
 
     const saved = await this.processRepo.save(newProcesses);
     this.logger.log(`Guardados ${saved.length} procesos para la tarea ${taskId}`);
@@ -345,11 +362,185 @@ export class ProductionSyncService {
     }
 
     // ── Actualizar o crear la plantilla para futuras órdenes del mismo producto ──
-    if (task.productId) {
+    if (task.productId && !options?.skipTemplateUpsert) {
       await this.upsertProcessTemplate(task.productId, task.productName, dto);
     }
 
     return saved;
+  }
+
+  /** Aplica la plantilla del producto a una orden existente */
+  async applyProcessTemplate(taskId: string) {
+    const task = await this.taskRepo.findOne({ where: { id: taskId } });
+    if (!task) throw new NotFoundException('Tarea de producción no encontrada');
+    if (!task.productId) {
+      throw new BadRequestException('La orden no tiene un producto asociado');
+    }
+    if (task.status === 'REPORTED_TO_MT') {
+      throw new BadRequestException('No se pueden modificar procesos de una orden ya reportada a MT');
+    }
+
+    const templates = await this.templateRepo.find({
+      where: { productId: task.productId },
+      order: { orderIndex: 'ASC' },
+    });
+
+    if (templates.length === 0) {
+      throw new NotFoundException('No existe plantilla de procesos para este producto');
+    }
+
+    const allowedMap = this.buildAllowedRecipeMap(task.recipe);
+    const processes = this.mapTemplatesToProcessItems(templates, allowedMap);
+
+    const dto: SetProcessesDto = {
+      processes,
+      totalEstimatedTimeValue: templates[0].totalEstimatedTimeValue || 0,
+      totalEstimatedTimeUnit: templates[0].totalEstimatedTimeUnit || 'minutes',
+    };
+
+    return this.setProcessesForTask(taskId, dto, { skipTemplateUpsert: true });
+  }
+
+  /** Copia procesos desde otra orden hacia la orden destino */
+  async copyProcessesFromTask(destTaskId: string, sourceTaskId: string) {
+    if (destTaskId === sourceTaskId) {
+      throw new BadRequestException('No se puede copiar procesos de la misma orden');
+    }
+
+    const destTask = await this.taskRepo.findOne({ where: { id: destTaskId } });
+    if (!destTask) throw new NotFoundException('Orden destino no encontrada');
+
+    const sourceTask = await this.taskRepo.findOne({ where: { id: sourceTaskId } });
+    if (!sourceTask) throw new NotFoundException('Orden origen no encontrada');
+
+    if (destTask.status === 'REPORTED_TO_MT') {
+      throw new BadRequestException('No se pueden modificar procesos de una orden ya reportada a MT');
+    }
+
+    const sourceProcesses = await this.processRepo.find({
+      where: { taskId: sourceTaskId },
+      order: { orderIndex: 'ASC' },
+    });
+
+    if (sourceProcesses.length === 0) {
+      throw new BadRequestException('La orden origen no tiene procesos definidos');
+    }
+
+    const allowedMap = this.buildAllowedRecipeMap(destTask.recipe);
+    const processes: ProcessItemDto[] = sourceProcesses.map(p => ({
+      orderIndex: p.orderIndex,
+      name: p.name,
+      description: p.description || '',
+      estimatedTimeValue: p.estimatedTimeValue,
+      estimatedTimeUnit: p.estimatedTimeUnit || 'minutes',
+      recipeItems: this.filterRecipeItemsForTask(p.recipeItems || [], allowedMap),
+    }));
+
+    const dto: SetProcessesDto = {
+      processes,
+      totalEstimatedTimeValue: sourceTask.totalEstimatedTimeValue || 0,
+      totalEstimatedTimeUnit: sourceTask.totalEstimatedTimeUnit || 'minutes',
+    };
+
+    return this.setProcessesForTask(destTaskId, dto, { skipTemplateUpsert: true });
+  }
+
+  /** Verifica si existe plantilla para el productId de una tarea */
+  async hasProcessTemplate(productId: string): Promise<boolean> {
+    if (!productId) return false;
+    const count = await this.templateRepo.count({ where: { productId } });
+    return count > 0;
+  }
+
+  private buildAllowedRecipeMap(recipe: any): Map<string, AllowedRecipeItem> {
+    const map = new Map<string, AllowedRecipeItem>();
+    const items = recipe?.items || [];
+
+    for (const item of items) {
+      const productId = item.productId ?? item.product?.id;
+      if (!productId) continue;
+
+      map.set(String(productId), {
+        productId: String(productId),
+        productName: item.productName || item.product?.name || 'Insumo',
+        itemType: item.itemType || item.product?.itemType || '',
+        unitOfMeasure: item.unitOfMeasure || item.product?.unitOfMeasure || '',
+      });
+    }
+
+    return map;
+  }
+
+  private validateAndSanitizeRecipeItems(
+    submitted: ProcessRecipeItem[] | undefined,
+    allowedMap: Map<string, AllowedRecipeItem>,
+  ): ProcessRecipeItem[] {
+    if (!submitted?.length) return [];
+
+    const result: ProcessRecipeItem[] = [];
+
+    for (const item of submitted) {
+      const allowed = allowedMap.get(String(item.productId));
+      if (!allowed) {
+        throw new BadRequestException(
+          `El insumo "${item.productName || item.productId}" no pertenece a la receta de esta orden`,
+        );
+      }
+
+      const quantity = Number(item.quantity);
+      if (!Number.isFinite(quantity) || quantity <= 0) continue;
+
+      result.push({
+        productId: allowed.productId,
+        productName: allowed.productName,
+        itemType: allowed.itemType,
+        unitOfMeasure: allowed.unitOfMeasure,
+        quantity,
+      });
+    }
+
+    return result;
+  }
+
+  private filterRecipeItemsForTask(
+    recipeItems: ProcessRecipeItem[],
+    allowedMap: Map<string, AllowedRecipeItem>,
+  ): ProcessRecipeItem[] {
+    if (!recipeItems?.length) return [];
+
+    const result: ProcessRecipeItem[] = [];
+
+    for (const item of recipeItems) {
+      const allowed = allowedMap.get(String(item.productId));
+      if (!allowed) continue;
+
+      const quantity = Number(item.quantity);
+      if (!Number.isFinite(quantity) || quantity <= 0) continue;
+
+      result.push({
+        productId: allowed.productId,
+        productName: allowed.productName,
+        itemType: allowed.itemType,
+        unitOfMeasure: allowed.unitOfMeasure,
+        quantity,
+      });
+    }
+
+    return result;
+  }
+
+  private mapTemplatesToProcessItems(
+    templates: ProductProcessTemplate[],
+    allowedMap: Map<string, AllowedRecipeItem>,
+  ): ProcessItemDto[] {
+    return templates.map(t => ({
+      orderIndex: t.orderIndex,
+      name: t.name,
+      description: t.description || '',
+      estimatedTimeValue: t.estimatedTimeValue,
+      estimatedTimeUnit: t.estimatedTimeUnit || 'minutes',
+      recipeItems: this.filterRecipeItemsForTask(t.recipeItems || [], allowedMap),
+    }));
   }
 
   /** Crea o actualiza la plantilla de procesos para un producto */
@@ -370,6 +561,13 @@ export class ProductionSyncService {
           estimatedTimeUnit: p.estimatedTimeUnit || 'minutes',
           totalEstimatedTimeValue: dto.totalEstimatedTimeValue || 0,
           totalEstimatedTimeUnit: dto.totalEstimatedTimeUnit || 'minutes',
+          recipeItems: (p.recipeItems || []).map(item => ({
+            productId: String(item.productId),
+            productName: item.productName,
+            itemType: item.itemType || '',
+            unitOfMeasure: item.unitOfMeasure || '',
+            quantity: Number(item.quantity) || 0,
+          })),
         }),
       );
 
@@ -455,11 +653,51 @@ export class ProductionSyncService {
       assignmentId,
       processId,
       startedAt: new Date(),
+      accumulatedPausedSeconds: 0,
     });
 
     const saved = await this.trackingRepo.save(tracking);
     this.logger.log(`Trabajador inició proceso ${process.name} (index ${process.orderIndex}) en asignación ${assignmentId}`);
     return saved;
+  }
+
+  /** Pausar el reloj de un proceso activo */
+  async pauseProcess(assignmentId: string, processId: string) {
+    const tracking = await this.trackingRepo.findOne({
+      where: { assignmentId, processId, completedAt: null as any },
+    });
+
+    if (!tracking || !tracking.startedAt) {
+      throw new BadRequestException('No se encontró un proceso en curso para pausar.');
+    }
+
+    if (tracking.pausedAt) {
+      return tracking;
+    }
+
+    tracking.pausedAt = new Date();
+    return this.trackingRepo.save(tracking);
+  }
+
+  /** Reanudar el reloj de un proceso pausado */
+  async resumeProcess(assignmentId: string, processId: string) {
+    const tracking = await this.trackingRepo.findOne({
+      where: { assignmentId, processId, completedAt: null as any },
+    });
+
+    if (!tracking || !tracking.startedAt) {
+      throw new BadRequestException('No se encontró un proceso en curso para reanudar.');
+    }
+
+    if (!tracking.pausedAt) {
+      return tracking;
+    }
+
+    const pausedSeconds = Math.floor((Date.now() - tracking.pausedAt.getTime()) / 1000);
+    tracking.accumulatedPausedSeconds = (tracking.accumulatedPausedSeconds || 0) + Math.max(0, pausedSeconds);
+    tracking.pausedAt = null;
+
+    return this.trackingRepo.save(tracking);
   }
 
   /** Finalizar un proceso */
@@ -480,8 +718,20 @@ export class ProductionSyncService {
       throw new NotFoundException('No se encontró el proceso en la tarea vinculada.');
     }
 
-    tracking.completedAt = new Date();
-    tracking.durationSeconds = Math.floor((tracking.completedAt.getTime() - tracking.startedAt.getTime()) / 1000);
+    const now = new Date();
+    const activePauseSeconds = tracking.pausedAt
+      ? Math.floor((now.getTime() - tracking.pausedAt.getTime()) / 1000)
+      : 0;
+
+    tracking.completedAt = now;
+    tracking.accumulatedPausedSeconds =
+      (tracking.accumulatedPausedSeconds || 0) + Math.max(0, activePauseSeconds);
+    tracking.pausedAt = null;
+    tracking.durationSeconds = Math.max(
+      0,
+      Math.floor((tracking.completedAt.getTime() - tracking.startedAt.getTime()) / 1000) -
+        (tracking.accumulatedPausedSeconds || 0),
+    );
 
     const saved = await this.trackingRepo.save(tracking);
     this.logger.log(`Proceso ${processId} completado. Duración: ${tracking.durationSeconds}s`);

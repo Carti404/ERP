@@ -1,5 +1,33 @@
-import { IsString, IsInt, IsOptional, Min, IsArray, ValidateNested } from 'class-validator';
+import {
+  IsString,
+  IsInt,
+  IsOptional,
+  Min,
+  IsArray,
+  ValidateNested,
+  IsNumber,
+} from 'class-validator';
 import { Type } from 'class-transformer';
+
+export class ProcessRecipeItemDto {
+  @IsString()
+  productId: string;
+
+  @IsString()
+  productName: string;
+
+  @IsString()
+  @IsOptional()
+  itemType?: string;
+
+  @IsString()
+  @IsOptional()
+  unitOfMeasure?: string;
+
+  @IsNumber()
+  @Min(0)
+  quantity: number;
+}
 
 export class ProcessItemDto {
   @IsInt()
@@ -19,7 +47,13 @@ export class ProcessItemDto {
 
   @IsString()
   @IsOptional()
-  estimatedTimeUnit?: string; // 'minutes', 'hours', 'days', 'weeks'
+  estimatedTimeUnit?: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProcessRecipeItemDto)
+  @IsOptional()
+  recipeItems?: ProcessRecipeItemDto[];
 }
 
 export class SetProcessesDto {
@@ -35,5 +69,5 @@ export class SetProcessesDto {
 
   @IsString()
   @IsOptional()
-  totalEstimatedTimeUnit?: string; // 'minutes', 'hours', 'days', 'weeks'
+  totalEstimatedTimeUnit?: string;
 }

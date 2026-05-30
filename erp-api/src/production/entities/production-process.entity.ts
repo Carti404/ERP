@@ -8,6 +8,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { ProductionTask } from './production-task.entity';
+import { ProcessRecipeItem } from '../interfaces/process-recipe-item.interface';
 
 /**
  * Representa un paso/proceso individual dentro de una orden de producción.
@@ -42,6 +43,10 @@ export class ProductionProcess {
   /** Unidad de tiempo (minutes, hours, days, weeks) */
   @Column({ name: 'estimated_time_unit', length: 20, default: 'minutes' })
   estimatedTimeUnit: string;
+
+  /** Insumos de la receta asignados a este proceso con cantidad */
+  @Column({ name: 'recipe_items', type: 'jsonb', nullable: true, default: () => "'[]'" })
+  recipeItems: ProcessRecipeItem[];
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;

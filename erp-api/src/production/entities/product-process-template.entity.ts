@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { ProcessRecipeItem } from '../interfaces/process-recipe-item.interface';
 
 /**
  * Plantilla de procesos reutilizable por producto.
@@ -47,6 +48,10 @@ export class ProductProcessTemplate {
 
   @Column({ name: 'total_estimated_time_unit', length: 20, default: 'minutes' })
   totalEstimatedTimeUnit: string;
+
+  /** Insumos de la receta asignados a este paso de la plantilla */
+  @Column({ name: 'recipe_items', type: 'jsonb', nullable: true, default: () => "'[]'" })
+  recipeItems: ProcessRecipeItem[];
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
