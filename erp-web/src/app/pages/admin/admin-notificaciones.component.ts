@@ -55,7 +55,9 @@ export class AdminNotificacionesComponent implements OnInit {
 
   protected prodIcon(n: AppNotification): string {
     if (n.category === 'PRODUCTION_COMPLETED') return 'check_circle';
+    if (n.category === 'PRODUCTION_STARTED') return 'play_circle';
     if (n.category === 'PRODUCTION_ASSIGNED') return 'assignment';
+    if (n.category === 'PRODUCTION_NO_PROCESSES') return 'warning';
     if (n.category === 'LEAVE_REQUEST') return 'event_note';
     if (n.category === 'ATTENDANCE_INCIDENCE') return 'running_with_errors';
     return 'notifications';
@@ -64,7 +66,9 @@ export class AdminNotificacionesComponent implements OnInit {
   protected categoryLabel(n: AppNotification): string {
     switch (n.category) {
       case 'PRODUCTION_COMPLETED': return 'Producción terminada';
+      case 'PRODUCTION_STARTED': return 'Producción iniciada';
       case 'PRODUCTION_ASSIGNED': return 'Nueva asignación';
+      case 'PRODUCTION_NO_PROCESSES': return 'Sin procesos de plantilla';
       case 'LEAVE_REQUEST': return 'Permiso / Vacaciones';
       case 'ATTENDANCE_INCIDENCE': return 'Incidencia Asistencia';
       default: return 'Sistema';

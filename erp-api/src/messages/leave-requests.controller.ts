@@ -42,8 +42,15 @@ export class LeaveRequestsController {
   updateStatus(
     @Req() req: { user: JwtValidatedUser },
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() body: { status: LeaveRequestStatus; message?: string; proposedStartDate?: string; proposedEndDate?: string },
+    @Body()
+    body: {
+      status: LeaveRequestStatus;
+      message?: string;
+      proposedStartDate?: string;
+      proposedEndDate?: string;
+      proposedSegments?: { start: string; end: string; count: number }[];
+    },
   ) {
-    return this.leaveService.updateStatus(id, req.user.userId, body);
+    return this.leaveService.updateStatus(id, req.user.userId, req.user.role, body);
   }
 }

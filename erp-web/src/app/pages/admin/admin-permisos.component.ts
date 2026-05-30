@@ -1,17 +1,27 @@
 import { Component, computed, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription, timer } from 'rxjs';
-import { ADMIN_PERMISOS_GANTT_ROWS, ADMIN_PERMISOS_KPIS, ADMIN_PERMISOS_PANEL_BY_ROW_ID, ADMIN_PERMISOS_TIMELINE_MARKERS, type AdminPermisoBarVariant, type AdminPermisoGanttRow } from './admin-permisos.mock';
+import { ADMIN_PERMISOS_TIMELINE_MARKERS, type AdminPermisoBarVariant, type AdminPermisoGanttRow } from './admin-permisos.mock';
 import { LeaveRequestsService, LeaveRequest } from '../../core/services/leave-requests.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { FeedbackService } from '../../core/services/feedback.service';
-import { apiBaseUrl } from '../../core/environment';
 import { MessagesApiService } from '../../core/messages/messages-api.service';
+import { SystemParametersApiService } from '../../core/system-parameters/system-parameters-api.service';
+import type { HolidayRowDto } from '../../core/system-parameters/system-parameters-api.types';
+import { ErpLeaveCalendarComponent } from '../../shared/erp-leave-calendar/erp-leave-calendar.component';
+import {
+  countWorkingDaysBetween,
+  formatSegmentsSummary,
+  msSetToSegments,
+  segmentsEqual,
+  segmentsToDateMsSet,
+  type LeaveSegmentDto,
+} from '../../core/leave/leave-segments.util';
 
 @Component({
   selector: 'app-admin-permisos',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ErpLeaveCalendarComponent],
   templateUrl: './admin-permisos.component.html',
 })
 export class AdminPermisosComponent implements OnInit, OnDestroy {
@@ -19,7 +29,10 @@ export class AdminPermisosComponent implements OnInit, OnDestroy {
   private readonly notificationService = inject(NotificationService);
   private readonly fb = inject(FeedbackService);
   private readonly messagesService = inject(MessagesApiService);
+  private readonly sysParams = inject(SystemParametersApiService);
   private pollingSub?: Subscription;
+
+  protected readonly holidays = signal<HolidayRowDto[]>([]);
 
   protected readonly kpis = signal([
     { id: 'ops', label: 'Total operarios (planta)', value: '0', sub: 'Cargando...', icon: 'group' },
@@ -68,8 +81,14 @@ export class AdminPermisosComponent implements OnInit, OnDestroy {
         date: new Date(h.createdAt).toLocaleString(),
         by: h.author?.fullName || 'Sistema',
         dot: this.mapActionDot(h.actionType),
-        proposal: h.proposedStartDate ? `${new Date(h.proposedStartDate).toLocaleDateString()} al ${new Date(h.proposedEndDate!).toLocaleDateString()}` : null
-      }))
+        proposal: h.proposedSegments?.length
+          ? formatSegmentsSummary(h.proposedSegments)
+          : h.proposedStartDate
+            ? `${new Date(h.proposedStartDate).toLocaleDateString()} al ${new Date(h.proposedEndDate!).toLocaleDateString()}`
+            : null,
+      })),
+      pendingAppeal: req.status === 'WORKER_APPEAL',
+      lastWorkerAppeal: this.getLastHistoryProposal(req, 'WORKER_APPEAL'),
     };
   });
 
@@ -95,9 +114,20 @@ export class AdminPermisosComponent implements OnInit, OnDestroy {
       'PENDING': 'PENDIENTE',
       'APPROVED': 'APROBADO',
       'REJECTED': 'RECHAZADO',
-      'ADMIN_PROPOSAL': 'PROPUESTA ADMIN'
+      'ADMIN_PROPOSAL': 'PROPUESTA ADMIN',
+      'WORKER_APPEAL': 'APELACIÓN TRABAJADOR',
     };
     return map[status] || status;
+  }
+
+  private getLastHistoryProposal(
+    req: LeaveRequest,
+    action: 'ADMIN_PROPOSAL' | 'WORKER_APPEAL',
+  ): LeaveSegmentDto[] | null {
+    const history = req.history ?? [];
+    const last = [...history].reverse().find((h) => h.actionType === action);
+    if (!last?.proposedSegments?.length) return null;
+    return last.proposedSegments;
   }
 
   private mapType(type: string): string {
@@ -111,12 +141,15 @@ export class AdminPermisosComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Primera carga inmediata y luego cada 10 segundos
+    this.sysParams.get().subscribe({
+      next: (snap) => this.holidays.set(snap.holidays),
+      error: (err) => console.error('Error al cargar festivos', err),
+    });
+
     this.pollingSub = timer(0, 10000).subscribe(() => {
       this.loadData();
     });
 
-    // Limpiar notificaciones de permisos al entrar
     this.notificationService.markByCategoryAsRead('LEAVE_REQUEST').subscribe();
   }
 
@@ -144,7 +177,7 @@ export class AdminPermisosComponent implements OnInit, OnDestroy {
       // We will map each request as an individual row exactly
       const mapping = reqs.map((r, i) => {
         let variant: AdminPermisoBarVariant = 'vacaciones';
-        if (r.status === 'PENDING' || r.status === 'ADMIN_PROPOSAL') variant = 'pendiente';
+        if (r.status === 'PENDING' || r.status === 'ADMIN_PROPOSAL' || r.status === 'WORKER_APPEAL') variant = 'pendiente';
         else if (r.status === 'APPROVED') variant = 'aprobado';
         else if (r.status === 'REJECTED') variant = 'rechazado';
         else if (r.type === 'MEDICAL') variant = 'medico';
@@ -171,26 +204,17 @@ export class AdminPermisosComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Modal para proponer alternativa
-  protected readonly showAltModal = signal<boolean>(false);
-  protected readonly altSegments = signal<{ start: string; end: string; count: number }[]>([]);
+  protected readonly showAltModal = signal(false);
+  protected readonly altOriginalDatesMs = signal<Set<number>>(new Set());
+  protected readonly altProposalDatesMs = signal<Set<number>>(new Set());
+  protected readonly altCalendarViewDate = signal(new Date());
+  protected readonly altOriginalSegments = signal<LeaveSegmentDto[]>([]);
 
-  protected addAltSegment(): void {
-    const today = new Date().toISOString().split('T')[0];
-    this.altSegments.update(prev => [...prev, { start: today, end: today, count: 1 }]);
-  }
-
-  protected removeAltSegment(index: number): void {
-    this.altSegments.update(prev => prev.filter((_, i) => i !== index));
-  }
-
-  protected updateAltSegment(index: number, field: 'start' | 'end', value: string): void {
-    this.altSegments.update(prev => prev.map((seg, i) => {
-      if (i !== index) return seg;
-      const updated = { ...seg, [field]: value };
-      return updated;
-    }));
-  }
+  protected readonly altProposalSummary = computed(() => {
+    const sorted = [...this.altProposalDatesMs()].sort((a, b) => a - b);
+    const segs = msSetToSegments(sorted, countWorkingDaysBetween);
+    return formatSegmentsSummary(segs);
+  });
 
 
   protected selectRow(rowId: string): void {
@@ -226,34 +250,94 @@ export class AdminPermisosComponent implements OnInit, OnDestroy {
   protected onProposeAlt(): void {
     const detail = this.panelDetail();
     if (!detail) return;
-    
-    // Inicializar con copia de los segmentos actuales
-    const initialSegments = detail.segments.map(s => ({ ...s }));
-    this.altSegments.set(initialSegments);
+
+    const originals = detail.segments.map((s) => ({
+      start: s.start,
+      end: s.end,
+      count: s.count,
+    }));
+    this.altOriginalSegments.set(originals);
+    this.altOriginalDatesMs.set(segmentsToDateMsSet(originals));
+    this.altProposalDatesMs.set(segmentsToDateMsSet(originals));
+    this.altCalendarViewDate.set(new Date(originals[0].start + 'T12:00:00'));
     this.showAltModal.set(true);
   }
 
   protected cancelAltProposal(): void {
     this.showAltModal.set(false);
+    this.altProposalDatesMs.set(new Set());
+  }
+
+  protected clearAltProposal(): void {
+    this.altProposalDatesMs.set(new Set());
   }
 
   protected sendAltProposal(): void {
-    const segments = this.altSegments();
-    if (segments.length === 0) {
-      this.fb.showToast('Debes añadir al menos un periodo para la propuesta.', 'warning');
+    const sorted = [...this.altProposalDatesMs()].sort((a, b) => a - b);
+    if (sorted.length === 0) {
+      this.fb.showToast('Selecciona al menos un día en el calendario para la propuesta.', 'warning');
+      return;
+    }
+
+    const segments = msSetToSegments(sorted, countWorkingDaysBetween);
+    if (segmentsEqual(segments, this.altOriginalSegments())) {
+      this.fb.showToast(
+        'La propuesta debe ser distinta a las fechas originales solicitadas por el trabajador.',
+        'warning',
+      );
       return;
     }
 
     const id = this.selectedRowId();
-    this.leaveService.updateStatus(id, { 
-      status: 'ADMIN_PROPOSAL', 
-      message: 'El administrador ha sugerido una nueva distribución de fechas.',
-      proposedSegments: segments
-    }).subscribe(() => {
-      this.fb.showToast('Propuesta alternativa enviada', 'success');
-      this.showAltModal.set(false);
-      this.loadData();
-    });
+    this.leaveService
+      .updateStatus(id, {
+        status: 'ADMIN_PROPOSAL',
+        message: 'El administrador ha sugerido una nueva distribución de fechas.',
+        proposedSegments: segments,
+      })
+      .subscribe({
+        next: () => {
+          this.fb.showToast('Propuesta alternativa enviada. Se abrió una apelación.', 'success');
+          this.showAltModal.set(false);
+          this.loadData();
+        },
+        error: (err) => {
+          this.fb.showToast(err?.error?.message || 'No se pudo enviar la propuesta.', 'error');
+        },
+      });
+  }
+
+  protected onAcceptWorkerAppeal(): void {
+    const detail = this.panelDetail();
+    if (!detail?.lastWorkerAppeal?.length) {
+      this.fb.showToast('No hay apelación del trabajador para aceptar.', 'warning');
+      return;
+    }
+
+    this.fb
+      .showConfirm(
+        'Aceptar apelación',
+        '¿Aprobar las fechas propuestas por el trabajador en su última apelación?',
+      )
+      .then((confirmed) => {
+        if (!confirmed) return;
+        const id = this.selectedRowId();
+        this.leaveService
+          .updateStatus(id, {
+            status: 'APPROVED',
+            message: 'Aceptado por administrador (apelación del trabajador)',
+            proposedSegments: detail.lastWorkerAppeal!,
+          })
+          .subscribe({
+            next: () => {
+              this.fb.showToast('Apelación aceptada y solicitud aprobada', 'success');
+              this.loadData();
+            },
+            error: (err) => {
+              this.fb.showToast(err?.error?.message || 'No se pudo aceptar la apelación.', 'error');
+            },
+          });
+      });
   }
 
   protected onReject(): void {
@@ -287,6 +371,8 @@ export class AdminPermisosComponent implements OnInit, OnDestroy {
       this.selectRow(rowId);
     }
   }
+
+  protected readonly formatSegmentsSummary = formatSegmentsSummary;
 
   protected isImageFile(url: string | null): boolean {
     if (!url) return false;

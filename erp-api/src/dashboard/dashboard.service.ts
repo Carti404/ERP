@@ -5,6 +5,7 @@ import { User } from '../users/entities/user.entity';
 import { AttendanceRecord } from '../attendance/entities/attendance-record.entity';
 import { ProductionTask } from '../production/entities/production-task.entity';
 import { ProductionWaste } from '../production/entities/production-waste.entity';
+import { ProductionAssignmentStatus } from '../common/enums/production-assignment-status.enum';
 import { UserRole } from '../common/enums/user-role.enum';
 import { SystemParametersService } from '../system-parameters/system-parameters.service';
 
@@ -203,12 +204,22 @@ export class DashboardService {
       order: { updatedAt: 'DESC' },
     });
 
-    return tasks.map(t => ({
+    return tasks.map((t) => ({
       id: t.id,
       orderNumber: t.orderNumber,
       productName: t.productName,
-      status: t.status,
-      workers: t.assignments.map(a => a.worker?.fullName).filter(Boolean),
+      status: this.deriveTaskDisplayStatus(t),
+      workers: t.assignments.map((a) => a.worker?.fullName).filter(Boolean),
     }));
+  }
+
+  private deriveTaskDisplayStatus(task: ProductionTask): string {
+    const assignments = task.assignments ?? [];
+    if (
+      assignments.some((a) => a.status === ProductionAssignmentStatus.IN_PROGRESS)
+    ) {
+      return 'IN_PROGRESS';
+    }
+    return task.status;
   }
 }

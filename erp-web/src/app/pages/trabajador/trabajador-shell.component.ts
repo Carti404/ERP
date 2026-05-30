@@ -1,8 +1,9 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { AuthService } from '../../core/auth/auth.service';
 import { ErpThemeService } from '../../core/theme/erp-theme.service';
+import { NavActivityService } from '../../core/nav/nav-activity.service';
 
 export type WorkerPlantOperationalStatus = 'online' | 'absent' | 'no_attendance';
 
@@ -18,13 +19,14 @@ const WORKER_PLANT_STATUS_LABEL: Record<WorkerPlantOperationalStatus, string> = 
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './trabajador-shell.component.html',
 })
-export class TrabajadorShellComponent {
+export class TrabajadorShellComponent implements OnInit, OnDestroy {
   private static readonly SCROLL_DELTA_MIN = 10;
   private static readonly TOP_THRESHOLD = 12;
 
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   protected readonly theme = inject(ErpThemeService);
+  protected readonly navActivity = inject(NavActivityService);
 
   protected readonly navItems = [
     { label: 'Inicio', path: '/trabajador/inicio', icon: 'dashboard', short: 'Inicio' },
@@ -40,6 +42,24 @@ export class TrabajadorShellComponent {
   protected readonly plantStatus = signal<WorkerPlantOperationalStatus>('online');
 
   protected readonly plantStatusLabel = computed(() => WORKER_PLANT_STATUS_LABEL[this.plantStatus()]);
+
+  ngOnInit(): void {
+    this.navActivity.startPolling(15_000);
+  }
+
+  ngOnDestroy(): void {
+    this.navActivity.ngOnDestroy();
+  }
+
+  protected navHasActivity(path: string): boolean {
+    if (path === '/trabajador/mensajes') return this.navActivity.inboxUnread() > 0;
+    return false;
+  }
+
+  protected navActivityCount(path: string): number {
+    if (path === '/trabajador/mensajes') return this.navActivity.inboxUnread();
+    return 0;
+  }
 
   protected readonly bottomBarVisible = signal(true);
 

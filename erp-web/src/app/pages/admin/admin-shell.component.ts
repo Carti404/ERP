@@ -1,8 +1,9 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { AuthService } from '../../core/auth/auth.service';
 import { ErpThemeService } from '../../core/theme/erp-theme.service';
+import { NavActivityService } from '../../core/nav/nav-activity.service';
 
 /** Estado operativo de planta (mock hasta API). */
 export type PlantOperationalStatus = 'online' | 'absent' | 'no_attendance';
@@ -19,13 +20,14 @@ const PLANT_STATUS_LABEL: Record<PlantOperationalStatus, string> = {
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './admin-shell.component.html',
 })
-export class AdminShellComponent {
+export class AdminShellComponent implements OnInit, OnDestroy {
   private static readonly SCROLL_DELTA_MIN = 10;
   private static readonly TOP_THRESHOLD = 12;
 
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   protected readonly theme = inject(ErpThemeService);
+  protected readonly navActivity = inject(NavActivityService);
 
   /** Scroll hacia abajo → visible; hacia arriba → oculta (en tope siempre visible). */
   protected readonly bottomBarVisible = signal(true);
@@ -49,6 +51,28 @@ export class AdminShellComponent {
   protected readonly plantStatus = signal<PlantOperationalStatus>('online');
 
   protected readonly plantStatusLabel = computed(() => PLANT_STATUS_LABEL[this.plantStatus()]);
+
+  ngOnInit(): void {
+    this.navActivity.startPolling(15_000);
+  }
+
+  ngOnDestroy(): void {
+    this.navActivity.ngOnDestroy();
+  }
+
+  protected navHasActivity(path: string): boolean {
+    if (path === '/admin/notificaciones') return this.navActivity.notificationsUnread() > 0;
+    if (path === '/admin/bandeja') return this.navActivity.inboxUnread() > 0;
+    if (path === '/admin/asistencias') return this.navActivity.attendanceUnread() > 0;
+    return false;
+  }
+
+  protected navActivityCount(path: string): number {
+    if (path === '/admin/notificaciones') return this.navActivity.notificationsUnread();
+    if (path === '/admin/bandeja') return this.navActivity.inboxUnread();
+    if (path === '/admin/asistencias') return this.navActivity.attendanceUnread();
+    return 0;
+  }
 
   protected logout(): void {
     this.auth.logout();

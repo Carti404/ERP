@@ -4,7 +4,12 @@ import { Observable } from 'rxjs';
 import { apiBaseUrl } from '../environment';
 
 export type LeaveRequestType = 'VACATION' | 'LATENESS' | 'ABSENCE' | 'PERSONAL' | 'MEDICAL';
-export type LeaveRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'ADMIN_PROPOSAL';
+export type LeaveRequestStatus =
+  | 'PENDING'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'ADMIN_PROPOSAL'
+  | 'WORKER_APPEAL';
 
 export interface LeaveRequestHistory {
   id: string;

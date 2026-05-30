@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository, Not } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { LeaveRequest, LeaveRequestType, LeaveRequestStatus } from './entities/leave-request.entity';
 import { LeaveRequestHistory, LeaveRequestActionType } from './entities/leave-request-history.entity';
 import { UsersService } from '../users/users.service';
@@ -8,6 +8,40 @@ import { calculateVacationDays, countWorkingDays } from '../common/utils/vacatio
 import { SystemParametersService } from '../system-parameters/system-parameters.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationCategory, NotificationType } from '../notifications/entities/notification.entity';
+import { UserRole } from '../common/enums/user-role.enum';
+
+type LeaveSegmentPayload = { start: string; end: string; count: number };
+
+function normalizeDateStr(d: string | Date): string {
+  const date = typeof d === 'string' ? new Date(d.includes('T') ? d : `${d}T12:00:00`) : d;
+  return date.toISOString().slice(0, 10);
+}
+
+function segmentsEqual(a: LeaveSegmentPayload[], b: LeaveSegmentPayload[]): boolean {
+  const key = (segs: LeaveSegmentPayload[]) =>
+    [...segs]
+      .map((s) => `${normalizeDateStr(s.start)}|${normalizeDateStr(s.end)}|${s.count}`)
+      .sort()
+      .join(',');
+  return key(a) === key(b);
+}
+
+function getOriginalSegments(req: LeaveRequest): LeaveSegmentPayload[] {
+  if (req.segments?.length) {
+    return req.segments.map((s) => ({
+      start: normalizeDateStr(s.start),
+      end: normalizeDateStr(s.end),
+      count: s.count,
+    }));
+  }
+  return [
+    {
+      start: normalizeDateStr(req.startDate),
+      end: normalizeDateStr(req.endDate),
+      count: req.totalDays,
+    },
+  ];
+}
 
 @Injectable()
 export class LeaveRequestsService {
@@ -108,9 +142,79 @@ export class LeaveRequestsService {
     return saved;
   }
 
-  async updateStatus(id: string, authorId: string, data: { status: LeaveRequestStatus; message?: string; proposedStartDate?: string; proposedEndDate?: string; proposedSegments?: { start: string, end: string, count: number }[] }) {
-    const req = await this.requestRepo.findOne({ where: { id } });
+  async updateStatus(
+    id: string,
+    authorId: string,
+    authorRole: UserRole,
+    data: {
+      status: LeaveRequestStatus;
+      message?: string;
+      proposedStartDate?: string;
+      proposedEndDate?: string;
+      proposedSegments?: LeaveSegmentPayload[];
+    },
+  ) {
+    const req = await this.requestRepo.findOne({ where: { id }, relations: ['history'] });
     if (!req) throw new NotFoundException('Solicitud no encontrada');
+
+    if (req.status === LeaveRequestStatus.APPROVED || req.status === LeaveRequestStatus.REJECTED) {
+      throw new BadRequestException('Esta solicitud ya fue cerrada y no admite más cambios.');
+    }
+
+    const originalSegments = getOriginalSegments(req);
+
+    if (
+      data.status === LeaveRequestStatus.ADMIN_PROPOSAL ||
+      data.status === LeaveRequestStatus.WORKER_APPEAL
+    ) {
+      const proposed = data.proposedSegments ?? [];
+      if (proposed.length === 0 && !data.proposedStartDate) {
+        throw new BadRequestException('Debes indicar al menos un periodo en la propuesta.');
+      }
+      const normalizedProposed: LeaveSegmentPayload[] =
+        proposed.length > 0
+          ? proposed.map((s) => ({
+              start: normalizeDateStr(s.start),
+              end: normalizeDateStr(s.end),
+              count: s.count,
+            }))
+          : [
+              {
+                start: normalizeDateStr(data.proposedStartDate!),
+                end: normalizeDateStr(data.proposedEndDate || data.proposedStartDate!),
+                count: 1,
+              },
+            ];
+
+      if (segmentsEqual(normalizedProposed, originalSegments)) {
+        throw new BadRequestException(
+          'La propuesta no puede ser idéntica a las fechas originales solicitadas.',
+        );
+      }
+      data.proposedSegments = normalizedProposed;
+    }
+
+    if (data.status === LeaveRequestStatus.ADMIN_PROPOSAL) {
+      if (authorRole !== UserRole.ADMIN) {
+        throw new ForbiddenException('Solo un administrador puede proponer fechas alternativas.');
+      }
+    } else if (data.status === LeaveRequestStatus.WORKER_APPEAL) {
+      if (req.userId !== authorId) {
+        throw new ForbiddenException('Solo el trabajador dueño puede apelar.');
+      }
+    } else if (
+      data.status === LeaveRequestStatus.APPROVED ||
+      data.status === LeaveRequestStatus.REJECTED
+    ) {
+      const isOwner = req.userId === authorId;
+      const isAdmin = authorRole === UserRole.ADMIN;
+      if (data.status === LeaveRequestStatus.REJECTED && !isAdmin) {
+        throw new ForbiddenException('Solo un administrador puede rechazar solicitudes.');
+      }
+      if (data.status === LeaveRequestStatus.APPROVED && !isOwner && !isAdmin) {
+        throw new ForbiddenException('No tienes permiso para aprobar esta solicitud.');
+      }
+    }
 
     req.status = data.status;
     
@@ -182,7 +286,13 @@ export class LeaveRequestsService {
   async getAdminStats() {
     const activeWorkers = await this.usersService.listActives();
     const pendingRequests = await this.requestRepo.find({
-      where: { status: LeaveRequestStatus.PENDING },
+      where: {
+        status: In([
+          LeaveRequestStatus.PENDING,
+          LeaveRequestStatus.ADMIN_PROPOSAL,
+          LeaveRequestStatus.WORKER_APPEAL,
+        ]),
+      },
     });
 
     return {
